@@ -1,6 +1,5 @@
 name: Gerar Curriculos PDF
 
-# O script vai rodar sempre que você enviar código para a branch main
 on:
   push:
     branches:
@@ -12,10 +11,10 @@ jobs:
     
     steps:
       - name: 📥 Clonar o repositório
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # Atualizado (v4) para corrigir o aviso do Node.js
 
       - name: 🐍 Configurar Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5 # Atualizado (v5) para corrigir o aviso do Node.js
         with:
           python-version: '3.10'
 
@@ -28,12 +27,13 @@ jobs:
       - name: 📄 Compilar LaTeX para PDF
         uses: xu-cheng/latex-action@v3
         with:
+          # Como o diretório de trabalho já é a pasta 'saida', 
+          # passamos apenas o nome final dos arquivos.
           root_file: |
-            saida/curriculo_ats_pt.tex
-            saida/curriculo_ats_en.tex
-            saida/curriculo_design_pt.tex
-            saida/curriculo_design_en.tex
-          # Essa configuração garante que a compilação ocorra dentro da pasta saida
+            curriculo_ats_pt.tex
+            curriculo_ats_en.tex
+            curriculo_design_pt.tex
+            curriculo_design_en.tex
           working_directory: saida 
 
       - name: 💾 Salvar PDFs como Artefatos
