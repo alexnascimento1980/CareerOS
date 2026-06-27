@@ -48,6 +48,10 @@ if __name__ == "__main__":
     dados_cv = carregar_dados('dados.json')
     ambiente = configurar_jinja('templates')
     
-    # Gerar versões ATS (Português e Inglês)
+    # 1. Gerar versões ATS (Português e Inglês)
     gerar_curriculo('pt', dados_cv, ambiente, 'base_ats.tex', 'curriculo_ats_pt.tex')
     gerar_curriculo('en', dados_cv, ambiente, 'base_ats.tex', 'curriculo_ats_en.tex')
+    
+    # 2. Gerar versões de Design (Português e Inglês)
+    gerar_curriculo('pt', dados_cv, ambiente, 'base_design.tex', 'curriculo_design_pt.tex')
+    gerar_curriculo('en', dados_cv, ambiente, 'base_design.tex', 'curriculo_design_en.tex')
