@@ -1,0 +1,39 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\begin{document}
+
+% Cabeçalho
+\begin{center}
+    {\Huge \textbf{<< dados.basics.name >>}} \\
+    \vspace{2mm}
+    << if lang == 'pt' >>
+        << dados.basics.label_pt >> \\
+    << else >>
+        << dados.basics.label_en >> \\
+    << endif >>
+    << dados.basics.location >> | << dados.basics.phone >> | << dados.basics.email >>
+\end{center}
+
+\vspace{5mm}
+
+% Experiência Profissional
+\section*{<< 'Experiência Profissional' if lang == 'pt' else 'Professional Experience' >>}
+\hrule
+\vspace{3mm}
+
+<BLOCK> for xp in dados.experience </BLOCK>
+    \noindent \textbf{<< xp.company >>} \hfill << xp.startDate >> -- << xp.endDate >> \\
+    \textit{<< xp.position_pt if lang == 'pt' else xp.position_en >>}
+    \begin{itemize}
+        <BLOCK> set destaques = xp.highlights_pt if lang == 'pt' else xp.highlights_en </BLOCK>
+        <BLOCK> for item in destaques </BLOCK>
+            \item << item >>
+        <BLOCK> endfor </BLOCK>
+    \end{itemize}
+    \vspace{2mm}
+<BLOCK> endfor </BLOCK>
+
+\end{document}
