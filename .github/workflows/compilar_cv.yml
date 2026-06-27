@@ -1,0 +1,43 @@
+name: Gerar Curriculos PDF
+
+# O script vai rodar sempre que você enviar código para a branch main
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Clonar o repositório
+        uses: actions/checkout@v3
+
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: 📦 Instalar Jinja2
+        run: pip install jinja2
+
+      - name: ⚙️ Rodar o Gerador Python
+        run: python gerador.py
+
+      - name: 📄 Compilar LaTeX para PDF
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: |
+            saida/curriculo_ats_pt.tex
+            saida/curriculo_ats_en.tex
+            saida/curriculo_design_pt.tex
+            saida/curriculo_design_en.tex
+          # Essa configuração garante que a compilação ocorra dentro da pasta saida
+          working_directory: saida 
+
+      - name: 💾 Salvar PDFs como Artefatos
+        uses: actions/upload-artifact@v4
+        with:
+          name: Meus_Curriculos_Gerados
+          path: saida/*.pdf
