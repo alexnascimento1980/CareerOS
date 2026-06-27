@@ -1,0 +1,88 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\usepackage{xcolor}
+% Ajuste de margens mais estreitas para o layout de design
+\geometry{a4paper, margin=0.75in}
+
+% Definição de uma cor sobre para detalhes (ex: azul escuro/cinza)
+\definecolor{primarycolor}{RGB}{30, 55, 90}
+
+\begin{document}
+
+% Cabeçalho de Destaque
+\begin{center}
+    {\Huge \textbf{\color{primarycolor}<< dados.basics.name >>}} \\
+    \vspace{1mm}
+    {\large \textit{<< dados.basics.label_pt if lang == 'pt' else dados.basics.label_en >>}} \\
+    \vspace{2mm}
+    \small << dados.basics.location >> | << dados.basics.phone >> | << dados.basics.email >>
+\end{center}
+
+\vspace{4mm}
+
+% Início do Layout de Duas Colunas usando minipage
+% Coluna Esquerda: Informações Técnicas e Contactos (33% da largura)
+\begin{minipage}[t]{0.33\textwidth}
+    \raggedright
+    
+    {\color{primarycolor}\large \textbf{<< 'Competências' if lang == 'pt' else 'Skills' >>}} \\
+    \rule{\linewidth}{0.5pt} \\
+    \vspace{1mm}
+    % Loop para listar competências técnicas em linhas separadas
+    <BLOCK> for skill in dados.skills.technical </BLOCK>
+        • << skill >> \\
+    <BLOCK> endfor </BLOCK>
+    
+    \vspace{5mm}
+    
+    {\color{primarycolor}\large \textbf{<< 'Idiomas' if lang == 'pt' else 'Languages' >>}} \\
+    \rule{\linewidth}{0.5pt} \\
+    \vspace{1mm}
+    <BLOCK> for idioma in dados.skills.languages </BLOCK>
+        \textbf{<< idioma.language_pt if lang == 'pt' else idioma.language_en >>} \\
+        \small << idioma.fluency_pt if lang == 'pt' else idioma.fluency_en >> \\
+        \vspace{1mm}
+    <BLOCK> endfor </BLOCK>
+\end{minipage}
+\hfill
+% Divisória invisível ou espaço entre colunas
+\begin{minipage}[t]{0.02\textwidth}
+    \hfill
+\end{minipage}
+\hfill
+% Coluna Direita: Percurso Profissional e Académico (63% da largura)
+\begin{minipage}[t]{0.63\textwidth}
+    \raggedright
+    
+    {\color{primarycolor}\large \textbf{<< 'Experiência' if lang == 'pt' else 'Experience' >>}} \\
+    \rule{\linewidth}{0.5pt} \\
+    \vspace{2mm}
+    
+    <BLOCK> for xp in dados.experience </BLOCK>
+        \textbf{<< xp.company >>} \hfill \small << xp.startDate >> -- << xp.endDate >> \\
+        \textit{\small << xp.position_pt if lang == 'pt' else xp.position_en >>}
+        \begin{itemize}
+            <BLOCK> set destaques = xp.highlights_pt if lang == 'pt' else xp.highlights_en </BLOCK>
+            <BLOCK> for item in destaques </BLOCK>
+                \item \small << item >>
+            <BLOCK> endfor </BLOCK>
+        \end{itemize}
+        \vspace{2mm}
+    <BLOCK> endfor </BLOCK>
+    
+    \vspace{3mm}
+    
+    {\color{primarycolor}\large \textbf{<< 'Educação' if lang == 'pt' else 'Education' >>}} \\
+    \rule{\linewidth}{0.5pt} \\
+    \vspace{2mm}
+    
+    <BLOCK> for edu in dados.education </BLOCK>
+        \textbf{<< edu.institution >>} \hfill \small << edu.startDate >> -- << edu.endDate >> \\
+        \textit{\small << edu.area_pt if lang == 'pt' else edu.area_en >>} \\
+        \small << edu.status_pt if lang == 'pt' else edu.status_en >> \\
+        \vspace{2mm}
+    <BLOCK> endfor </BLOCK>
+\end{minipage}
+
+\end{document}
