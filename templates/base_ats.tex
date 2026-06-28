@@ -53,20 +53,22 @@
 
 % Formação Acadêmica
 \section*{ {% if lang == 'pt' %}Formação Acadêmica{% else %}Education{% endif %} }
-\noindent \begin{tabularx}{\textwidth}{X r}
-    \textbf{ {{ dados.education[0].institution }} } & \textbf{ {{ dados.education[0].startDate }} -- {{ dados.education[0].endDate }} } \\
-    \textit{ {{ dados.education[0].area_pt if lang == 'pt' else dados.education[0].area_en }} } & 
-\end{tabularx}
-Status: {{ dados.education[0].status_pt if lang == 'pt' else dados.education[0].status_en }}
-
-\vspace{3mm}
+{% for edu in dados.education %}
+    \noindent \begin{tabularx}{\textwidth}{X r}
+        \textbf{ {{ edu.institution }} } & \textbf{ {{ edu.startDate }} -- {{ edu.endDate }} } \\
+        \textit{ {{ edu.area_pt if lang == 'pt' else edu.area_en }} } & 
+    \end{tabularx}
+    \noindent Status: {{ edu.status_pt if lang == 'pt' else edu.status_en }}
+    \vspace{2mm}
+{% endfor %}
 
 % Habilidades
 \section*{ {% if lang == 'pt' %}Habilidades{% else %}Skills{% endif %} }
-\noindent \textbf{ {{ 'Técnicas' if lang == 'pt' else 'Technical' }} : } {{ dados.skills.technical | join(', ') }} \\
-\textbf{ {{ 'Idiomas' if lang == 'pt' else 'Languages' }} : } 
-{% for idioma in dados.skills.languages %}
-    {{ idioma.language_pt if lang == 'pt' else idioma.language_en }} ({{ idioma.fluency_pt if lang == 'pt' else idioma.fluency_en }})
-{% endfor %}
+\noindent \begin{tabularx}{\textwidth}{l X}
+    \textbf{ {{ 'Técnicas' if lang == 'pt' else 'Technical' }}: } & {{ dados.skills.technical | join(', ') }} \\
+    \textbf{ {{ 'Idiomas' if lang == 'pt' else 'Languages' }}: } & {% for idioma in dados.skills.languages %}
+        {{ idioma.language_pt if lang == 'pt' else idioma.language_en }} ({{ idioma.fluency_pt if lang == 'pt' else idioma.fluency_en }}){% if not loop.last %}, {% endif %}
+    {% endfor %}
+\end{tabularx}
 
 \end{document}
