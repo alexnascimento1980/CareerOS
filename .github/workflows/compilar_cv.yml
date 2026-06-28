@@ -29,9 +29,6 @@ jobs:
         with:
           root_file: |
             curriculo_ats_pt.tex
-            curriculo_ats_en.tex
-            curriculo_design_pt.tex
-            curriculo_design_en.tex
           working_directory: saida
 
       - name: 💾 Salvar PDFs como Artefatos

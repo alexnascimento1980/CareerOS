@@ -21,7 +21,7 @@ def gerar_curriculos():
         template = ambiente_jinja.get_template(nome_template)
         renderizado = template.render(dados_limpos)
 
-        output_filename = f"saida/curriculo_{nome_template.replace('base_', '')}"
+        output_filename = os.path.join('saida', 'curriculo_ats_pt.tex')
 
         with open(output_filename, 'w', encoding='utf-8') as f:
             f.write(renderizado)
