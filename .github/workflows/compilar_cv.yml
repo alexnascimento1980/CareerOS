@@ -1,26 +1,28 @@
 name: Gerar Curriculos PDF
-
 on: [push]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Clonar o repositório
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Configurar Python
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      - name: Instalar Jinja2
+      - name: Instalar Dependencias
         run: pip install jinja2 markupsafe
 
-      - name: Rodar o Gerador Python
+      - name: Rodar Gerador
         run: python gerador.py
 
-      - name: 📄 Compilar LaTeX para PDF
+      - name: Verificar se arquivo existe
+        run: ls -R saida/
+
+      - name: Compilar LaTeX
         uses: xu-cheng/latex-action@v3
         with:
-          root_file: saida/curriculo_ats_pt.tex
+          root_file: curriculo_ats_pt.tex
+          working_directory: saida
