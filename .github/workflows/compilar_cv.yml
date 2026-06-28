@@ -1,16 +1,20 @@
 name: Gerar Curriculos PDF
+
 on: [push]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        lang: [pt, en]
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: '3.10'
 
       - name: Instalar Dependencias
         run: pip install jinja2 markupsafe
@@ -18,23 +22,14 @@ jobs:
       - name: Rodar Gerador
         run: python gerador.py
 
-      - name: ONDE ESTÃO OS ARQUIVOS? (DEBUG)
-        run: |
-          echo "Conteúdo da raiz:"
-          ls -F
-          echo "Conteúdo da pasta saida (se existir):"
-          ls -F saida/ || echo "Pasta 'saida' não encontrada"
-
-      - name: Mover arquivo para a raiz
-        run: mv saida/curriculo_ats_pt.tex .
-
-      - name: 📄 Compilar LaTeX para PDF
+      - name: 📄 Compilar LaTeX
         uses: xu-cheng/latex-action@v3
         with:
-          root_file: curriculo_ats_pt.tex
+          root_file: curriculo_ats_${{ matrix.lang }}.tex
+          working_directory: saida
 
       - name: Salvar PDF como Artefato
         uses: actions/upload-artifact@v4
         with:
-          name: curriculo-pdf
-          path: curriculo_ats_pt.pdf # ou o caminho onde o PDF foi gerado
+          name: curriculo-${{ matrix.lang }}
+          path: saida/curriculo_ats_${{ matrix.lang }}.pdf
