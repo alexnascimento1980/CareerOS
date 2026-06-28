@@ -1,8 +1,8 @@
 {
   "basics": {
     "name": "Alex Nascimento",
-    "label_pt": "LOGÍSTICA | TRANSPORTE E ARMAZENAGEM | E-COMMERCE",
-    "label_en": "LOGISTICS | TRANSPORTATION AND STORAGE | E-COMMERCE",
+    "label_pt": "Logística | Transporte e Armazenagem | Ciência de Dados",
+    "label_en": "Logistics | Transportation and Storage | Data Science",
     "email": "alex_nascto@hotmail.com",
     "phone": "(19) 98290-7060",
     "location": "Indaiatuba, São Paulo",
@@ -11,14 +11,14 @@
   },
   "summary": {
     "pt": [
-      "Experiência em agendamento e planejamento estratégico de entregas, garantindo eficiência e pontualidade.",
-      "Habilidade em rastreamento de remessas, oferecendo visibilidade e segurança em operações nacionais.",
-      "Proficiência em negociação de fretes e gestão de frota para uma cadeia de suprimentos ininterrupta."
+      "Profissional com mais de 10 anos de experiência em operações logísticas e cadeia de suprimentos, atualmente integrando habilidades de Ciência de Dados para otimização de processos.",
+      "Especialista em planejamento estratégico, monitoramento de SLAs e análise de demandas de entregas (First Mile e Last Mile).",
+      "Capacidade analítica para tomada de decisão baseada em dados, com foco em gestão de frotas, redução de custos operacionais e integração de sistemas (ERP, TMS)."
     ],
     "en": [
-      "Experience in scheduling and strategic delivery planning, ensuring efficiency and punctuality.",
-      "Skill in shipment tracking, offering visibility and security in national operations.",
-      "Proficiency in freight negotiation and fleet management for an uninterrupted supply chain."
+      "Professional with over 10 years of experience in logistics operations and supply chain, currently integrating Data Science skills for process optimization.",
+      "Specialist in strategic planning, SLA monitoring, and delivery demand analysis (First Mile and Last Mile).",
+      "Analytical capacity for data-driven decision-making, focusing on fleet management, operational cost reduction, and systems integration (ERP, TMS)."
     ]
   },
   "experience": [
@@ -29,14 +29,14 @@
       "position_pt": "Assistente de Transporte",
       "position_en": "Transport Assistant",
       "highlights_pt": [
-        "Trabalho focado em atendimento a coletas de produtos via aplicativo de venda (Primeira Milha).",
-        "Treinamento de motoristas terceiros seguindo padrões de excelência do cliente.",
-        "Gestão da base de motoristas parceiros, garantindo disponibilidade na operação."
+        "Monitoramento de métricas e KPIs de Primeira Milha (First Mile), garantindo a eficiência das coletas e o cumprimento de SLAs com o cliente.",
+        "Gestão de dados operacionais e cadastro da base de motoristas parceiros, otimizando o roteamento e a disponibilidade da frota.",
+        "Treinamento de equipes operacionais com foco em padronização de processos e melhoria contínua dos indicadores de qualidade."
       ],
       "highlights_en": [
-        "Focused on product collection services sold via sales application (Customer's First Mile).",
-        "Trained third-party drivers to provide excellent service according to client standards.",
-        "Managed the partner driver base to maintain interest and operational availability."
+        "Monitored First Mile metrics and KPIs, ensuring collection efficiency and compliance with client SLAs.",
+        "Managed operational data and partner driver database, optimizing routing and fleet availability.",
+        "Trained operational teams focusing on process standardization and continuous improvement of quality indicators."
       ]
     },
     {
@@ -46,14 +46,14 @@
       "position_pt": "Auxiliar de Tráfego",
       "position_en": "Traffic Assistant",
       "highlights_pt": [
-        "Controle de escala e cumprimento de jornada de motoristas de fretamento.",
-        "Monitoramento do tráfego e acionamento de veículos reserva em casos de atraso.",
-        "Controle e arquivamento de discos de tacógrafo e diários de bordo."
+        "Análise e controle de escalas de motoristas, garantindo a conformidade com as regulamentações de jornada de trabalho.",
+        "Monitoramento em tempo real do tráfego para roteirização dinâmica e acionamento preventivo de veículos reserva.",
+        "Auditoria, gestão e registro de dados de discos de tacógrafo e diários de bordo para controle rigoroso da frota."
       ],
       "highlights_en": [
-        "Controlled schedules and ensured adherence to shift start times for charter line drivers.",
-        "Monitored traffic and coordinated backup vehicles in case of delays.",
-        "Managed and archived tachograph discs and fleet logbooks."
+        "Analyzed and controlled driver schedules, ensuring compliance with working hour regulations.",
+        "Monitored real-time traffic for dynamic routing and preventive deployment of backup vehicles.",
+        "Audited, managed, and recorded tachograph disc and logbook data for strict fleet control."
       ]
     },
     {
@@ -63,14 +63,14 @@
       "position_pt": "Analista de Logística",
       "position_en": "Logistics Analyst",
       "highlights_pt": [
-        "Atendimento ao cliente embarcador e análise de demanda de carregamento.",
-        "Realização de cotações de fretes e gestão via TMS e ERP.",
-        "Cadastro e liberação de motoristas em gerenciadoras de risco."
+        "Análise de demanda de carregamento e planejamento logístico baseado em volume e capacidade de frota.",
+        "Gestão de operações e cotações de fretes utilizando sistemas corporativos integrados (ERP SAP e TMS).",
+        "Processamento e validação de dados cadastrais de motoristas e veículos junto a gerenciadoras de risco, garantindo compliance e segurança."
       ],
       "highlights_en": [
-        "Shipper customer service and loading demand analysis.",
-        "Freight quoting and management using TMS and ERP systems.",
-        "Driver/vehicle registration and security clearance."
+        "Analyzed loading demand and conducted logistical planning based on volume and fleet capacity.",
+        "Managed operations and freight quotes using integrated corporate systems (SAP ERP and TMS).",
+        "Processed and validated driver and vehicle registration data with risk management agencies, ensuring compliance and security."
       ]
     }
   ],
