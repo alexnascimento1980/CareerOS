@@ -10,13 +10,20 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: '3.10'
 
       - name: Instalar Dependencias
         run: pip install jinja2 markupsafe
 
       - name: Rodar Gerador
         run: python gerador.py
+
+      - name: ONDE ESTÃO OS ARQUIVOS? (DEBUG)
+        run: |
+          echo "Conteúdo da raiz:"
+          ls -F
+          echo "Conteúdo da pasta saida (se existir):"
+          ls -F saida/ || echo "Pasta 'saida' não encontrada"
 
       - name: Mover arquivo para a raiz
         run: mv saida/curriculo_ats_pt.tex .
