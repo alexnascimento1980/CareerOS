@@ -2,6 +2,8 @@ import json
 import os
 from jinja2 import Environment, FileSystemLoader
 
+ambiente_jinja = Environment(loader=FileSystemLoader('templates'))
+
 template_nome = 'base_ats.tex'  # ou o nome que você estiver usando
 # 1. Carregar os dados do arquivo JSON
 template = ambiente_jinja.get_template(template_nome)
