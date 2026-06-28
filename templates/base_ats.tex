@@ -12,7 +12,7 @@
     {\Huge \textbf{ {{ dados.basics.name }} }} \\
     \vspace{2mm}
     {{ dados.basics.label_pt if lang == 'pt' else dados.basics.label_en }} \\
-    {{ dados.basics.location }} | {{ dados.basics.phone }} | {{ dados.basics.email }} \\
+    {{ dados.basics.location }} | {{ dados.basics.phone }} | \texttt{ {{ dados.basics.email | replace('_', '\\_') }} } \\
     {{ dados.basics.linkedin }} | {{ dados.basics.github }}
 \end{center}
 
