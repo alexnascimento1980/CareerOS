@@ -1,8 +1,8 @@
 {
   "basics": {
     "name": "Alex Nascimento",
-    "label_pt": "Logística | Transporte e Armazenagem | Ciência de Dados",
-    "label_en": "Logistics | Transportation and Storage | Data Science",
+    "label_pt": "LOGÍSTICA | TRANSPORTE E ARMAZENAGEM | E-COMMERCE",
+    "label_en": "LOGISTICS | TRANSPORTATION AND STORAGE | E-COMMERCE",
     "email": "alex_nascto@hotmail.com",
     "phone": "(19) 98290-7060",
     "location": "Indaiatuba, São Paulo",
@@ -12,11 +12,13 @@
   "summary": {
     "pt": [
       "Experiência em agendamento e planejamento estratégico de entregas, garantindo eficiência e pontualidade.",
-      "Gestão de frota para abastecimento de estoque, promovendo uma cadeia de suprimentos ininterrupta."
+      "Habilidade em rastreamento de remessas, oferecendo visibilidade e segurança em operações nacionais.",
+      "Proficiência em negociação de fretes e gestão de frota para uma cadeia de suprimentos ininterrupta."
     ],
     "en": [
       "Experience in scheduling and strategic delivery planning, ensuring efficiency and punctuality.",
-      "Fleet management for inventory replenishment, promoting an uninterrupted supply chain."
+      "Skill in shipment tracking, offering visibility and security in national operations.",
+      "Proficiency in freight negotiation and fleet management for an uninterrupted supply chain."
     ]
   },
   "experience": [
@@ -27,9 +29,9 @@
       "position_pt": "Assistente de Transporte",
       "position_en": "Transport Assistant",
       "highlights_pt": [
-        "Trabalho focado em atendimento a coletas de produtos comercializados via aplicativo de venda (Primeira Milha do cliente).",
-        "Treinamento dos motoristas terceiros para atendimento com excelência e padrão acertados com cliente.",
-        "Gestão da base de motoristas parceiros para manutenção do interesse e disponibilidade na operação."
+        "Trabalho focado em atendimento a coletas de produtos via aplicativo de venda (Primeira Milha).",
+        "Treinamento de motoristas terceiros seguindo padrões de excelência do cliente.",
+        "Gestão da base de motoristas parceiros, garantindo disponibilidade na operação."
       ],
       "highlights_en": [
         "Focused on product collection services sold via sales application (Customer's First Mile).",
@@ -44,12 +46,31 @@
       "position_pt": "Auxiliar de Tráfego",
       "position_en": "Traffic Assistant",
       "highlights_pt": [
-        "Controle de escala e cumprimento de horário de início de jornada de motoristas das linhas de fretamento.",
-        "Controle e arquivamento dos discos de tacógrafo e diários de bordo de cada um dos veículos da frota."
+        "Controle de escala e cumprimento de jornada de motoristas de fretamento.",
+        "Monitoramento do tráfego e acionamento de veículos reserva em casos de atraso.",
+        "Controle e arquivamento de discos de tacógrafo e diários de bordo."
       ],
       "highlights_en": [
         "Controlled schedules and ensured adherence to shift start times for charter line drivers.",
-        "Managed and archived tachograph discs and logbooks for all fleet vehicles."
+        "Monitored traffic and coordinated backup vehicles in case of delays.",
+        "Managed and archived tachograph discs and fleet logbooks."
+      ]
+    },
+    {
+      "company": "Atual Solística / AGV Logística",
+      "startDate": "01/2012",
+      "endDate": "03/2017",
+      "position_pt": "Analista de Logística",
+      "position_en": "Logistics Analyst",
+      "highlights_pt": [
+        "Atendimento ao cliente embarcador e análise de demanda de carregamento.",
+        "Realização de cotações de fretes e gestão via TMS e ERP.",
+        "Cadastro e liberação de motoristas em gerenciadoras de risco."
+      ],
+      "highlights_en": [
+        "Shipper customer service and loading demand analysis.",
+        "Freight quoting and management using TMS and ERP systems.",
+        "Driver/vehicle registration and security clearance."
       ]
     }
   ],
@@ -60,8 +81,8 @@
       "endDate": "Present",
       "area_pt": "Bacharel em Ciência de Dados",
       "area_en": "Bachelor's in Data Science",
-      "status_pt": "Cursando o 6º semestre",
-      "status_en": "6th semester ongoing"
+      "status_pt": "6º semestre",
+      "status_en": "6th semester"
     }
   ],
   "skills": {

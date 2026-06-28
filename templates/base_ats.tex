@@ -1,8 +1,9 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{geometry}
-\geometry{a4paper, margin=1in}
-\catcode`_=12
+\geometry{a4paper, margin=0.75in}
+\usepackage{enumitem}
+\setlist{noitemsep}
 
 \begin{document}
 
@@ -10,21 +11,22 @@
 \begin{center}
     {\Huge \textbf{ {{ dados.basics.name }} }} \\
     \vspace{2mm}
-    {% if lang == 'pt' %}
-        {{ dados.basics.label_pt }} \\
-    {% else %}
-        {{ dados.basics.label_en }} \\
-    {% endif %}
-    {{ dados.basics.location }} | {{ dados.basics.phone }} | {{ dados.basics.email }}
+    {{ dados.basics.label_pt if lang == 'pt' else dados.basics.label_en }} \\
+    {{ dados.basics.location }} | {{ dados.basics.phone }} | {{ dados.basics.email }} \\
+    {{ dados.basics.linkedin }} | {{ dados.basics.github }}
 \end{center}
 
-\vspace{5mm}
+% Resumo
+\section*{ {{ 'Resumo' if lang == 'pt' else 'Summary' }} }
+\begin{itemize}
+    {% set resumo = dados.summary.pt if lang == 'pt' else dados.summary.en %}
+    {% for linha in resumo %}
+        \item {{ linha }}
+    {% endfor %}
+\end{itemize}
 
 % Experiência Profissional
 \section*{ {{ 'Experiência Profissional' if lang == 'pt' else 'Professional Experience' }} }
-\hrule
-\vspace{3mm}
-
 {% for xp in dados.experience %}
     \noindent \textbf{ {{ xp.company }} } \hfill {{ xp.startDate }} -- {{ xp.endDate }} \\
     \textit{ {{ xp.position_pt if lang == 'pt' else xp.position_en }} }
@@ -38,11 +40,7 @@
 {% endfor %}
 
 % Formação Acadêmica
-\vspace{5mm}
 \section*{ {% if lang == 'pt' %}Formação Acadêmica{% else %}Education{% endif %} }
-\hrule
-\vspace{3mm}
-
 {% for edu in dados.education %}
     \noindent \textbf{ {{ edu.institution }} } \hfill {{ edu.startDate }} -- {{ edu.endDate }} \\
     \textit{ {{ edu.area_pt if lang == 'pt' else edu.area_en }} } \\
@@ -51,13 +49,9 @@
 {% endfor %}
 
 % Habilidades
-\vspace{5mm}
 \section*{ {% if lang == 'pt' %}Habilidades{% else %}Skills{% endif %} }
-\hrule
-\vspace{3mm}
-\noindent \textbf{ {% if lang == 'pt' %}Técnicas{% else %}Technical{% endif %} : } {{ dados.skills.technical | join(', ') }} \\
-\vspace{1mm} \\
-\textbf{ {% if lang == 'pt' %}Idiomas{% else %}Languages{% endif %} : } 
+\noindent \textbf{ {{ 'Técnicas' if lang == 'pt' else 'Technical' }} : } {{ dados.skills.technical | join(', ') }} \\
+\textbf{ {{ 'Idiomas' if lang == 'pt' else 'Languages' }} : } 
 {% for idioma in dados.skills.languages %}
     {{ idioma.language_pt if lang == 'pt' else idioma.language_en }} ({{ idioma.fluency_pt if lang == 'pt' else idioma.fluency_en }}){% if not loop.last %}, {% endif %}
 {% endfor %}
