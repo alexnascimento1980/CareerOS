@@ -27,9 +27,7 @@ jobs:
       - name: 📄 Compilar LaTeX para PDF
         uses: xu-cheng/latex-action@v3
         with:
-          root_file: |
-            curriculo_ats_pt.tex
-          working_directory: saida
+          root_file: saida/curriculo_ats_pt.tex
 
       - name: 💾 Salvar PDFs como Artefatos
         uses: actions/upload-artifact@v4
