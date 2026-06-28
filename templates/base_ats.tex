@@ -56,9 +56,9 @@
 {% for edu in dados.education %}
     \noindent \begin{tabularx}{\textwidth}{X r}
         \textbf{ {{ edu.institution }} } & \textbf{ {{ edu.startDate }} -- {{ edu.endDate }} } \\
-        \textit{ {{ edu.area_pt if lang == 'pt' else edu.area_en }} } & 
+        \textit{ {{ edu.area_pt if lang == 'pt' else edu.area_en }} } & \\
+        {{ 'Status' if lang == 'pt' else 'Status' }}: {{ edu.status_pt if lang == 'pt' else edu.status_en }} & 
     \end{tabularx}
-    \noindent Status: {{ edu.status_pt if lang == 'pt' else edu.status_en }}
     \vspace{2mm}
 {% endfor %}
 
