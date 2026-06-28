@@ -10,7 +10,7 @@ Este repositório contém a arquitetura do meu currículo automatizado. Em vez d
 4. **Saída (`/saida`):** O script gera instantaneamente os arquivos `.tex` finais em duas versões (Design Visual e formato ATS), tanto em português quanto em inglês.
 5. **Compilação:** Os arquivos de saída são compilados em PDF de alta qualidade.
 
-Automação de CV ativa
+Automação de CV ati
 
 ## 🚀 Tecnologias Utilizadas
 
