@@ -25,7 +25,7 @@ def gerar_curriculos():
 
     # Renderiza
     template = ambiente_jinja.get_template('base_ats.tex')
-    renderizado = template.render(dados_cv)
+    renderizado = template.render(dados=dados_cv)
 
     # Grava
     with open(output_filename, 'w', encoding='utf-8') as f:
