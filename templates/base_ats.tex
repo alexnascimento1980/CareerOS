@@ -8,58 +8,58 @@
 
 % Cabeçalho
 \begin{center}
-    {\Huge \textbf{<< dados.basics.name >>}} \\
+    {\Huge \textbf{ {{ dados.basics.name }} }} \\
     \vspace{2mm}
-    <BLOCK> if lang == 'pt' </BLOCK>
-        << dados.basics.label_pt >> \\
-    <BLOCK> else </BLOCK>
-        << dados.basics.label_en >> \\
-    <BLOCK> endif </BLOCK>
-    << dados.basics.location >> | << dados.basics.phone >> | << dados.basics.email >>
+    {% if lang == 'pt' %}
+        {{ dados.basics.label_pt }} \\
+    {% else %}
+        {{ dados.basics.label_en }} \\
+    {% endif %}
+    {{ dados.basics.location }} | {{ dados.basics.phone }} | {{ dados.basics.email }}
 \end{center}
 
 \vspace{5mm}
 
 % Experiência Profissional
-\section*{<< 'Experiência Profissional' if lang == 'pt' else 'Professional Experience' >>}
+\section*{ {{ 'Experiência Profissional' if lang == 'pt' else 'Professional Experience' }} }
 \hrule
 \vspace{3mm}
 
-<BLOCK> for xp in dados.experience </BLOCK>
-    \noindent \textbf{<< xp.company >>} \hfill << xp.startDate >> -- << xp.endDate >> \\
-    \textit{<< xp.position_pt if lang == 'pt' else xp.position_en >>}
+{% for xp in dados.experience %}
+    \noindent \textbf{ {{ xp.company }} } \hfill {{ xp.startDate }} -- {{ xp.endDate }} \\
+    \textit{ {{ xp.position_pt if lang == 'pt' else xp.position_en }} }
     \begin{itemize}
-        <BLOCK> set destaques = xp.highlights_pt if lang == 'pt' else xp.highlights_en </BLOCK>
-        <BLOCK> for item in destaques </BLOCK>
-            \item << item >>
-        <BLOCK> endfor </BLOCK>
+        {% set destaques = xp.highlights_pt if lang == 'pt' else xp.highlights_en %}
+        {% for item in destaques %}
+            \item {{ item }}
+        {% endfor %}
     \end{itemize}
     \vspace{2mm}
-<BLOCK> endfor </BLOCK>
+{% endfor %}
 
 % Formação Acadêmica
 \vspace{5mm}
-\section*{<BLOCK> if lang == 'pt' </BLOCK>Formação Acadêmica<BLOCK> else </BLOCK>Education<BLOCK> endif </BLOCK>}
+\section*{ {% if lang == 'pt' %}Formação Acadêmica{% else %}Education{% endif %} }
 \hrule
 \vspace{3mm}
 
-<BLOCK> for edu in dados.education </BLOCK>
-    \noindent \textbf{<< edu.institution >>} \hfill << edu.startDate >> -- << edu.endDate >> \\
-    \textit{<< edu.area_pt if lang == 'pt' else edu.area_en >>} \\
-    Status: << edu.status_pt if lang == 'pt' else edu.status_en >>
+{% for edu in dados.education %}
+    \noindent \textbf{ {{ edu.institution }} } \hfill {{ edu.startDate }} -- {{ edu.endDate }} \\
+    \textit{ {{ edu.area_pt if lang == 'pt' else edu.area_en }} } \\
+    Status: {{ edu.status_pt if lang == 'pt' else edu.status_en }}
     \vspace{2mm}
-<BLOCK> endfor </BLOCK>
+{% endfor %}
 
 % Habilidades
 \vspace{5mm}
-\section*{<BLOCK> if lang == 'pt' </BLOCK>Habilidades<BLOCK> else </BLOCK>Skills<BLOCK> endif </BLOCK>}
+\section*{ {% if lang == 'pt' %}Habilidades{% else %}Skills{% endif %} }
 \hrule
 \vspace{3mm}
-\noindent \textbf{<BLOCK> if lang == 'pt' </BLOCK>Técnicas<BLOCK> else </BLOCK>Technical<BLOCK> endif </BLOCK>:} << dados.skills.technical | join(', ') >> \\
+\noindent \textbf{ {% if lang == 'pt' %}Técnicas{% else %}Technical{% endif %} : } {{ dados.skills.technical | join(', ') }} \\
 \vspace{1mm} \\
-\textbf{<BLOCK> if lang == 'pt' </BLOCK>Idiomas<BLOCK> else </BLOCK>Languages<BLOCK> endif </BLOCK>:} 
-<BLOCK> for idioma in dados.skills.languages </BLOCK>
-    << idioma.language_pt if lang == 'pt' else idioma.language_en >> (<< idioma.fluency_pt if lang == 'pt' else idioma.fluency_en >>)<BLOCK> if not loop.last </BLOCK>, <BLOCK> endif </BLOCK>
-<BLOCK> endfor </BLOCK>
+\textbf{ {% if lang == 'pt' %}Idiomas{% else %}Languages{% endif %} : } 
+{% for idioma in dados.skills.languages %}
+    {{ idioma.language_pt if lang == 'pt' else idioma.language_en }} ({{ idioma.fluency_pt if lang == 'pt' else idioma.fluency_en }}){% if not loop.last %}, {% endif %}
+{% endfor %}
 
 \end{document}
