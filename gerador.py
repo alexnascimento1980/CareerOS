@@ -20,6 +20,7 @@ def limpar_para_latex(texto):
 # E então, ao passar os dados para o template:
 template = ambiente_jinja.get_template(template_nome)
 dados_limpos = {k: limpar_para_latex(v) for k, v in dados_cv.items()}
+dados_cv['email'] = dados_cv['email'].replace('_', r'\_')
 renderizado = template.render(dados_limpos)
 
 # 2. Configurar o Jinja2 com delimitadores personalizados para não conflitar com o LaTeX
