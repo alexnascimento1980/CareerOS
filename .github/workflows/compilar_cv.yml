@@ -32,3 +32,9 @@ jobs:
         uses: xu-cheng/latex-action@v3
         with:
           root_file: curriculo_ats_pt.tex
+      
+      - name: Salvar PDF como Artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: curriculo-pdf
+          path: curriculo_ats_pt.pdf # ou o caminho onde o PDF foi gerado
