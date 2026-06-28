@@ -2,7 +2,7 @@
   "basics": {
     "name": "Alex Nascimento",
     "label_pt": "Logística | Transporte e Armazenagem | Ciência de Dados",
-    "label_en": "Logistics | Transportation & Storage | Data Science",
+    "label_en": "Logistics | Transportation and Storage | Data Science",
     "email": "alex_nascto@hotmail.com",
     "phone": "(19) 98290-7060",
     "location": "Indaiatuba, São Paulo",
@@ -60,8 +60,8 @@
       "endDate": "Present",
       "area_pt": "Bacharel em Ciência de Dados",
       "area_en": "Bachelor's in Data Science",
-      "status_pt": "Cursando o 4º semestre",
-      "status_en": "4th semester ongoing"
+      "status_pt": "Cursando o 6º semestre",
+      "status_en": "6th semester ongoing"
     }
   ],
   "skills": {
