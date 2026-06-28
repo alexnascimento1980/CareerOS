@@ -1,9 +1,14 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 \usepackage{geometry}
-\geometry{a4paper, margin=0.75in}
+\geometry{a4paper, margin=0.7in}
 \usepackage{enumitem}
-\setlist{noitemsep}
+\usepackage{tabularx}
+\usepackage{hyperref}
+
+\setlist[itemize]{leftmargin=15pt, label=•, noitemsep, topsep=2pt}
+\pagestyle{empty}
 
 \begin{document}
 
@@ -11,10 +16,13 @@
 \begin{center}
     {\Huge \textbf{ {{ dados.basics.name }} }} \\
     \vspace{2mm}
-    {{ dados.basics.label_pt if lang == 'pt' else dados.basics.label_en }} \\
-    {{ dados.basics.location }} | {{ dados.basics.phone }} | \texttt{ {{ dados.basics.email | replace('_', '\\_') }} } \\
-    {{ dados.basics.linkedin }} | {{ dados.basics.github }}
+    \textbf{ {{ dados.basics.label_pt if lang == 'pt' else dados.basics.label_en }} } \\
+    \vspace{1mm}
+    \small {{ dados.basics.location }} | {{ dados.basics.phone }} | \href{mailto:{{ dados.basics.email }}}{\texttt{ {{ dados.basics.email | replace('_', '\\_') }} }} \\
+    \small {{ dados.basics.linkedin }} | {{ dados.basics.github }}
 \end{center}
+
+\vspace{3mm}
 
 % Resumo
 \section*{ {{ 'Resumo' if lang == 'pt' else 'Summary' }} }
@@ -25,11 +33,15 @@
     {% endfor %}
 \end{itemize}
 
+\vspace{2mm}
+
 % Experiência Profissional
 \section*{ {{ 'Experiência Profissional' if lang == 'pt' else 'Professional Experience' }} }
 {% for xp in dados.experience %}
-    \noindent \textbf{ {{ xp.company }} } \hfill {{ xp.startDate }} -- {{ xp.endDate }} \\
-    \textit{ {{ xp.position_pt if lang == 'pt' else xp.position_en }} }
+    \noindent \begin{tabularx}{\textwidth}{X r}
+        \textbf{ {{ xp.company }} } & \textbf{ {{ xp.startDate }} -- {{ xp.endDate }} } \\
+        \textit{ {{ xp.position_pt if lang == 'pt' else xp.position_en }} } & 
+    \end{tabularx}
     \begin{itemize}
         {% set destaques = xp.highlights_pt if lang == 'pt' else xp.highlights_en %}
         {% for item in destaques %}
@@ -41,19 +53,20 @@
 
 % Formação Acadêmica
 \section*{ {% if lang == 'pt' %}Formação Acadêmica{% else %}Education{% endif %} }
-{% for edu in dados.education %}
-    \noindent \textbf{ {{ edu.institution }} } \hfill {{ edu.startDate }} -- {{ edu.endDate }} \\
-    \textit{ {{ edu.area_pt if lang == 'pt' else edu.area_en }} } \\
-    Status: {{ edu.status_pt if lang == 'pt' else edu.status_en }}
-    \vspace{2mm}
-{% endfor %}
+\noindent \begin{tabularx}{\textwidth}{X r}
+    \textbf{ {{ dados.education[0].institution }} } & \textbf{ {{ dados.education[0].startDate }} -- {{ dados.education[0].endDate }} } \\
+    \textit{ {{ dados.education[0].area_pt if lang == 'pt' else dados.education[0].area_en }} } & 
+\end{tabularx}
+Status: {{ dados.education[0].status_pt if lang == 'pt' else dados.education[0].status_en }}
+
+\vspace{3mm}
 
 % Habilidades
 \section*{ {% if lang == 'pt' %}Habilidades{% else %}Skills{% endif %} }
 \noindent \textbf{ {{ 'Técnicas' if lang == 'pt' else 'Technical' }} : } {{ dados.skills.technical | join(', ') }} \\
 \textbf{ {{ 'Idiomas' if lang == 'pt' else 'Languages' }} : } 
 {% for idioma in dados.skills.languages %}
-    {{ idioma.language_pt if lang == 'pt' else idioma.language_en }} ({{ idioma.fluency_pt if lang == 'pt' else idioma.fluency_en }}){% if not loop.last %}, {% endif %}
+    {{ idioma.language_pt if lang == 'pt' else idioma.language_en }} ({{ idioma.fluency_pt if lang == 'pt' else idioma.fluency_en }})
 {% endfor %}
 
 \end{document}
