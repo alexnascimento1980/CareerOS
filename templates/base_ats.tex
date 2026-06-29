@@ -51,6 +51,18 @@
     \vspace{2mm}
 {% endfor %}
 
+% Projetos Técnicos
+\section*{ {% if lang == 'pt' %}Projetos Técnicos{% else %}Technical Projects{% endif %} }
+{% for proj in dados.projects %}
+    \noindent \begin{tabularx}{\textwidth}{X r}
+        \textbf{ {{ proj.name }} } | \textit{ {{ proj.technologies }} } & \href{https://{{ proj.link }}}{GitHub} \\
+    \end{tabularx}
+    \begin{itemize}
+        \item {{ proj.description_pt if lang == 'pt' else proj.description_en }}
+    \end{itemize}
+    \vspace{2mm}
+{% endfor %}
+
 % Formação Acadêmica
 \section*{ {% if lang == 'pt' %}Formação Acadêmica{% else %}Education{% endif %} }
 {% for edu in dados.education %}

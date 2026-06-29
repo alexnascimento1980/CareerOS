@@ -74,6 +74,22 @@
       ]
     }
   ],
+  "projects": [
+    {
+      "name": "API Data Tracker",
+      "technologies": "Python, Flask, JavaScript, REST API",
+      "description_pt": "Desenvolvimento de aplicação web para extração, rastreamento e visualização de dados consumindo a API oficial do Clash Royale.",
+      "description_en": "Developed a web application for data extraction, tracking, and visualization by consuming the official Clash Royale REST API.",
+      "link": "github.com/alexnascimento1980/clash-tracker"
+    },
+    {
+      "name": "Projeto Techverso",
+      "technologies": "Python, SQL, Git/GitHub",
+      "description_pt": "Estruturação de banco de dados e desenvolvimento backend, utilizando consultas SQL para manipulação e gestão de informações.",
+      "description_en": "Database structuring and backend development, utilizing SQL queries for information management and manipulation.",
+      "link": "github.com/alexnascimento1980/techverso"
+    }
+  ],
   "education": [
     {
       "institution": "UNIVESP",
