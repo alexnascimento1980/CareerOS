@@ -1,8 +1,9 @@
 let expCount = 0;
+let eduCount = 0;
+let projCount = 0;
 
-// 1. Função para injetar dinamicamente campos de Experiência no HTML
+// --- FUNÇÕES DE EXPERIÊNCIA ---
 function adicionarExperiencia() {
-  const container = document.getElementById("experiencias-container");
   const html = `
         <div class="card mb-3 exp-block shadow-sm" id="exp-${expCount}">
             <div class="card-body">
@@ -11,87 +12,154 @@ function adicionarExperiencia() {
                     <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerElemento('exp-${expCount}')">Remover</button>
                 </div>
                 <div class="row mb-2">
-                    <div class="col-md-6">
-                        <label class="form-label">Empresa</label>
-                        <input type="text" class="form-control exp-company" placeholder="Ex: DHL Supply Chain" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Cargo</label>
-                        <input type="text" class="form-control exp-position" placeholder="Ex: Assistente de Transporte" required>
-                    </div>
+                    <div class="col-md-6"><label class="form-label">Empresa</label><input type="text" class="form-control exp-company" required></div>
+                    <div class="col-md-6"><label class="form-label">Cargo</label><input type="text" class="form-control exp-position" required></div>
                 </div>
                 <div class="row mb-2">
-                    <div class="col-md-6">
-                        <label class="form-label">Data Início</label>
-                        <input type="text" class="form-control exp-start" placeholder="Ex: 05/2019" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Data Fim</label>
-                        <input type="text" class="form-control exp-end" placeholder="Ex: 09/2024" required>
-                    </div>
+                    <div class="col-md-6"><label class="form-label">Data Início</label><input type="text" class="form-control exp-start" required></div>
+                    <div class="col-md-6"><label class="form-label">Data Fim</label><input type="text" class="form-control exp-end" required></div>
                 </div>
                 <div class="mb-2">
-                    <label class="form-label">Atividades (separe cada atividade por ponto e vírgula ";")</label>
-                    <textarea class="form-control exp-highlights" rows="3" placeholder="Ex: Monitoramento de métricas; Gestão de dados operacionais;" required></textarea>
+                    <label class="form-label">Atividades (separe por ponto e vírgula ";")</label>
+                    <textarea class="form-control exp-highlights" rows="2" required></textarea>
                 </div>
             </div>
-        </div>
-    `;
-  container.insertAdjacentHTML("beforeend", html);
+        </div>`;
+  document
+    .getElementById("experiencias-container")
+    .insertAdjacentHTML("beforeend", html);
   expCount++;
 }
 
-// 2. Função para remover um bloco específico de experiência
+function coletarExperiencias() {
+  return Array.from(document.querySelectorAll(".exp-block")).map((bloco) => {
+    const atividades = bloco
+      .querySelector(".exp-highlights")
+      .value.split(";")
+      .map((i) => i.trim())
+      .filter((i) => i);
+    const cargo = bloco.querySelector(".exp-position").value;
+    return {
+      company: bloco.querySelector(".exp-company").value,
+      position_pt: cargo,
+      position_en: cargo,
+      startDate: bloco.querySelector(".exp-start").value,
+      endDate: bloco.querySelector(".exp-end").value,
+      highlights_pt: atividades,
+      highlights_en: atividades,
+    };
+  });
+}
+
+// --- FUNÇÕES DE FORMAÇÃO ---
+function adicionarFormacao() {
+  const html = `
+        <div class="card mb-3 edu-block shadow-sm" id="edu-${eduCount}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0 text-secondary">Nova Formação</h6>
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerElemento('edu-${eduCount}')">Remover</button>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6"><label class="form-label">Instituição</label><input type="text" class="form-control edu-institution" required></div>
+                    <div class="col-md-6"><label class="form-label">Curso</label><input type="text" class="form-control edu-area" required></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-4"><label class="form-label">Início</label><input type="text" class="form-control edu-start" required></div>
+                    <div class="col-md-4"><label class="form-label">Fim</label><input type="text" class="form-control edu-end" required></div>
+                    <div class="col-md-4"><label class="form-label">Status</label><input type="text" class="form-control edu-status" required></div>
+                </div>
+            </div>
+        </div>`;
+  document
+    .getElementById("formacao-container")
+    .insertAdjacentHTML("beforeend", html);
+  eduCount++;
+}
+
+function coletarFormacoes() {
+  return Array.from(document.querySelectorAll(".edu-block")).map((bloco) => {
+    const curso = bloco.querySelector(".edu-area").value;
+    const status = bloco.querySelector(".edu-status").value;
+    return {
+      institution: bloco.querySelector(".edu-institution").value,
+      area_pt: curso,
+      area_en: curso,
+      startDate: bloco.querySelector(".edu-start").value,
+      endDate: bloco.querySelector(".edu-end").value,
+      status_pt: status,
+      status_en: status,
+    };
+  });
+}
+
+// --- FUNÇÕES DE PROJETOS ---
+function adicionarProjeto() {
+  const html = `
+        <div class="card mb-3 proj-block shadow-sm" id="proj-${projCount}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0 text-secondary">Novo Projeto</h6>
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerElemento('proj-${projCount}')">Remover</button>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-4"><label class="form-label">Nome do Projeto</label><input type="text" class="form-control proj-name" placeholder="Ex: Projeto Techverso" required></div>
+                    <div class="col-md-4"><label class="form-label">Tecnologias</label><input type="text" class="form-control proj-tech" placeholder="Ex: Python, SQL" required></div>
+                    <div class="col-md-4"><label class="form-label">Link</label><input type="text" class="form-control proj-link" placeholder="Ex: github.com/..." required></div>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Descrição</label>
+                    <textarea class="form-control proj-desc" rows="2" required></textarea>
+                </div>
+            </div>
+        </div>`;
+  document
+    .getElementById("projetos-container")
+    .insertAdjacentHTML("beforeend", html);
+  projCount++;
+}
+
+function coletarProjetos() {
+  return Array.from(document.querySelectorAll(".proj-block")).map((bloco) => {
+    const desc = bloco.querySelector(".proj-desc").value;
+    return {
+      name: bloco.querySelector(".proj-name").value,
+      technologies: bloco.querySelector(".proj-tech").value,
+      link: bloco.querySelector(".proj-link").value,
+      description_pt: desc,
+      description_en: desc,
+    };
+  });
+}
+
+// --- UTILITÁRIOS ---
 function removerElemento(id) {
   document.getElementById(id).remove();
 }
 
-// 3. Função para fazer o varrimento da interface e recolher as experiências inseridas
-function coletarExperiencias() {
-  const experiencias = [];
-  const blocos = document.querySelectorAll(".exp-block");
-
-  blocos.forEach((bloco) => {
-    const textoHighlights = bloco.querySelector(".exp-highlights").value;
-    // Divide o texto do textarea gerando um array limpo de atividades
-    const arrayHighlights = textoHighlights
-      .split(";")
-      .map((item) => item.trim())
-      .filter((item) => item !== "");
-
-    experiencias.push({
-      company: bloco.querySelector(".exp-company").value,
-      position_pt: bloco.querySelector(".exp-position").value,
-      position_en: bloco.querySelector(".exp-position").value, // Espelho temporário
-      startDate: bloco.querySelector(".exp-start").value,
-      endDate: bloco.querySelector(".exp-end").value,
-      highlights_pt: arrayHighlights,
-      highlights_en: arrayHighlights, // Espelho temporário
-    });
-  });
-
-  return experiencias;
-}
-
-// Garante que o formulário comece com pelo menos um bloco de experiência visível
 window.onload = function () {
   adicionarExperiencia();
+  adicionarFormacao();
+  adicionarProjeto();
 };
 
-// 4. Interceção do Submit do formulário e comunicação com a API Backend
+// --- SUBMISSÃO ---
 document
   .getElementById("cv-form")
   .addEventListener("submit", async function (event) {
-    event.preventDefault(); // Impede o recarregamento da página
+    event.preventDefault();
 
     const btnGerar = document.getElementById("btn-gerar");
     btnGerar.textContent = "Gerando PDF...";
     btnGerar.disabled = true;
 
-    // Recolhe a lista dinâmica de experiências
-    const listaExperiencias = coletarExperiencias();
+    const summaryText = document.getElementById("summary").value;
+    const skillsArray = document
+      .getElementById("skills")
+      .value.split(",")
+      .map((s) => s.trim())
+      .filter((s) => s);
 
-    // Montagem do payload completo exigido pelo validador do app.py
     const payload = {
       lang: "pt",
       basics: {
@@ -104,32 +172,14 @@ document
         linkedin: document.getElementById("linkedin").value,
         github: document.getElementById("github").value,
       },
-      summary: {
-        pt: [
-          "Profissional de logística integrando competências de Ciência de Dados para a otimização de fluxos operacionais e automação de processos.",
-        ],
-        en: [
-          "Logistics professional integrating Data Science skills to optimize operational workflows and process automation.",
-        ],
-      },
-      experience: listaExperiencias,
-      education: [
-        {
-          institution: "UNIVESP",
-          startDate: "2024",
-          endDate: "Presente",
-          area_pt: "Bacharel em Ciência de Dados",
-          area_en: "Bachelor's in Data Science",
-          status_pt: "6º semestre",
-          status_en: "6th semester",
-        },
-      ],
-      skills: { technical: ["Python", "SQL", "Power BI"], languages: [] },
-      projects: [],
+      summary: { pt: [summaryText], en: [summaryText] },
+      experience: coletarExperiencias(),
+      education: coletarFormacoes(),
+      projects: coletarProjetos(),
+      skills: { technical: skillsArray, languages: [] },
     };
 
     try {
-      // Envio dos dados via POST para o servidor Flask
       const response = await fetch("http://localhost:5000/generate-cv", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -139,10 +189,9 @@ document
       if (!response.ok) {
         const erro = await response.json();
         alert("Erro ao gerar: " + erro.erro);
-        throw new Error("Erro na requisição obtida do servidor.");
+        throw new Error("Erro na requisição.");
       }
 
-      // Processamento do retorno binário (Blob) para despoletar o download do PDF
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -153,10 +202,8 @@ document
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Erro verificado:", error);
-      alert("Ocorreu um erro ao comunicar com o servidor backend.");
+      console.error("Erro:", error);
     } finally {
-      // Restaura o estado original do botão
       btnGerar.textContent = "Gerar Currículo PDF";
       btnGerar.disabled = false;
     }

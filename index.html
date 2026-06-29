@@ -20,7 +20,6 @@
             <div class="card-body">
               <form id="cv-form">
                 <h5 class="border-bottom pb-2 mb-3">Dados Básicos</h5>
-
                 <div class="row mb-3">
                   <div class="col-md-6">
                     <label for="name" class="form-label">Nome Completo</label>
@@ -45,7 +44,6 @@
                     />
                   </div>
                 </div>
-
                 <div class="row mb-3">
                   <div class="col-md-6">
                     <label for="email" class="form-label">E-mail</label>
@@ -54,7 +52,7 @@
                       class="form-control"
                       id="email"
                       required
-                      placeholder="Ex: alex@email.com"
+                      placeholder="Ex: alex_nascto@hotmail.com"
                     />
                   </div>
                   <div class="col-md-6">
@@ -68,7 +66,6 @@
                     />
                   </div>
                 </div>
-
                 <div class="row mb-4">
                   <div class="col-md-4">
                     <label for="location" class="form-label">Localização</label>
@@ -87,7 +84,7 @@
                       class="form-control"
                       id="linkedin"
                       required
-                      placeholder="Ex: linkedin.com/in/username"
+                      placeholder="Ex: linkedin.com/in/alexnascimento1980"
                     />
                   </div>
                   <div class="col-md-4">
@@ -102,11 +99,24 @@
                   </div>
                 </div>
 
-                <h5 class="border-bottom pb-2 mt-4 mb-3">
+                <h5 class="border-bottom pb-2 mb-3">Resumo Profissional</h5>
+                <div class="mb-4">
+                  <label class="form-label"
+                    >Cole aqui o seu parágrafo de resumo</label
+                  >
+                  <textarea
+                    class="form-control"
+                    id="summary"
+                    rows="3"
+                    required
+                    placeholder="Ex: Profissional com experiência em operações logísticas..."
+                  ></textarea>
+                </div>
+
+                <h5 class="border-bottom pb-2 mb-3">
                   Experiência Profissional
                 </h5>
                 <div id="experiencias-container"></div>
-
                 <div class="mb-4">
                   <button
                     type="button"
@@ -117,7 +127,47 @@
                   </button>
                 </div>
 
-                <div class="d-grid gap-2">
+                <h5 class="border-bottom pb-2 mt-4 mb-3">Formação Acadêmica</h5>
+                <div id="formacao-container"></div>
+                <div class="mb-4">
+                  <button
+                    type="button"
+                    class="btn btn-outline-info btn-sm"
+                    onclick="adicionarFormacao()"
+                  >
+                    + Adicionar Formação
+                  </button>
+                </div>
+
+                <h5 class="border-bottom pb-2 mt-4 mb-3">Projetos Técnicos</h5>
+                <div id="projetos-container"></div>
+                <div class="mb-4">
+                  <button
+                    type="button"
+                    class="btn btn-outline-warning btn-sm"
+                    onclick="adicionarProjeto()"
+                  >
+                    + Adicionar Projeto
+                  </button>
+                </div>
+
+                <h5 class="border-bottom pb-2 mt-4 mb-3">
+                  Habilidades e Ferramentas
+                </h5>
+                <div class="mb-4">
+                  <label class="form-label"
+                    >Tecnologias (Separe por vírgula)</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="skills"
+                    required
+                    placeholder="Ex: Python, SQL, Power BI, Git, SAP"
+                  />
+                </div>
+
+                <div class="d-grid gap-2 mt-5">
                   <button
                     type="submit"
                     class="btn btn-success btn-lg"
