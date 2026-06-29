@@ -24,8 +24,8 @@
                 </h5>
                 <div class="row mb-3">
                   <div class="col-md-6">
-                    <label class="form-label fw-bold">Nome Completo</label
-                    ><input
+                    <label class="form-label fw-bold">Nome Completo</label>
+                    <input
                       type="text"
                       class="form-control"
                       id="name"
@@ -33,8 +33,10 @@
                     />
                   </div>
                   <div class="col-md-6">
-                    <label class="form-label fw-bold">Título Profissional</label
-                    ><input
+                    <label class="form-label fw-bold"
+                      >Título Profissional</label
+                    >
+                    <input
                       type="text"
                       class="form-control"
                       id="label_pt"
@@ -44,28 +46,31 @@
                 </div>
                 <div class="row mb-3">
                   <div class="col-md-6">
-                    <label class="form-label fw-bold">E-mail</label
-                    ><input
+                    <label class="form-label fw-bold">E-mail</label>
+                    <input
                       type="email"
                       class="form-control"
                       id="email"
                       required
+                      title="Insira um endereço de e-mail válido"
                     />
                   </div>
                   <div class="col-md-6">
-                    <label class="form-label fw-bold">Telefone</label
-                    ><input
-                      type="text"
+                    <label class="form-label fw-bold">Telefone</label>
+                    <input
+                      type="tel"
                       class="form-control"
                       id="phone"
                       required
+                      pattern="^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$"
+                      title="Formato aceito: (XX) XXXXX-XXXX"
                     />
                   </div>
                 </div>
                 <div class="row mb-4">
                   <div class="col-md-4">
-                    <label class="form-label fw-bold">Localização</label
-                    ><input
+                    <label class="form-label fw-bold">Localização</label>
+                    <input
                       type="text"
                       class="form-control"
                       id="location"
@@ -73,21 +78,25 @@
                     />
                   </div>
                   <div class="col-md-4">
-                    <label class="form-label fw-bold">LinkedIn</label
-                    ><input
+                    <label class="form-label fw-bold">LinkedIn</label>
+                    <input
                       type="text"
                       class="form-control"
                       id="linkedin"
                       required
+                      pattern="^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?$"
+                      title="Insira um link de perfil válido (ex: linkedin.com/in/usuario)"
                     />
                   </div>
                   <div class="col-md-4">
-                    <label class="form-label fw-bold">GitHub</label
-                    ><input
+                    <label class="form-label fw-bold">GitHub</label>
+                    <input
                       type="text"
                       class="form-control"
                       id="github"
                       required
+                      pattern="^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?$"
+                      title="Insira um link de perfil válido (ex: github.com/usuario)"
                     />
                   </div>
                 </div>
@@ -169,6 +178,7 @@
                   <button
                     type="button"
                     class="btn btn-outline-warning btn-sm"
+                    id="btn-add-proj"
                     onclick="adicionarProjeto()"
                   >
                     + Adicionar Projeto

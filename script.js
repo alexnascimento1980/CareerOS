@@ -3,6 +3,13 @@ let eduCount = 0;
 let projCount = 0;
 let cursoCount = 0;
 
+// Constantes de validação
+const datePattern = "^((0[1-9]|1[0-2])\\/\\d{4}|[0-9]{4}|Presente|Present)$";
+const dateTitle = "Formato esperado: MM/AAAA, AAAA ou Presente";
+const linkPattern =
+  "^(https?:\\/\\/)?([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}(?:\\/[^\\s]*)?$";
+const linkTitle = "Insira um link válido (ex: github.com/projeto)";
+
 // --- INJEÇÃO DE HTML ---
 function adicionarExperiencia() {
   const html = `
@@ -17,8 +24,8 @@ function adicionarExperiencia() {
                     <div class="col-md-6"><label class="form-label fw-bold">Cargo</label><input type="text" class="form-control exp-position-pt" required></div>
                 </div>
                 <div class="row mb-3">
-                    <div class="col-md-6"><label class="form-label fw-bold">Data Início</label><input type="text" class="form-control exp-start" required></div>
-                    <div class="col-md-6"><label class="form-label fw-bold">Data Fim</label><input type="text" class="form-control exp-end" required></div>
+                    <div class="col-md-6"><label class="form-label fw-bold">Data Início</label><input type="text" class="form-control exp-start" required pattern="${datePattern}" title="${dateTitle}"></div>
+                    <div class="col-md-6"><label class="form-label fw-bold">Data Fim</label><input type="text" class="form-control exp-end" required pattern="${datePattern}" title="${dateTitle}"></div>
                 </div>
                 <div class="mb-2">
                     <label class="form-label fw-bold">Atividades (separe por ";")</label>
@@ -45,8 +52,8 @@ function adicionarFormacao() {
                     <div class="col-md-6"><label class="form-label fw-bold">Curso</label><input type="text" class="form-control edu-area-pt" required></div>
                 </div>
                 <div class="row mb-2">
-                    <div class="col-md-4"><label class="form-label fw-bold">Ano Início</label><input type="text" class="form-control edu-start" required></div>
-                    <div class="col-md-4"><label class="form-label fw-bold">Ano Fim</label><input type="text" class="form-control edu-end" required></div>
+                    <div class="col-md-4"><label class="form-label fw-bold">Ano Início</label><input type="text" class="form-control edu-start" required pattern="${datePattern}" title="${dateTitle}"></div>
+                    <div class="col-md-4"><label class="form-label fw-bold">Ano Fim</label><input type="text" class="form-control edu-end" required pattern="${datePattern}" title="${dateTitle}"></div>
                     <div class="col-md-4"><label class="form-label fw-bold">Status</label><input type="text" class="form-control edu-status" required></div>
                 </div>
             </div>
@@ -68,7 +75,7 @@ function adicionarCurso() {
                 <div class="row mb-2">
                     <div class="col-md-4"><label class="form-label fw-bold">Nome do Curso</label><input type="text" class="form-control curso-name" required></div>
                     <div class="col-md-4"><label class="form-label fw-bold">Instituição</label><input type="text" class="form-control curso-inst" required></div>
-                    <div class="col-md-4"><label class="form-label fw-bold">Ano</label><input type="text" class="form-control curso-year" required></div>
+                    <div class="col-md-4"><label class="form-label fw-bold">Ano</label><input type="text" class="form-control curso-year" required pattern="^[0-9]{4}$" title="Apenas o ano (ex: 2023)"></div>
                 </div>
             </div>
         </div>`;
@@ -79,6 +86,11 @@ function adicionarCurso() {
 }
 
 function adicionarProjeto() {
+  // Verifica se a opção de projetos está desativada para não criar campos com 'required'
+  const isRequired = document.getElementById("include-projects").checked
+    ? "required"
+    : "";
+
   const html = `
         <div class="card mb-3 proj-block shadow-sm border-start border-warning border-3" id="proj-${projCount}">
             <div class="card-body">
@@ -87,13 +99,13 @@ function adicionarProjeto() {
                     <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerElemento('proj-${projCount}')">Remover</button>
                 </div>
                 <div class="row mb-2">
-                    <div class="col-md-4"><label class="form-label fw-bold">Nome do Projeto</label><input type="text" class="form-control proj-name" required></div>
-                    <div class="col-md-4"><label class="form-label fw-bold">Tecnologias</label><input type="text" class="form-control proj-tech" required></div>
-                    <div class="col-md-4"><label class="form-label fw-bold">Link (GitHub)</label><input type="text" class="form-control proj-link" required></div>
+                    <div class="col-md-4"><label class="form-label fw-bold">Nome do Projeto</label><input type="text" class="form-control proj-name" ${isRequired}></div>
+                    <div class="col-md-4"><label class="form-label fw-bold">Tecnologias</label><input type="text" class="form-control proj-tech" ${isRequired}></div>
+                    <div class="col-md-4"><label class="form-label fw-bold">Link (GitHub)</label><input type="text" class="form-control proj-link" ${isRequired} pattern="${linkPattern}" title="${linkTitle}"></div>
                 </div>
                 <div class="mb-2">
                     <label class="form-label fw-bold">Descrição</label>
-                    <textarea class="form-control proj-desc-pt" rows="2" required></textarea>
+                    <textarea class="form-control proj-desc-pt" rows="2" ${isRequired}></textarea>
                 </div>
             </div>
         </div>`;
@@ -106,6 +118,28 @@ function adicionarProjeto() {
 function removerElemento(id) {
   document.getElementById(id).remove();
 }
+
+// --- CONTROLE DE EXIBIÇÃO DE PROJETOS ---
+document
+  .getElementById("include-projects")
+  .addEventListener("change", function () {
+    const isChecked = this.checked;
+    const container = document.getElementById("projetos-container");
+    const btnAddProj = document.getElementById("btn-add-proj");
+    const inputs = container.querySelectorAll("input, textarea");
+
+    if (isChecked) {
+      container.style.display = "block";
+      btnAddProj.style.display = "inline-block";
+      // Devolve a obrigatoriedade dos campos
+      inputs.forEach((input) => input.setAttribute("required", "required"));
+    } else {
+      container.style.display = "none";
+      btnAddProj.style.display = "none";
+      // Remove a obrigatoriedade dos campos ocultos para permitir o envio do formulário
+      inputs.forEach((input) => input.removeAttribute("required"));
+    }
+  });
 
 window.onload = function () {
   adicionarExperiencia();
@@ -136,7 +170,6 @@ document
       .map((s) => s.trim())
       .filter((s) => s);
 
-    // Coleta as listas
     const projetosColetados = Array.from(
       document.querySelectorAll(".proj-block"),
     ).map((bloco) => ({
@@ -189,7 +222,6 @@ document
         }),
       ),
       courses: cursosColetados,
-      // Se a chave estiver ativada envia a lista, senão envia uma lista vazia
       projects: includeProjects ? projetosColetados : [],
       skills: { technical: skillsArray, languages: [] },
     };
