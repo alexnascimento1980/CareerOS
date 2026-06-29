@@ -103,8 +103,8 @@ function adicionarProjeto() {
                     <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerElemento('proj-${projCount}')">Remover</button>
                 </div>
                 <div class="row mb-2">
-                    <div class="col-md-4"><label class="form-label">Nome do Projeto</label><input type="text" class="form-control proj-name" placeholder="Ex: Projeto Techverso" required></div>
-                    <div class="col-md-4"><label class="form-label">Tecnologias</label><input type="text" class="form-control proj-tech" placeholder="Ex: Python, SQL" required></div>
+                    <div class="col-md-4"><label class="form-label">Nome do Projeto</label><input type="text" class="form-control proj-name" placeholder="Ex: API Data Tracker" required></div>
+                    <div class="col-md-4"><label class="form-label">Tecnologias</label><input type="text" class="form-control proj-tech" placeholder="Ex: Python, Flask" required></div>
                     <div class="col-md-4"><label class="form-label">Link</label><input type="text" class="form-control proj-link" placeholder="Ex: github.com/..." required></div>
                 </div>
                 <div class="mb-2">
@@ -153,6 +153,9 @@ document
     btnGerar.textContent = "Gerando PDF...";
     btnGerar.disabled = true;
 
+    // Captura o idioma selecionado
+    const idiomaSelecionado = document.getElementById("idioma_escolhido").value;
+
     const summaryText = document.getElementById("summary").value;
     const skillsArray = document
       .getElementById("skills")
@@ -161,7 +164,7 @@ document
       .filter((s) => s);
 
     const payload = {
-      lang: "pt",
+      lang: idiomaSelecionado, // Injeta o idioma dinamicamente
       basics: {
         name: document.getElementById("name").value,
         label_pt: document.getElementById("label_pt").value,
@@ -197,7 +200,8 @@ document
       const a = document.createElement("a");
       a.style.display = "none";
       a.href = url;
-      a.download = "meu_curriculo.pdf";
+      // O nome do arquivo baixado agora reflete o idioma selecionado
+      a.download = `meu_curriculo_${idiomaSelecionado}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
