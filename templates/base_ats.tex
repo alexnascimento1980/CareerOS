@@ -51,18 +51,6 @@
     \vspace{2mm}
 {% endfor %}
 
-% Projetos Técnicos
-\section*{ {% if lang == 'pt' %}Projetos Técnicos{% else %}Technical Projects{% endif %} }
-{% for proj in dados.projects %}
-    \noindent \begin{tabularx}{\textwidth}{X r}
-        \textbf{ {{ proj.name }} } | \textit{ {{ proj.technologies }} } & \href{https://{{ proj.link }}}{GitHub} \\
-    \end{tabularx}
-    \begin{itemize}
-        \item {{ proj.description_pt if lang == 'pt' else proj.description_en }}
-    \end{itemize}
-    \vspace{2mm}
-{% endfor %}
-
 % Formação Acadêmica
 \section*{ {% if lang == 'pt' %}Formação Acadêmica{% else %}Education{% endif %} }
 {% for edu in dados.education %}
@@ -74,13 +62,36 @@
     \vspace{2mm}
 {% endfor %}
 
+% Cursos Complementares (Renderiza apenas se houver cursos adicionados)
+{% if dados.courses and dados.courses|length > 0 %}
+\section*{ {% if lang == 'pt' %}Cursos Complementares{% else %}Additional Courses{% endif %} }
+{% for curso in dados.courses %}
+    \noindent \begin{tabularx}{\textwidth}{X r}
+        \textbf{ {{ curso.name_pt if lang == 'pt' else curso.name_en }} } | \textit{ {{ curso.institution }} } & {{ curso.year }} \\
+    \end{tabularx}
+    \vspace{1mm}
+{% endfor %}
+\vspace{2mm}
+{% endif %}
+
+% Projetos Técnicos (Renderiza apenas se a lista não estiver vazia)
+{% if dados.projects and dados.projects|length > 0 %}
+\section*{ {% if lang == 'pt' %}Projetos Técnicos{% else %}Technical Projects{% endif %} }
+{% for proj in dados.projects %}
+    \noindent \begin{tabularx}{\textwidth}{X r}
+        \textbf{ {{ proj.name }} } | \textit{ {{ proj.technologies }} } & \href{https://{{ proj.link }}}{GitHub} \\
+    \end{tabularx}
+    \begin{itemize}
+        \item {{ proj.description_pt if lang == 'pt' else proj.description_en }}
+    \end{itemize}
+    \vspace{2mm}
+{% endfor %}
+{% endif %}
+
 % Habilidades
 \section*{ {% if lang == 'pt' %}Habilidades{% else %}Skills{% endif %} }
 \noindent \begin{tabularx}{\textwidth}{l X}
     \textbf{ {{ 'Técnicas' if lang == 'pt' else 'Technical' }}: } & {{ dados.skills.technical | join(', ') }} \\
-    \textbf{ {{ 'Idiomas' if lang == 'pt' else 'Languages' }}: } & {% for idioma in dados.skills.languages %}
-        {{ idioma.language_pt if lang == 'pt' else idioma.language_en }} ({{ idioma.fluency_pt if lang == 'pt' else idioma.fluency_en }}){% if not loop.last %}, {% endif %}
-    {% endfor %}
 \end{tabularx}
 
 \end{document}

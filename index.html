@@ -24,8 +24,8 @@
                 </h5>
                 <div class="row mb-3">
                   <div class="col-md-6">
-                    <label class="form-label fw-bold">Nome Completo</label>
-                    <input
+                    <label class="form-label fw-bold">Nome Completo</label
+                    ><input
                       type="text"
                       class="form-control"
                       id="name"
@@ -33,10 +33,8 @@
                     />
                   </div>
                   <div class="col-md-6">
-                    <label class="form-label fw-bold"
-                      >Título Profissional</label
-                    >
-                    <input
+                    <label class="form-label fw-bold">Título Profissional</label
+                    ><input
                       type="text"
                       class="form-control"
                       id="label_pt"
@@ -135,8 +133,37 @@
                 </div>
 
                 <h5 class="border-bottom pb-2 mt-4 mb-3 text-primary">
-                  5. Projetos Técnicos
+                  5. Cursos Complementares
                 </h5>
+                <div id="cursos-container"></div>
+                <div class="mb-4">
+                  <button
+                    type="button"
+                    class="btn btn-outline-success btn-sm"
+                    onclick="adicionarCurso()"
+                  >
+                    + Adicionar Curso
+                  </button>
+                </div>
+
+                <div
+                  class="d-flex justify-content-between align-items-center border-bottom pb-2 mt-4 mb-3"
+                >
+                  <h5 class="mb-0 text-primary">6. Projetos Técnicos</h5>
+                  <div class="form-check form-switch">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="include-projects"
+                      checked
+                    />
+                    <label
+                      class="form-check-label fw-bold text-warning"
+                      for="include-projects"
+                      >Incluir no PDF?</label
+                    >
+                  </div>
+                </div>
                 <div id="projetos-container"></div>
                 <div class="mb-4">
                   <button
@@ -149,7 +176,7 @@
                 </div>
 
                 <h5 class="border-bottom pb-2 mt-4 mb-3 text-primary">
-                  6. Habilidades e Ferramentas
+                  7. Habilidades e Ferramentas
                 </h5>
                 <div class="mb-4">
                   <label class="form-label fw-bold"
@@ -164,7 +191,7 @@
                 </div>
 
                 <h5 class="border-bottom pb-2 mt-5 mb-3 text-success">
-                  7. Exportar Documento
+                  8. Exportar Documento
                 </h5>
                 <div class="row mb-4">
                   <div class="col-md-12">
@@ -175,12 +202,8 @@
                       class="form-select border-success form-select-lg"
                       id="idioma_escolhido"
                     >
-                      <option value="pt" selected>
-                        Português (Geração Rápida)
-                      </option>
-                      <option value="en">
-                        Inglês (Tradução Automática com IA)
-                      </option>
+                      <option value="pt" selected>Português</option>
+                      <option value="en">Inglês (Tradução Automática)</option>
                     </select>
                   </div>
                 </div>

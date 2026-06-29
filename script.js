@@ -1,6 +1,7 @@
 let expCount = 0;
 let eduCount = 0;
 let projCount = 0;
+let cursoCount = 0;
 
 // --- INJEÇÃO DE HTML ---
 function adicionarExperiencia() {
@@ -56,6 +57,27 @@ function adicionarFormacao() {
   eduCount++;
 }
 
+function adicionarCurso() {
+  const html = `
+        <div class="card mb-3 curso-block shadow-sm border-start border-success border-3" id="curso-${cursoCount}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0 text-success fw-bold">Curso Complementar</h6>
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerElemento('curso-${cursoCount}')">Remover</button>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-4"><label class="form-label fw-bold">Nome do Curso</label><input type="text" class="form-control curso-name" required></div>
+                    <div class="col-md-4"><label class="form-label fw-bold">Instituição</label><input type="text" class="form-control curso-inst" required></div>
+                    <div class="col-md-4"><label class="form-label fw-bold">Ano</label><input type="text" class="form-control curso-year" required></div>
+                </div>
+            </div>
+        </div>`;
+  document
+    .getElementById("cursos-container")
+    .insertAdjacentHTML("beforeend", html);
+  cursoCount++;
+}
+
 function adicionarProjeto() {
   const html = `
         <div class="card mb-3 proj-block shadow-sm border-start border-warning border-3" id="proj-${projCount}">
@@ -88,6 +110,7 @@ function removerElemento(id) {
 window.onload = function () {
   adicionarExperiencia();
   adicionarFormacao();
+  adicionarCurso();
   adicionarProjeto();
 };
 
@@ -99,22 +122,38 @@ document
 
     const btnGerar = document.getElementById("btn-gerar");
     const idiomaSelecionado = document.getElementById("idioma_escolhido").value;
+    const includeProjects = document.getElementById("include-projects").checked;
 
-    // Atualiza o texto do botão de acordo com o idioma para dar feedback visual
     btnGerar.textContent =
       idiomaSelecionado === "en"
-        ? "Traduzindo e Gerando PDF (Isso pode levar alguns segundos)..."
+        ? "Traduzindo e Gerando PDF..."
         : "Gerando PDF...";
     btnGerar.disabled = true;
 
-    // Coleta as habilidades
     const skillsArray = document
       .getElementById("skills")
       .value.split(",")
       .map((s) => s.trim())
       .filter((s) => s);
 
-    // Monta o payload (O Backend preencherá as chaves '_en' automaticamente se necessário)
+    // Coleta as listas
+    const projetosColetados = Array.from(
+      document.querySelectorAll(".proj-block"),
+    ).map((bloco) => ({
+      name: bloco.querySelector(".proj-name").value,
+      technologies: bloco.querySelector(".proj-tech").value,
+      link: bloco.querySelector(".proj-link").value,
+      description_pt: bloco.querySelector(".proj-desc-pt").value,
+    }));
+
+    const cursosColetados = Array.from(
+      document.querySelectorAll(".curso-block"),
+    ).map((bloco) => ({
+      name_pt: bloco.querySelector(".curso-name").value,
+      institution: bloco.querySelector(".curso-inst").value,
+      year: bloco.querySelector(".curso-year").value,
+    }));
+
     const payload = {
       lang: idiomaSelecionado,
       basics: {
@@ -149,14 +188,9 @@ document
           status_pt: bloco.querySelector(".edu-status").value,
         }),
       ),
-      projects: Array.from(document.querySelectorAll(".proj-block")).map(
-        (bloco) => ({
-          name: bloco.querySelector(".proj-name").value,
-          technologies: bloco.querySelector(".proj-tech").value,
-          link: bloco.querySelector(".proj-link").value,
-          description_pt: bloco.querySelector(".proj-desc-pt").value,
-        }),
-      ),
+      courses: cursosColetados,
+      // Se a chave estiver ativada envia a lista, senão envia uma lista vazia
+      projects: includeProjects ? projetosColetados : [],
       skills: { technical: skillsArray, languages: [] },
     };
 
