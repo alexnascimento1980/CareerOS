@@ -3,12 +3,35 @@ let eduCount = 0;
 let projCount = 0;
 let cursoCount = 0;
 
-// Constantes de validação
-const datePattern = "^((0[1-9]|1[0-2])\\/\\d{4}|[0-9]{4}|Presente|Present)$";
-const dateTitle = "Formato esperado: MM/AAAA, AAAA ou Presente";
 const linkPattern =
   "^(https?:\\/\\/)?([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}(?:\\/[^\\s]*)?$";
 const linkTitle = "Insira um link válido (ex: github.com/projeto)";
+
+// --- FUNÇÕES AUXILIARES DE DATA ---
+// Transforma AAAA-MM (padrão do input month) em MM/AAAA (padrão do currículo)
+function formatarDataMesAno(valor) {
+  if (!valor) return "";
+  const partes = valor.split("-");
+  if (partes.length === 2) {
+    return `${partes[1]}/${partes[0]}`;
+  }
+  return valor;
+}
+
+// Bloqueia o calendário de "Data Fim" se o usuário ainda estiver no cargo/curso
+function toggleDataFim(checkbox) {
+  const inputDataFim = checkbox
+    .closest(".row")
+    .querySelector(".input-data-fim");
+  if (checkbox.checked) {
+    inputDataFim.disabled = true;
+    inputDataFim.removeAttribute("required");
+    inputDataFim.value = "";
+  } else {
+    inputDataFim.disabled = false;
+    inputDataFim.setAttribute("required", "required");
+  }
+}
 
 // --- INJEÇÃO DE HTML ---
 function adicionarExperiencia() {
@@ -24,8 +47,18 @@ function adicionarExperiencia() {
                     <div class="col-md-6"><label class="form-label fw-bold">Cargo</label><input type="text" class="form-control exp-position-pt" required></div>
                 </div>
                 <div class="row mb-3">
-                    <div class="col-md-6"><label class="form-label fw-bold">Data Início</label><input type="text" class="form-control exp-start" required pattern="${datePattern}" title="${dateTitle}"></div>
-                    <div class="col-md-6"><label class="form-label fw-bold">Data Fim</label><input type="text" class="form-control exp-end" required pattern="${datePattern}" title="${dateTitle}"></div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Mês/Ano Início</label>
+                        <input type="month" class="form-control exp-start" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Mês/Ano Fim</label>
+                        <input type="month" class="form-control exp-end input-data-fim" required>
+                        <div class="form-check mt-1">
+                            <input class="form-check-input exp-current" type="checkbox" onchange="toggleDataFim(this)">
+                            <label class="form-check-label text-muted small">Trabalho aqui atualmente</label>
+                        </div>
+                    </div>
                 </div>
                 <div class="mb-2">
                     <label class="form-label fw-bold">Atividades (separe por ";")</label>
@@ -52,9 +85,19 @@ function adicionarFormacao() {
                     <div class="col-md-6"><label class="form-label fw-bold">Curso</label><input type="text" class="form-control edu-area-pt" required></div>
                 </div>
                 <div class="row mb-2">
-                    <div class="col-md-4"><label class="form-label fw-bold">Ano Início</label><input type="text" class="form-control edu-start" required pattern="${datePattern}" title="${dateTitle}"></div>
-                    <div class="col-md-4"><label class="form-label fw-bold">Ano Fim</label><input type="text" class="form-control edu-end" required pattern="${datePattern}" title="${dateTitle}"></div>
-                    <div class="col-md-4"><label class="form-label fw-bold">Status</label><input type="text" class="form-control edu-status" required></div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Início</label>
+                        <input type="month" class="form-control edu-start" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Término</label>
+                        <input type="month" class="form-control edu-end input-data-fim" required>
+                        <div class="form-check mt-1">
+                            <input class="form-check-input edu-current" type="checkbox" onchange="toggleDataFim(this)">
+                            <label class="form-check-label text-muted small">Cursando atualmente</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4"><label class="form-label fw-bold">Status (Ex: 6º Semestre)</label><input type="text" class="form-control edu-status" required></div>
                 </div>
             </div>
         </div>`;
@@ -64,8 +107,8 @@ function adicionarFormacao() {
   eduCount++;
 }
 
-// --- FUNÇÃO DE CURSOS COMPLEMENTARES ---
 function adicionarCurso() {
+  const currentYear = new Date().getFullYear();
   const html = `
         <div class="card mb-3 curso-block shadow-sm border-start border-success border-3" id="curso-${cursoCount}">
             <div class="card-body">
@@ -76,7 +119,10 @@ function adicionarCurso() {
                 <div class="row mb-2">
                     <div class="col-md-4"><label class="form-label fw-bold">Nome do Curso</label><input type="text" class="form-control curso-name" required></div>
                     <div class="col-md-4"><label class="form-label fw-bold">Instituição</label><input type="text" class="form-control curso-inst" required></div>
-                    <div class="col-md-4"><label class="form-label fw-bold">Ano</label><input type="text" class="form-control curso-year" required pattern="^[0-9]{4}$" title="Apenas o ano (ex: 2023)"></div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Ano</label>
+                        <input type="number" class="form-control curso-year" min="1950" max="2050" step="1" value="${currentYear}" required>
+                    </div>
                 </div>
             </div>
         </div>`;
@@ -90,7 +136,6 @@ function adicionarProjeto() {
   const isRequired = document.getElementById("include-projects").checked
     ? "required"
     : "";
-
   const html = `
         <div class="card mb-3 proj-block shadow-sm border-start border-warning border-3" id="proj-${projCount}">
             <div class="card-body">
@@ -197,27 +242,55 @@ document
         github: document.getElementById("github").value,
       },
       summary: { pt: [document.getElementById("summary_pt").value] },
+
+      // Formata as datas no envio das experiências e verifica checkbox de "Presente"
       experience: Array.from(document.querySelectorAll(".exp-block")).map(
-        (bloco) => ({
-          company: bloco.querySelector(".exp-company").value,
-          position_pt: bloco.querySelector(".exp-position-pt").value,
-          startDate: bloco.querySelector(".exp-start").value,
-          endDate: bloco.querySelector(".exp-end").value,
-          highlights_pt: bloco
-            .querySelector(".exp-highlights-pt")
-            .value.split(";")
-            .map((i) => i.trim())
-            .filter((i) => i),
-        }),
+        (bloco) => {
+          const isCurrent = bloco.querySelector(".exp-current").checked;
+          const dataInicioFormatada = formatarDataMesAno(
+            bloco.querySelector(".exp-start").value,
+          );
+          const dataFimFormatada = isCurrent
+            ? idiomaSelecionado === "en"
+              ? "Present"
+              : "Presente"
+            : formatarDataMesAno(bloco.querySelector(".exp-end").value);
+
+          return {
+            company: bloco.querySelector(".exp-company").value,
+            position_pt: bloco.querySelector(".exp-position-pt").value,
+            startDate: dataInicioFormatada,
+            endDate: dataFimFormatada,
+            highlights_pt: bloco
+              .querySelector(".exp-highlights-pt")
+              .value.split(";")
+              .map((i) => i.trim())
+              .filter((i) => i),
+          };
+        },
       ),
+
+      // Formata as datas no envio das formações e verifica checkbox de "Presente"
       education: Array.from(document.querySelectorAll(".edu-block")).map(
-        (bloco) => ({
-          institution: bloco.querySelector(".edu-institution").value,
-          area_pt: bloco.querySelector(".edu-area-pt").value,
-          startDate: bloco.querySelector(".edu-start").value,
-          endDate: bloco.querySelector(".edu-end").value,
-          status_pt: bloco.querySelector(".edu-status").value,
-        }),
+        (bloco) => {
+          const isCurrent = bloco.querySelector(".edu-current").checked;
+          const dataInicioFormatada = formatarDataMesAno(
+            bloco.querySelector(".edu-start").value,
+          );
+          const dataFimFormatada = isCurrent
+            ? idiomaSelecionado === "en"
+              ? "Present"
+              : "Presente"
+            : formatarDataMesAno(bloco.querySelector(".edu-end").value);
+
+          return {
+            institution: bloco.querySelector(".edu-institution").value,
+            area_pt: bloco.querySelector(".edu-area-pt").value,
+            startDate: dataInicioFormatada,
+            endDate: dataFimFormatada,
+            status_pt: bloco.querySelector(".edu-status").value,
+          };
+        },
       ),
       courses: cursosColetados,
       projects: includeProjects ? projetosColetados : [],
@@ -225,7 +298,6 @@ document
     };
 
     try {
-      // AJUSTE CRUCIAL: Agora faz a chamada usando rota relativa para funcionar na nuvem
       const response = await fetch("/generate-cv", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
