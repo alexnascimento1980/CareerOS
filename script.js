@@ -64,6 +64,7 @@ function adicionarFormacao() {
   eduCount++;
 }
 
+// --- FUNÇÃO DE CURSOS COMPLEMENTARES ---
 function adicionarCurso() {
   const html = `
         <div class="card mb-3 curso-block shadow-sm border-start border-success border-3" id="curso-${cursoCount}">
@@ -86,7 +87,6 @@ function adicionarCurso() {
 }
 
 function adicionarProjeto() {
-  // Verifica se a opção de projetos está desativada para não criar campos com 'required'
   const isRequired = document.getElementById("include-projects").checked
     ? "required"
     : "";
@@ -131,12 +131,10 @@ document
     if (isChecked) {
       container.style.display = "block";
       btnAddProj.style.display = "inline-block";
-      // Devolve a obrigatoriedade dos campos
       inputs.forEach((input) => input.setAttribute("required", "required"));
     } else {
       container.style.display = "none";
       btnAddProj.style.display = "none";
-      // Remove a obrigatoriedade dos campos ocultos para permitir o envio do formulário
       inputs.forEach((input) => input.removeAttribute("required"));
     }
   });
@@ -227,7 +225,8 @@ document
     };
 
     try {
-      const response = await fetch("http://localhost:5000/generate-cv", {
+      // AJUSTE CRUCIAL: Agora faz a chamada usando rota relativa para funcionar na nuvem
+      const response = await fetch("/generate-cv", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
