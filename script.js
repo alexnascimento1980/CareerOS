@@ -3,12 +3,64 @@ let eduCount = 0;
 let projCount = 0;
 let cursoCount = 0;
 
+const datePattern = "^((0[1-9]|1[0-2])\\/\\d{4}|[0-9]{4}|Presente|Present)$";
+const dateTitle = "Formato esperado: MM/AAAA, AAAA ou Presente";
 const linkPattern =
   "^(https?:\\/\\/)?([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}(?:\\/[^\\s]*)?$";
 const linkTitle = "Insira um link válido (ex: github.com/projeto)";
 
+// --- INTEGRAÇÃO API IBGE (LOCALIZAÇÃO) ---
+async function carregarEstados() {
+  const selectEstado = document.getElementById("estado");
+  try {
+    const response = await fetch(
+      "https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome",
+    );
+    const estados = await response.json();
+
+    selectEstado.innerHTML =
+      '<option value="" disabled selected>Selecione um estado...</option>';
+    estados.forEach((estado) => {
+      selectEstado.innerHTML += `<option value="${estado.sigla}">${estado.nome}</option>`;
+    });
+  } catch (error) {
+    console.error("Erro ao carregar estados:", error);
+    selectEstado.innerHTML =
+      '<option value="" disabled selected>Erro ao carregar</option>';
+  }
+}
+
+async function carregarCidades(uf) {
+  const selectCidade = document.getElementById("cidade");
+  selectCidade.innerHTML =
+    '<option value="" disabled selected>Carregando cidades...</option>';
+  selectCidade.disabled = true;
+
+  try {
+    const response = await fetch(
+      `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios?orderBy=nome`,
+    );
+    const cidades = await response.json();
+
+    selectCidade.innerHTML =
+      '<option value="" disabled selected>Selecione uma cidade...</option>';
+    cidades.forEach((cidade) => {
+      selectCidade.innerHTML += `<option value="${cidade.nome}">${cidade.nome}</option>`;
+    });
+    selectCidade.disabled = false;
+  } catch (error) {
+    console.error("Erro ao carregar cidades:", error);
+    selectCidade.innerHTML =
+      '<option value="" disabled selected>Erro ao carregar</option>';
+  }
+}
+
+// Evento que dispara quando o usuário troca o estado
+document.getElementById("estado").addEventListener("change", function () {
+  carregarCidades(this.value);
+});
+
 // --- FUNÇÕES AUXILIARES DE DATA ---
-// Transforma AAAA-MM (padrão do input month) em MM/AAAA (padrão do currículo)
 function formatarDataMesAno(valor) {
   if (!valor) return "";
   const partes = valor.split("-");
@@ -18,7 +70,6 @@ function formatarDataMesAno(valor) {
   return valor;
 }
 
-// Bloqueia o calendário de "Data Fim" se o usuário ainda estiver no cargo/curso
 function toggleDataFim(checkbox) {
   const inputDataFim = checkbox
     .closest(".row")
@@ -164,7 +215,6 @@ function removerElemento(id) {
   document.getElementById(id).remove();
 }
 
-// --- CONTROLE DE EXIBIÇÃO DE PROJETOS ---
 document
   .getElementById("include-projects")
   .addEventListener("change", function () {
@@ -184,7 +234,9 @@ document
     }
   });
 
+// Ao carregar a tela, também chama a API do IBGE
 window.onload = function () {
+  carregarEstados();
   adicionarExperiencia();
   adicionarFormacao();
   adicionarCurso();
@@ -206,6 +258,11 @@ document
         ? "Traduzindo e Gerando PDF..."
         : "Gerando PDF...";
     btnGerar.disabled = true;
+
+    // Constrói a string final de localização combinando Cidade e Estado
+    const cidadeSelect = document.getElementById("cidade").value;
+    const estadoSelect = document.getElementById("estado").value;
+    const localizacaoFinal = `${cidadeSelect}, ${estadoSelect}`;
 
     const skillsArray = document
       .getElementById("skills")
@@ -237,13 +294,11 @@ document
         label_pt: document.getElementById("label_pt").value,
         email: document.getElementById("email").value,
         phone: document.getElementById("phone").value,
-        location: document.getElementById("location").value,
+        location: localizacaoFinal, // Campo injetado aqui
         linkedin: document.getElementById("linkedin").value,
         github: document.getElementById("github").value,
       },
       summary: { pt: [document.getElementById("summary_pt").value] },
-
-      // Formata as datas no envio das experiências e verifica checkbox de "Presente"
       experience: Array.from(document.querySelectorAll(".exp-block")).map(
         (bloco) => {
           const isCurrent = bloco.querySelector(".exp-current").checked;
@@ -269,8 +324,6 @@ document
           };
         },
       ),
-
-      // Formata as datas no envio das formações e verifica checkbox de "Presente"
       education: Array.from(document.querySelectorAll(".edu-block")).map(
         (bloco) => {
           const isCurrent = bloco.querySelector(".edu-current").checked;
