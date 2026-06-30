@@ -1,20 +1,41 @@
-# 📄 Resume as Code: Automação de Currículo com Python e LaTeX
+# CareerOS - Gerador de Currículo ATS Bilíngue
 
-Este repositório contém a arquitetura do meu currículo automatizado. Em vez de editar documentos de texto estáticos, utilizo uma abordagem orientada a dados para gerenciar minha trajetória profissional e acadêmica.
+O **CareerOS** é uma aplicação web full-stack desenvolvida para gerar currículos profissionais otimizados para sistemas ATS (Applicant Tracking Systems). Ele recebe dados estruturados através de uma interface dinâmica, processa as informações no backend e compila um documento PDF com design limpo utilizando o motor de tipografia LaTeX.
 
-## ⚙️ Como funciona a arquitetura
+## 🚀 Funcionalidades
 
-1. **Base de Dados (`dados.json`):** Todas as minhas informações (experiências, educação, habilidades) ficam centralizadas em um único arquivo JSON, suportando múltiplos idiomas.
-2. **Motor de Renderização (`gerador.py`):** Um script em Python, utilizando a biblioteca **Jinja2**, lê os dados do JSON e injeta as variáveis dinamicamente em templates.
-3. **Templates Modulares (`/templates`):** Esqueletos em LaTeX limpos e separados por caso de uso.
-4. **Saída (`/saida`):** O script gera instantaneamente os arquivos `.tex` finais em duas versões (Design Visual e formato ATS), tanto em português quanto em inglês.
-5. **Compilação:** Os arquivos de saída são compilados em PDF de alta qualidade.
+* **Interface Dinâmica:** Formulário construído com Vanilla JS e Bootstrap, permitindo a adição e remoção de blocos (Experiências, Formações, Cursos, Projetos) sob demanda.
+* **Validação de Dados:** Máscaras e expressões regulares (Regex) rigorosas para datas, links, e-mails e telefones, garantindo a integridade do PDF final.
+* **Tradução Automática (IA):** Integração com o Google Translate via backend. Com um clique, todo o currículo preenchido em Português é automaticamente traduzido e renderizado com cabeçalhos em Inglês.
+* **Seções Condicionais:** Ocultação inteligente da seção de "Projetos Técnicos" (útil para transições de carreira entre gestão e tecnologia).
+* **Motor LaTeX:** Renderização de alta precisão tipográfica em PDF, utilizando Jinja2 para injetar dados dinâmicos no template `.tex`.
+* **Pronto para a Nuvem:** Arquitetura 100% dockerizada para deploy fácil em plataformas como Render ou Railway.
 
-Automação de CV ati
+## 🛠️ Tecnologias Utilizadas
 
-## 🚀 Tecnologias Utilizadas
+**Frontend:**
+* HTML5 & CSS3
+* JavaScript (ES6+)
+* Bootstrap 5
 
-- **Python** (Lógica, manipulação de JSON e I/O)
-- **Jinja2** (Motor de templates)
-- **LaTeX** (Tipografia e estruturação de documentos)
-- **Git/GitHub** (Versionamento de código)
+**Backend & Infraestrutura:**
+* Python 3.10+
+* Flask (Web Framework)
+* Jinja2 (Templating)
+* deep-translator (API de Tradução)
+* TeX Live / pdflatex (Motor PDF)
+* Docker & Gunicorn (Deploy e Servidor de Produção)
+
+## 📂 Estrutura do Projeto
+
+```text
+career-os/
+├── templates/
+│   └── base_ats.tex       # Template do currículo em LaTeX
+├── app.py                 # Servidor Flask e rotas da API
+├── index.html             # Interface do usuário (Formulário)
+├── script.js              # Lógica de captura e envio de dados (Frontend)
+├── requirements.txt       # Dependências do Python
+├── Dockerfile             # Receita de infraestrutura para nuvem
+├── .dockerignore          # Arquivos ignorados na build do Docker
+└── README.md              # Documentação do projeto
