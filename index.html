@@ -57,12 +57,15 @@
                   </div>
                   <div class="col-md-6">
                     <label class="form-label fw-bold">Telefone</label>
+                    <!-- Adicionado maxlength="15" e placeholder para guiar a máscara -->
                     <input
                       type="tel"
                       class="form-control"
                       id="phone"
                       required
-                      pattern="^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$"
+                      maxlength="15"
+                      placeholder="(99) 99999-9999"
+                      pattern="^\(\d{2}\) \d{4,5}-\d{4}$"
                       title="Formato aceito: (XX) XXXXX-XXXX"
                     />
                   </div>
