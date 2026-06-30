@@ -3,8 +3,6 @@ let eduCount = 0;
 let projCount = 0;
 let cursoCount = 0;
 
-const datePattern = "^((0[1-9]|1[0-2])\\/\\d{4}|[0-9]{4}|Presente|Present)$";
-const dateTitle = "Formato esperado: MM/AAAA, AAAA ou Presente";
 const linkPattern =
   "^(https?:\\/\\/)?([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}(?:\\/[^\\s]*)?$";
 const linkTitle = "Insira um link válido (ex: github.com/projeto)";
@@ -59,6 +57,26 @@ document.getElementById("estado").addEventListener("change", function () {
   carregarCidades(this.value);
 });
 
+// --- MÁSCARA DE TELEFONE ---
+document.getElementById("phone").addEventListener("input", function (event) {
+  let input = event.target;
+  let valor = input.value.replace(/\D/g, "");
+
+  if (valor.length > 11) {
+    valor = valor.substring(0, 11);
+  }
+
+  if (valor.length <= 10) {
+    valor = valor.replace(/^(\d{2})(\d)/g, "($1) $2");
+    valor = valor.replace(/(\d{4})(\d{1,4})$/, "$1-$2");
+  } else {
+    valor = valor.replace(/^(\d{2})(\d)/g, "($1) $2");
+    valor = valor.replace(/(\d{5})(\d{1,4})$/, "$1-$2");
+  }
+
+  input.value = valor;
+});
+
 // --- FUNÇÕES AUXILIARES DE DATA ---
 function formatarDataMesAno(valor) {
   if (!valor) return "";
@@ -83,35 +101,37 @@ function toggleDataFim(checkbox) {
   }
 }
 
-// --- INJEÇÃO DE HTML ---
+// --- INJEÇÃO DE HTML (COM CLASSES DE ANIMAÇÃO E ÍCONES) ---
 function adicionarExperiencia() {
   const html = `
-        <div class="card mb-3 exp-block shadow-sm border-start border-primary border-3" id="exp-${expCount}">
-            <div class="card-body">
+        <div class="card mb-3 exp-block shadow-sm border-start border-primary border-4 fade-in" id="exp-${expCount}">
+            <div class="card-body bg-white rounded">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0 text-primary fw-bold">Experiência Profissional</h6>
-                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerElemento('exp-${expCount}')">Remover</button>
+                    <h6 class="mb-0 text-primary fw-bold"><i class="fas fa-building me-2"></i>Nova Experiência</h6>
+                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" onclick="removerElemento('exp-${expCount}')">
+                        <i class="fas fa-trash-alt"></i> Remover
+                    </button>
                 </div>
                 <div class="row mb-2">
-                    <div class="col-md-6"><label class="form-label fw-bold">Empresa</label><input type="text" class="form-control exp-company" required></div>
-                    <div class="col-md-6"><label class="form-label fw-bold">Cargo</label><input type="text" class="form-control exp-position-pt" required></div>
+                    <div class="col-md-6"><label class="form-label fw-bold text-muted small">Empresa</label><input type="text" class="form-control" class="exp-company" required></div>
+                    <div class="col-md-6"><label class="form-label fw-bold text-muted small">Cargo</label><input type="text" class="form-control exp-position-pt" required></div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label class="form-label fw-bold">Mês/Ano Início</label>
+                        <label class="form-label fw-bold text-muted small">Mês/Ano Início</label>
                         <input type="month" class="form-control exp-start" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-bold">Mês/Ano Fim</label>
+                        <label class="form-label fw-bold text-muted small">Mês/Ano Fim</label>
                         <input type="month" class="form-control exp-end input-data-fim" required>
-                        <div class="form-check mt-1">
-                            <input class="form-check-input exp-current" type="checkbox" onchange="toggleDataFim(this)">
-                            <label class="form-check-label text-muted small">Trabalho aqui atualmente</label>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input exp-current" type="checkbox" onchange="toggleDataFim(this)" id="chk-exp-${expCount}">
+                            <label class="form-check-label text-primary fw-bold small" for="chk-exp-${expCount}">Trabalho aqui atualmente</label>
                         </div>
                     </div>
                 </div>
                 <div class="mb-2">
-                    <label class="form-label fw-bold">Atividades (separe por ";")</label>
+                    <label class="form-label fw-bold text-muted small"><i class="fas fa-list-ul me-1"></i> Atividades (separe por ";")</label>
                     <textarea class="form-control exp-highlights-pt" rows="3" required></textarea>
                 </div>
             </div>
@@ -124,30 +144,32 @@ function adicionarExperiencia() {
 
 function adicionarFormacao() {
   const html = `
-        <div class="card mb-3 edu-block shadow-sm border-start border-info border-3" id="edu-${eduCount}">
-            <div class="card-body">
+        <div class="card mb-3 edu-block shadow-sm border-start border-info border-4 fade-in" id="edu-${eduCount}">
+            <div class="card-body bg-white rounded">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0 text-info fw-bold">Formação Acadêmica</h6>
-                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerElemento('edu-${eduCount}')">Remover</button>
+                    <h6 class="mb-0 text-info fw-bold"><i class="fas fa-university me-2"></i>Nova Formação</h6>
+                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" onclick="removerElemento('edu-${eduCount}')">
+                        <i class="fas fa-trash-alt"></i> Remover
+                    </button>
                 </div>
                 <div class="row mb-2">
-                    <div class="col-md-6"><label class="form-label fw-bold">Instituição</label><input type="text" class="form-control edu-institution" required></div>
-                    <div class="col-md-6"><label class="form-label fw-bold">Curso</label><input type="text" class="form-control edu-area-pt" required></div>
+                    <div class="col-md-6"><label class="form-label fw-bold text-muted small">Instituição</label><input type="text" class="form-control edu-institution" required></div>
+                    <div class="col-md-6"><label class="form-label fw-bold text-muted small">Curso</label><input type="text" class="form-control edu-area-pt" required></div>
                 </div>
                 <div class="row mb-2">
                     <div class="col-md-4">
-                        <label class="form-label fw-bold">Início</label>
+                        <label class="form-label fw-bold text-muted small">Mês/Ano Início</label>
                         <input type="month" class="form-control edu-start" required>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-bold">Término</label>
+                        <label class="form-label fw-bold text-muted small">Mês/Ano Término</label>
                         <input type="month" class="form-control edu-end input-data-fim" required>
-                        <div class="form-check mt-1">
-                            <input class="form-check-input edu-current" type="checkbox" onchange="toggleDataFim(this)">
-                            <label class="form-check-label text-muted small">Cursando atualmente</label>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input edu-current" type="checkbox" onchange="toggleDataFim(this)" id="chk-edu-${eduCount}">
+                            <label class="form-check-label text-info fw-bold small" for="chk-edu-${eduCount}">Cursando atualmente</label>
                         </div>
                     </div>
-                    <div class="col-md-4"><label class="form-label fw-bold">Status (Ex: 6º Semestre)</label><input type="text" class="form-control edu-status" required></div>
+                    <div class="col-md-4"><label class="form-label fw-bold text-muted small">Status (Ex: 6º Semestre)</label><input type="text" class="form-control edu-status" required></div>
                 </div>
             </div>
         </div>`;
@@ -160,17 +182,19 @@ function adicionarFormacao() {
 function adicionarCurso() {
   const currentYear = new Date().getFullYear();
   const html = `
-        <div class="card mb-3 curso-block shadow-sm border-start border-success border-3" id="curso-${cursoCount}">
-            <div class="card-body">
+        <div class="card mb-3 curso-block shadow-sm border-start border-success border-4 fade-in" id="curso-${cursoCount}">
+            <div class="card-body bg-white rounded">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0 text-success fw-bold">Curso Complementar</h6>
-                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerElemento('curso-${cursoCount}')">Remover</button>
+                    <h6 class="mb-0 text-success fw-bold"><i class="fas fa-award me-2"></i>Novo Curso</h6>
+                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" onclick="removerElemento('curso-${cursoCount}')">
+                        <i class="fas fa-trash-alt"></i> Remover
+                    </button>
                 </div>
                 <div class="row mb-2">
-                    <div class="col-md-4"><label class="form-label fw-bold">Nome do Curso</label><input type="text" class="form-control curso-name" required></div>
-                    <div class="col-md-4"><label class="form-label fw-bold">Instituição</label><input type="text" class="form-control curso-inst" required></div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Ano</label>
+                    <div class="col-md-5"><label class="form-label fw-bold text-muted small">Nome do Curso</label><input type="text" class="form-control curso-name" required></div>
+                    <div class="col-md-5"><label class="form-label fw-bold text-muted small">Instituição</label><input type="text" class="form-control curso-inst" required></div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold text-muted small">Ano</label>
                         <input type="number" class="form-control curso-year" min="1950" max="2050" step="1" value="${currentYear}" required>
                     </div>
                 </div>
@@ -187,19 +211,21 @@ function adicionarProjeto() {
     ? "required"
     : "";
   const html = `
-        <div class="card mb-3 proj-block shadow-sm border-start border-warning border-3" id="proj-${projCount}">
-            <div class="card-body">
+        <div class="card mb-3 proj-block shadow-sm border-start border-warning border-4 fade-in" id="proj-${projCount}">
+            <div class="card-body bg-white rounded">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0 text-warning fw-bold">Projeto Técnico</h6>
-                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerElemento('proj-${projCount}')">Remover</button>
+                    <h6 class="mb-0 text-warning fw-bold"><i class="fas fa-code-branch me-2"></i>Novo Projeto</h6>
+                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" onclick="removerElemento('proj-${projCount}')">
+                        <i class="fas fa-trash-alt"></i> Remover
+                    </button>
                 </div>
                 <div class="row mb-2">
-                    <div class="col-md-4"><label class="form-label fw-bold">Nome do Projeto</label><input type="text" class="form-control proj-name" ${isRequired}></div>
-                    <div class="col-md-4"><label class="form-label fw-bold">Tecnologias</label><input type="text" class="form-control proj-tech" ${isRequired}></div>
-                    <div class="col-md-4"><label class="form-label fw-bold">Link (GitHub)</label><input type="text" class="form-control proj-link" ${isRequired} pattern="${linkPattern}" title="${linkTitle}"></div>
+                    <div class="col-md-4"><label class="form-label fw-bold text-muted small">Nome do Projeto</label><input type="text" class="form-control proj-name" ${isRequired}></div>
+                    <div class="col-md-4"><label class="form-label fw-bold text-muted small">Tecnologias</label><input type="text" class="form-control proj-tech" ${isRequired}></div>
+                    <div class="col-md-4"><label class="form-label fw-bold text-muted small">Link (GitHub/Web)</label><input type="text" class="form-control proj-link" ${isRequired} pattern="${linkPattern}" title="${linkTitle}"></div>
                 </div>
                 <div class="mb-2">
-                    <label class="form-label fw-bold">Descrição</label>
+                    <label class="form-label fw-bold text-muted small"><i class="fas fa-align-justify me-1"></i> Descrição Resumida</label>
                     <textarea class="form-control proj-desc-pt" rows="2" ${isRequired}></textarea>
                 </div>
             </div>
@@ -211,7 +237,12 @@ function adicionarProjeto() {
 }
 
 function removerElemento(id) {
-  document.getElementById(id).remove();
+  const el = document.getElementById(id);
+  // Animação de saída suave antes de remover
+  el.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+  el.style.opacity = "0";
+  el.style.transform = "translateY(10px)";
+  setTimeout(() => el.remove(), 300);
 }
 
 document
@@ -224,10 +255,12 @@ document
 
     if (isChecked) {
       container.style.display = "block";
+      container.classList.add("fade-in");
       btnAddProj.style.display = "inline-block";
       inputs.forEach((input) => input.setAttribute("required", "required"));
     } else {
       container.style.display = "none";
+      container.classList.remove("fade-in");
       btnAddProj.style.display = "none";
       inputs.forEach((input) => input.removeAttribute("required"));
     }
@@ -241,7 +274,7 @@ window.onload = function () {
   adicionarProjeto();
 };
 
-// --- SUBMISSÃO ---
+// --- SUBMISSÃO API ---
 document
   .getElementById("cv-form")
   .addEventListener("submit", async function (event) {
@@ -251,10 +284,12 @@ document
     const idiomaSelecionado = document.getElementById("idioma_escolhido").value;
     const includeProjects = document.getElementById("include-projects").checked;
 
-    btnGerar.textContent =
+    // Feedback visual moderno no botão
+    const originalBtnHTML = btnGerar.innerHTML;
+    btnGerar.innerHTML =
       idiomaSelecionado === "en"
-        ? "Traduzindo e Gerando PDF..."
-        : "Gerando PDF...";
+        ? '<i class="fas fa-language fa-spin me-2"></i> Traduzindo e Gerando...'
+        : '<i class="fas fa-spinner fa-spin me-2"></i> Gerando PDF...';
     btnGerar.disabled = true;
 
     const cidadeSelect = document.getElementById("cidade").value;
@@ -364,7 +399,6 @@ document
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
 
-      // --- LÓGICA DE NOMECLATURA NO FRONTEND ---
       const nomeDigitado = document.getElementById("name").value;
       const nomeFormatado = nomeDigitado.trim().replace(/\s+/g, "_");
       const nomeArquivo = `${nomeFormatado}_curriculo_${idiomaSelecionado}.pdf`;
@@ -379,7 +413,7 @@ document
       console.error("Erro:", error);
       alert("Ocorreu um erro ao gerar o PDF.");
     } finally {
-      btnGerar.textContent = "Gerar Currículo PDF";
+      btnGerar.innerHTML = originalBtnHTML;
       btnGerar.disabled = false;
     }
   });

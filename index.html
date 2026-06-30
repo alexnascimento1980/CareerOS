@@ -3,24 +3,85 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CareerOS - Gerador de Currículo</title>
+    <title>CareerOS - Gerador de Currículo Premium</title>
+
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      body {
+        background-color: #f4f6f9;
+      }
+      .bg-gradient-primary {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+      }
+      .section-title {
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      /* Animação suave ao adicionar novos blocos */
+      .fade-in {
+        animation: fadeIn 0.4s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .card {
+        border: none;
+        border-radius: 12px;
+      }
+      .form-control,
+      .form-select {
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+      }
+      .form-control:focus,
+      .form-select:focus {
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+      }
+      .btn-add {
+        border-radius: 20px;
+        font-weight: 600;
+        padding: 6px 16px;
+      }
+    </style>
   </head>
-  <body class="bg-light">
-    <div class="container mt-5 mb-5">
+  <body>
+    <div class="container mt-5 mb-5 fade-in">
       <div class="row justify-content-center">
         <div class="col-md-10">
-          <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-              <h4 class="mb-0">CareerOS - Gerador de Currículo</h4>
+          <div class="card shadow-lg">
+            <div
+              class="card-header bg-gradient-primary text-white p-4 rounded-top"
+            >
+              <h3 class="mb-0 fw-bold">
+                <i class="fas fa-file-signature me-2"></i> CareerOS
+              </h3>
+              <p class="mb-0 text-light opacity-75">
+                Gerador de Currículo ATS Inteligente
+              </p>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4 p-md-5">
               <form id="cv-form">
-                <h5 class="border-bottom pb-2 mb-3 text-primary">
-                  1. Dados Básicos
+                <h5 class="border-bottom pb-2 mb-4 text-primary section-title">
+                  <i class="fas fa-user-circle"></i> 1. Dados Básicos
                 </h5>
                 <div class="row mb-3">
                   <div class="col-md-6">
@@ -29,6 +90,7 @@
                       type="text"
                       class="form-control"
                       id="name"
+                      placeholder="Ex: Alex Nascimento"
                       required
                     />
                   </div>
@@ -40,13 +102,17 @@
                       type="text"
                       class="form-control"
                       id="label_pt"
+                      placeholder="Ex: Logística | Ciência de Dados"
                       required
                     />
                   </div>
                 </div>
                 <div class="row mb-3">
                   <div class="col-md-6">
-                    <label class="form-label fw-bold">E-mail</label>
+                    <label class="form-label fw-bold"
+                      ><i class="fas fa-envelope text-secondary me-1"></i>
+                      E-mail</label
+                    >
                     <input
                       type="email"
                       class="form-control"
@@ -56,8 +122,10 @@
                     />
                   </div>
                   <div class="col-md-6">
-                    <label class="form-label fw-bold">Telefone</label>
-                    <!-- Adicionado maxlength="15" e placeholder para guiar a máscara -->
+                    <label class="form-label fw-bold"
+                      ><i class="fas fa-phone text-secondary me-1"></i>
+                      Telefone</label
+                    >
                     <input
                       type="tel"
                       class="form-control"
@@ -66,19 +134,24 @@
                       maxlength="15"
                       placeholder="(99) 99999-9999"
                       pattern="^\(\d{2}\) \d{4,5}-\d{4}$"
-                      title="Formato aceito: (XX) XXXXX-XXXX"
                     />
                   </div>
                 </div>
                 <div class="row mb-4">
                   <div class="col-md-3">
-                    <label class="form-label fw-bold">Estado</label>
+                    <label class="form-label fw-bold"
+                      ><i class="fas fa-map-marker-alt text-secondary me-1"></i>
+                      Estado</label
+                    >
                     <select class="form-select" id="estado" required>
                       <option value="" disabled selected>Carregando...</option>
                     </select>
                   </div>
                   <div class="col-md-3">
-                    <label class="form-label fw-bold">Cidade</label>
+                    <label class="form-label fw-bold"
+                      ><i class="fas fa-city text-secondary me-1"></i>
+                      Cidade</label
+                    >
                     <select class="form-select" id="cidade" required disabled>
                       <option value="" disabled selected>
                         Selecione o estado
@@ -86,96 +159,114 @@
                     </select>
                   </div>
                   <div class="col-md-3">
-                    <label class="form-label fw-bold">LinkedIn</label>
+                    <label class="form-label fw-bold"
+                      ><i class="fab fa-linkedin text-secondary me-1"></i>
+                      LinkedIn</label
+                    >
                     <input
                       type="text"
                       class="form-control"
                       id="linkedin"
+                      placeholder="linkedin.com/in/..."
                       required
                       pattern="^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?$"
-                      title="Insira um link de perfil válido (ex: linkedin.com/in/usuario)"
                     />
                   </div>
                   <div class="col-md-3">
-                    <label class="form-label fw-bold">GitHub</label>
+                    <label class="form-label fw-bold"
+                      ><i class="fab fa-github text-secondary me-1"></i>
+                      GitHub</label
+                    >
                     <input
                       type="text"
                       class="form-control"
                       id="github"
+                      placeholder="github.com/..."
                       required
                       pattern="^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?$"
-                      title="Insira um link de perfil válido (ex: github.com/usuario)"
                     />
                   </div>
                 </div>
 
-                <h5 class="border-bottom pb-2 mb-3 text-primary">
-                  2. Resumo Profissional
+                <h5
+                  class="border-bottom pb-2 mb-4 text-primary section-title mt-5"
+                >
+                  <i class="fas fa-align-left"></i> 2. Resumo Profissional
                 </h5>
                 <div class="mb-4">
                   <textarea
                     class="form-control"
                     id="summary_pt"
-                    rows="3"
+                    rows="4"
+                    placeholder="Descreva sua trajetória, principais conquistas e objetivos..."
                     required
                   ></textarea>
                 </div>
 
-                <h5 class="border-bottom pb-2 mb-3 text-primary">
-                  3. Experiência Profissional
+                <h5
+                  class="border-bottom pb-2 mb-4 text-primary section-title mt-5"
+                >
+                  <i class="fas fa-briefcase"></i> 3. Experiência Profissional
                 </h5>
                 <div id="experiencias-container"></div>
                 <div class="mb-4">
                   <button
                     type="button"
-                    class="btn btn-outline-primary btn-sm"
+                    class="btn btn-outline-primary btn-add"
                     onclick="adicionarExperiencia()"
                   >
-                    + Adicionar Experiência
+                    <i class="fas fa-plus"></i> Adicionar Experiência
                   </button>
                 </div>
 
-                <h5 class="border-bottom pb-2 mt-4 mb-3 text-primary">
-                  4. Formação Acadêmica
+                <h5
+                  class="border-bottom pb-2 mb-4 text-primary section-title mt-5"
+                >
+                  <i class="fas fa-graduation-cap"></i> 4. Formação Acadêmica
                 </h5>
                 <div id="formacao-container"></div>
                 <div class="mb-4">
                   <button
                     type="button"
-                    class="btn btn-outline-info btn-sm"
+                    class="btn btn-outline-info btn-add"
                     onclick="adicionarFormacao()"
                   >
-                    + Adicionar Formação
+                    <i class="fas fa-plus"></i> Adicionar Formação
                   </button>
                 </div>
 
-                <h5 class="border-bottom pb-2 mt-4 mb-3 text-primary">
-                  5. Cursos Complementares
+                <h5
+                  class="border-bottom pb-2 mb-4 text-primary section-title mt-5"
+                >
+                  <i class="fas fa-certificate"></i> 5. Cursos Complementares
                 </h5>
                 <div id="cursos-container"></div>
                 <div class="mb-4">
                   <button
                     type="button"
-                    class="btn btn-outline-success btn-sm"
+                    class="btn btn-outline-success btn-add"
                     onclick="adicionarCurso()"
                   >
-                    + Adicionar Curso
+                    <i class="fas fa-plus"></i> Adicionar Curso
                   </button>
                 </div>
 
                 <div
-                  class="d-flex justify-content-between align-items-center border-bottom pb-2 mt-4 mb-3"
+                  class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4 mt-5"
                 >
-                  <h5 class="mb-0 text-primary">6. Projetos Técnicos</h5>
-                  <div class="form-check form-switch">
+                  <h5 class="mb-0 text-primary section-title">
+                    <i class="fas fa-laptop-code"></i> 6. Projetos Técnicos
+                  </h5>
+                  <div class="form-check form-switch fs-5">
                     <input
                       class="form-check-input"
                       type="checkbox"
                       id="include-projects"
                       checked
+                      style="cursor: pointer"
                     />
                     <label
-                      class="form-check-label fw-bold text-warning"
+                      class="form-check-label fw-bold text-warning fs-6"
                       for="include-projects"
                       >Incluir no PDF?</label
                     >
@@ -185,55 +276,63 @@
                 <div class="mb-4">
                   <button
                     type="button"
-                    class="btn btn-outline-warning btn-sm"
+                    class="btn btn-outline-warning btn-add"
                     id="btn-add-proj"
                     onclick="adicionarProjeto()"
                   >
-                    + Adicionar Projeto
+                    <i class="fas fa-plus"></i> Adicionar Projeto
                   </button>
                 </div>
 
-                <h5 class="border-bottom pb-2 mt-4 mb-3 text-primary">
-                  7. Habilidades e Ferramentas
+                <h5
+                  class="border-bottom pb-2 mb-4 text-primary section-title mt-5"
+                >
+                  <i class="fas fa-tools"></i> 7. Habilidades e Ferramentas
                 </h5>
                 <div class="mb-4">
-                  <label class="form-label fw-bold"
+                  <label class="form-label fw-bold text-muted"
                     >Tecnologias (Separe por vírgula)</label
                   >
                   <input
                     type="text"
-                    class="form-control"
+                    class="form-control form-control-lg"
                     id="skills"
+                    placeholder="Ex: Python, SQL, Power BI, Excel, SAP"
                     required
                   />
                 </div>
 
-                <h5 class="border-bottom pb-2 mt-5 mb-3 text-success">
-                  8. Exportar Documento
-                </h5>
-                <div class="row mb-4">
-                  <div class="col-md-12">
-                    <label class="form-label fw-bold"
-                      >Escolha o idioma do PDF final:</label
-                    >
-                    <select
-                      class="form-select border-success form-select-lg"
-                      id="idioma_escolhido"
-                    >
-                      <option value="pt" selected>Português</option>
-                      <option value="en">Inglês (Tradução Automática)</option>
-                    </select>
+                <div class="bg-light p-4 rounded-3 border mt-5 mb-4">
+                  <h5 class="text-success section-title mb-3">
+                    <i class="fas fa-file-export"></i> 8. Exportar Documento
+                  </h5>
+                  <div class="row align-items-center">
+                    <div class="col-md-8">
+                      <label class="form-label fw-bold"
+                        >Idioma de Saída (Tradução via IA no Backend):</label
+                      >
+                      <select
+                        class="form-select border-success form-select-lg"
+                        id="idioma_escolhido"
+                      >
+                        <option value="pt" selected>
+                          🇧🇷 Português (Geração Rápida)
+                        </option>
+                        <option value="en">
+                          🇺🇸 Inglês (Tradução Automática)
+                        </option>
+                      </select>
+                    </div>
+                    <div class="col-md-4 mt-4 mt-md-0 d-grid">
+                      <button
+                        type="submit"
+                        class="btn btn-success btn-lg shadow-sm rounded-pill"
+                        id="btn-gerar"
+                      >
+                        <i class="fas fa-file-pdf me-2"></i> Gerar Currículo
+                      </button>
+                    </div>
                   </div>
-                </div>
-
-                <div class="d-grid gap-2">
-                  <button
-                    type="submit"
-                    class="btn btn-success btn-lg shadow"
-                    id="btn-gerar"
-                  >
-                    Gerar Currículo PDF
-                  </button>
                 </div>
               </form>
             </div>
