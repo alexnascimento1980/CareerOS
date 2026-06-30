@@ -4,8 +4,20 @@
 \usepackage{geometry}
 \geometry{a4paper, margin=0.7in}
 \usepackage{enumitem}
-\usepackage{tabularx}
 \usepackage{hyperref}
+\usepackage{titlesec} % Adicionado para formatação elegante dos títulos
+
+% Configuração das cores dos links (deixa os links clicáveis e em azul escuro)
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=black,      
+    urlcolor=blue,
+}
+
+% Cria uma linha horizontal perfeitamente alinhada abaixo de cada seção
+\titleformat{\section}{\large\bfseries\uppercase}{}{0em}{}[\titlerule]
+\titlespacing*{\section}{0pt}{1.5ex plus 1ex minus .2ex}{1ex plus .2ex}
 
 \setlist[itemize]{leftmargin=15pt, label=•, noitemsep, topsep=2pt}
 \pagestyle{empty}
@@ -19,29 +31,24 @@
     \textbf{ {{ dados.basics.label_pt if lang == 'pt' else dados.basics.label_en }} } \\
     \vspace{1mm}
     \small {{ dados.basics.location }} | {{ dados.basics.phone }} | \href{mailto:{{ dados.basics.email }}}{\texttt{ {{ dados.basics.email | replace('_', '\\_') }} }} \\
-    \small {{ dados.basics.linkedin }} | {{ dados.basics.github }}
+    \small \href{https://{{ dados.basics.linkedin }}}{LinkedIn} | \href{https://{{ dados.basics.github }}}{GitHub}
 \end{center}
 
-\vspace{3mm}
-
-% Resumo
-\section*{ {{ 'Resumo' if lang == 'pt' else 'Summary' }} }
-\begin{itemize}
-    {% set resumo = dados.summary.pt if lang == 'pt' else dados.summary.en %}
-    {% for linha in resumo %}
-        \item {{ linha }}
-    {% endfor %}
-\end{itemize}
-
 \vspace{2mm}
+
+% Resumo (Sem as bolinhas, apenas o parágrafo justificado)
+\section*{ {{ 'Resumo' if lang == 'pt' else 'Summary' }} }
+{% set resumo = dados.summary.pt if lang == 'pt' else dados.summary.en %}
+{% for linha in resumo %}
+    \noindent {{ linha }}
+{% endfor %}
 
 % Experiência Profissional
 \section*{ {{ 'Experiência Profissional' if lang == 'pt' else 'Professional Experience' }} }
 {% for xp in dados.experience %}
-    \noindent \begin{tabularx}{\textwidth}{X r}
-        \textbf{ {{ xp.company }} } & \textbf{ {{ xp.startDate }} -- {{ xp.endDate }} } \\
-        \textit{ {{ xp.position_pt if lang == 'pt' else xp.position_en }} } & 
-    \end{tabularx}
+    \noindent \textbf{ {{ xp.company }} } \hfill \textbf{ {{ xp.startDate }} -- {{ xp.endDate }} } \\
+    \textit{ {{ xp.position_pt if lang == 'pt' else xp.position_en }} }
+    \vspace{-1.5mm}
     \begin{itemize}
         {% set destaques = xp.highlights_pt if lang == 'pt' else xp.highlights_en %}
         {% for item in destaques %}
@@ -54,33 +61,27 @@
 % Formação Acadêmica
 \section*{ {% if lang == 'pt' %}Formação Acadêmica{% else %}Education{% endif %} }
 {% for edu in dados.education %}
-    \noindent \begin{tabularx}{\textwidth}{X r}
-        \textbf{ {{ edu.institution }} } & \textbf{ {{ edu.startDate }} -- {{ edu.endDate }} } \\
-        \textit{ {{ edu.area_pt if lang == 'pt' else edu.area_en }} } & \\
-        {{ 'Status' if lang == 'pt' else 'Status' }}: {{ edu.status_pt if lang == 'pt' else edu.status_en }} & 
-    \end{tabularx}
+    \noindent \textbf{ {{ edu.institution }} } \hfill \textbf{ {{ edu.startDate }} -- {{ edu.endDate }} } \\
+    \textit{ {{ edu.area_pt if lang == 'pt' else edu.area_en }} } \\
+    {{ 'Status' if lang == 'pt' else 'Status' }}: {{ edu.status_pt if lang == 'pt' else edu.status_en }}
     \vspace{2mm}
 {% endfor %}
 
-% Cursos Complementares (Renderiza apenas se houver cursos adicionados)
+% Cursos Complementares
 {% if dados.courses and dados.courses|length > 0 %}
 \section*{ {% if lang == 'pt' %}Cursos Complementares{% else %}Additional Courses{% endif %} }
 {% for curso in dados.courses %}
-    \noindent \begin{tabularx}{\textwidth}{X r}
-        \textbf{ {{ curso.name_pt if lang == 'pt' else curso.name_en }} } | \textit{ {{ curso.institution }} } & {{ curso.year }} \\
-    \end{tabularx}
-    \vspace{1mm}
+    \noindent \textbf{ {{ curso.name_pt if lang == 'pt' else curso.name_en }} } | \textit{ {{ curso.institution }} } \hfill {{ curso.year }} \\
 {% endfor %}
 \vspace{2mm}
 {% endif %}
 
-% Projetos Técnicos (Renderiza apenas se a lista não estiver vazia)
+% Projetos Técnicos
 {% if dados.projects and dados.projects|length > 0 %}
 \section*{ {% if lang == 'pt' %}Projetos Técnicos{% else %}Technical Projects{% endif %} }
 {% for proj in dados.projects %}
-    \noindent \begin{tabularx}{\textwidth}{X r}
-        \textbf{ {{ proj.name }} } | \textit{ {{ proj.technologies }} } & \href{https://{{ proj.link }}}{GitHub} \\
-    \end{tabularx}
+    \noindent \textbf{ {{ proj.name }} } | \textit{ {{ proj.technologies }} } \hfill \href{https://{{ proj.link }}}{GitHub} \\
+    \vspace{-1.5mm}
     \begin{itemize}
         \item {{ proj.description_pt if lang == 'pt' else proj.description_en }}
     \end{itemize}
@@ -90,8 +91,6 @@
 
 % Habilidades
 \section*{ {% if lang == 'pt' %}Habilidades{% else %}Skills{% endif %} }
-\noindent \begin{tabularx}{\textwidth}{l X}
-    \textbf{ {{ 'Técnicas' if lang == 'pt' else 'Technical' }}: } & {{ dados.skills.technical | join(', ') }} \\
-\end{tabularx}
+\noindent \textbf{ {{ 'Técnicas' if lang == 'pt' else 'Technical' }}: } {{ dados.skills.technical | join(', ') }}
 
 \end{document}
