@@ -62,7 +62,6 @@ def traduzir_payload(data):
     for proj in data.get('projects', []):
         proj['description_en'] = traduzir_texto(proj.get('description_pt', ''))
 
-    # Nova regra para os Cursos
     for curso in data.get('courses', []):
         curso['name_en'] = traduzir_texto(curso.get('name_pt', ''))
 
@@ -111,7 +110,13 @@ def generate_cv():
                 return jsonify({"erro": "O arquivo PDF não pôde ser encontrado."}), 500
 
         mem_pdf = io.BytesIO(pdf_bytes)
-        return send_file(mem_pdf, mimetype='application/pdf', as_attachment=True, download_name=f"curriculo_{lang}.pdf")
+
+        # --- LÓGICA DE NOMECLATURA NO BACKEND ---
+        nome_candidato = data.get('basics', {}).get(
+            'name', 'Candidato').strip().replace(' ', '_')
+        nome_arquivo = f"{nome_candidato}_curriculo_{lang}.pdf"
+
+        return send_file(mem_pdf, mimetype='application/pdf', as_attachment=True, download_name=nome_arquivo)
 
     except Exception as e:
         return jsonify({"erro": f"Erro interno: {str(e)}"}), 500

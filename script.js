@@ -55,7 +55,6 @@ async function carregarCidades(uf) {
   }
 }
 
-// Evento que dispara quando o usuário troca o estado
 document.getElementById("estado").addEventListener("change", function () {
   carregarCidades(this.value);
 });
@@ -234,7 +233,6 @@ document
     }
   });
 
-// Ao carregar a tela, também chama a API do IBGE
 window.onload = function () {
   carregarEstados();
   adicionarExperiencia();
@@ -259,7 +257,6 @@ document
         : "Gerando PDF...";
     btnGerar.disabled = true;
 
-    // Constrói a string final de localização combinando Cidade e Estado
     const cidadeSelect = document.getElementById("cidade").value;
     const estadoSelect = document.getElementById("estado").value;
     const localizacaoFinal = `${cidadeSelect}, ${estadoSelect}`;
@@ -294,7 +291,7 @@ document
         label_pt: document.getElementById("label_pt").value,
         email: document.getElementById("email").value,
         phone: document.getElementById("phone").value,
-        location: localizacaoFinal, // Campo injetado aqui
+        location: localizacaoFinal,
         linkedin: document.getElementById("linkedin").value,
         github: document.getElementById("github").value,
       },
@@ -366,9 +363,15 @@ document
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
+
+      // --- LÓGICA DE NOMECLATURA NO FRONTEND ---
+      const nomeDigitado = document.getElementById("name").value;
+      const nomeFormatado = nomeDigitado.trim().replace(/\s+/g, "_");
+      const nomeArquivo = `${nomeFormatado}_curriculo_${idiomaSelecionado}.pdf`;
+
       a.style.display = "none";
       a.href = url;
-      a.download = `curriculo_${idiomaSelecionado}.pdf`;
+      a.download = nomeArquivo;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
