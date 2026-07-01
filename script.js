@@ -101,7 +101,7 @@ function toggleDataFim(checkbox) {
   }
 }
 
-// --- INJEÇÃO DE HTML (COM CLASSES DE ANIMAÇÃO E ÍCONES) ---
+// --- INJEÇÃO DE HTML ---
 function adicionarExperiencia() {
   const html = `
         <div class="card mb-3 exp-block shadow-sm border-start border-primary border-4 fade-in" id="exp-${expCount}">
@@ -113,7 +113,7 @@ function adicionarExperiencia() {
                     </button>
                 </div>
                 <div class="row mb-2">
-                    <div class="col-md-6"><label class="form-label fw-bold text-muted small">Empresa</label><input type="text" class="form-control" class="exp-company" required></div>
+                    <div class="col-md-6"><label class="form-label fw-bold text-muted small">Empresa</label><input type="text" class="form-control exp-company" required></div>
                     <div class="col-md-6"><label class="form-label fw-bold text-muted small">Cargo</label><input type="text" class="form-control exp-position-pt" required></div>
                 </div>
                 <div class="row mb-3">
@@ -238,13 +238,16 @@ function adicionarProjeto() {
 
 function removerElemento(id) {
   const el = document.getElementById(id);
-  // Animação de saída suave antes de remover
   el.style.transition = "opacity 0.3s ease, transform 0.3s ease";
   el.style.opacity = "0";
   el.style.transform = "translateY(10px)";
-  setTimeout(() => el.remove(), 300);
+  setTimeout(() => {
+    el.remove();
+    salvarRascunho(); // Salva o estado ao deletar um bloco
+  }, 300);
 }
 
+// Lógica de visualização do container de projetos
 document
   .getElementById("include-projects")
   .addEventListener("change", function () {
@@ -266,12 +269,170 @@ document
     }
   });
 
-window.onload = function () {
-  carregarEstados();
-  adicionarExperiencia();
-  adicionarFormacao();
-  adicionarCurso();
-  adicionarProjeto();
+// ==========================================
+// SISTEMA DE AUTO-SAVE (LOCAL STORAGE)
+// ==========================================
+
+// Função que fotografa os dados e salva no navegador
+function salvarRascunho() {
+  const rascunho = {
+    basics: {
+      name: document.getElementById("name").value,
+      label_pt: document.getElementById("label_pt").value,
+      email: document.getElementById("email").value,
+      phone: document.getElementById("phone").value,
+      estado: document.getElementById("estado").value,
+      cidade: document.getElementById("cidade").value,
+      linkedin: document.getElementById("linkedin").value,
+      github: document.getElementById("github").value,
+    },
+    summary: document.getElementById("summary_pt").value,
+    skills: document.getElementById("skills").value,
+    config: {
+      includeProjects: document.getElementById("include-projects").checked,
+      idioma: document.getElementById("idioma_escolhido").value,
+    },
+    experience: Array.from(document.querySelectorAll(".exp-block")).map(
+      (bloco) => ({
+        company: bloco.querySelector(".exp-company").value,
+        position: bloco.querySelector(".exp-position-pt").value,
+        start: bloco.querySelector(".exp-start").value,
+        end: bloco.querySelector(".exp-end").value,
+        isCurrent: bloco.querySelector(".exp-current").checked,
+        highlights: bloco.querySelector(".exp-highlights-pt").value,
+      }),
+    ),
+    education: Array.from(document.querySelectorAll(".edu-block")).map(
+      (bloco) => ({
+        institution: bloco.querySelector(".edu-institution").value,
+        area: bloco.querySelector(".edu-area-pt").value,
+        start: bloco.querySelector(".edu-start").value,
+        end: bloco.querySelector(".edu-end").value,
+        isCurrent: bloco.querySelector(".edu-current").checked,
+        status: bloco.querySelector(".edu-status").value,
+      }),
+    ),
+    courses: Array.from(document.querySelectorAll(".curso-block")).map(
+      (bloco) => ({
+        name: bloco.querySelector(".curso-name").value,
+        institution: bloco.querySelector(".curso-inst").value,
+        year: bloco.querySelector(".curso-year").value,
+      }),
+    ),
+    projects: Array.from(document.querySelectorAll(".proj-block")).map(
+      (bloco) => ({
+        name: bloco.querySelector(".proj-name").value,
+        tech: bloco.querySelector(".proj-tech").value,
+        link: bloco.querySelector(".proj-link").value,
+        desc: bloco.querySelector(".proj-desc-pt").value,
+      }),
+    ),
+  };
+
+  // Salva a string formatada no cache do navegador
+  localStorage.setItem("careerOS_rascunho", JSON.stringify(rascunho));
+}
+
+// Função que puxa os dados do navegador ao recarregar a página
+async function carregarRascunho() {
+  const rascunhoStr = localStorage.getItem("careerOS_rascunho");
+
+  // Se não tiver rascunho, inicia o formulário com blocos vazios (padrão)
+  if (!rascunhoStr) {
+    adicionarExperiencia();
+    adicionarFormacao();
+    adicionarCurso();
+    adicionarProjeto();
+    return;
+  }
+
+  const rascunho = JSON.parse(rascunhoStr);
+
+  // 1. Restaura Dados Básicos
+  document.getElementById("name").value = rascunho.basics.name || "";
+  document.getElementById("label_pt").value = rascunho.basics.label_pt || "";
+  document.getElementById("email").value = rascunho.basics.email || "";
+  document.getElementById("phone").value = rascunho.basics.phone || "";
+  document.getElementById("linkedin").value = rascunho.basics.linkedin || "";
+  document.getElementById("github").value = rascunho.basics.github || "";
+  document.getElementById("summary_pt").value = rascunho.summary || "";
+  document.getElementById("skills").value = rascunho.skills || "";
+  document.getElementById("idioma_escolhido").value =
+    rascunho.config.idioma || "pt";
+
+  // Dispara a lógica de ocultar/mostrar projetos com base na configuração salva
+  const checkProj = document.getElementById("include-projects");
+  checkProj.checked = rascunho.config.includeProjects;
+  checkProj.dispatchEvent(new Event("change"));
+
+  // 2. Restaura IBGE (Estados e Cidades precisam respeitar o tempo da API)
+  if (rascunho.basics.estado) {
+    document.getElementById("estado").value = rascunho.basics.estado;
+    await carregarCidades(rascunho.basics.estado);
+    if (rascunho.basics.cidade) {
+      document.getElementById("cidade").value = rascunho.basics.cidade;
+    }
+  }
+
+  // 3. Restaura Blocos Dinâmicos (Gera o bloco no HTML e depois injeta o valor)
+  rascunho.experience.forEach((exp) => {
+    adicionarExperiencia();
+    const bloco = document.getElementById(`exp-${expCount - 1}`);
+    bloco.querySelector(".exp-company").value = exp.company;
+    bloco.querySelector(".exp-position-pt").value = exp.position;
+    bloco.querySelector(".exp-start").value = exp.start;
+    const chkCurrent = bloco.querySelector(".exp-current");
+    chkCurrent.checked = exp.isCurrent;
+    bloco.querySelector(".exp-end").value = exp.end;
+    toggleDataFim(chkCurrent); // Bloqueia data fim se marcado como Atual
+    bloco.querySelector(".exp-highlights-pt").value = exp.highlights;
+  });
+
+  rascunho.education.forEach((edu) => {
+    adicionarFormacao();
+    const bloco = document.getElementById(`edu-${eduCount - 1}`);
+    bloco.querySelector(".edu-institution").value = edu.institution;
+    bloco.querySelector(".edu-area-pt").value = edu.area;
+    bloco.querySelector(".edu-start").value = edu.start;
+    const chkCurrent = bloco.querySelector(".edu-current");
+    chkCurrent.checked = edu.isCurrent;
+    bloco.querySelector(".edu-end").value = edu.end;
+    toggleDataFim(chkCurrent);
+    bloco.querySelector(".edu-status").value = edu.status;
+  });
+
+  rascunho.courses.forEach((curso) => {
+    adicionarCurso();
+    const bloco = document.getElementById(`curso-${cursoCount - 1}`);
+    bloco.querySelector(".curso-name").value = curso.name;
+    bloco.querySelector(".curso-inst").value = curso.institution;
+    bloco.querySelector(".curso-year").value = curso.year;
+  });
+
+  rascunho.projects.forEach((proj) => {
+    adicionarProjeto();
+    const bloco = document.getElementById(`proj-${projCount - 1}`);
+    bloco.querySelector(".proj-name").value = proj.name;
+    bloco.querySelector(".proj-tech").value = proj.tech;
+    bloco.querySelector(".proj-link").value = proj.link;
+    bloco.querySelector(".proj-desc-pt").value = proj.desc;
+  });
+
+  // Caso o usuário tenha deletado todos os blocos antes de sair, garante que tenha 1 limpo para digitar
+  if (rascunho.experience.length === 0) adicionarExperiencia();
+  if (rascunho.education.length === 0) adicionarFormacao();
+  if (rascunho.courses.length === 0) adicionarCurso();
+  if (rascunho.projects.length === 0) adicionarProjeto();
+}
+
+// "Escuta" qualquer digitação ou alteração no formulário para salvar automaticamente
+document.getElementById("cv-form").addEventListener("input", salvarRascunho);
+document.getElementById("cv-form").addEventListener("change", salvarRascunho);
+
+// --- INICIALIZAÇÃO DA TELA ---
+window.onload = async function () {
+  await carregarEstados(); // 1. Primeiro carrega a lista de estados do IBGE
+  await carregarRascunho(); // 2. Depois carrega os dados salvos e injeta no HTML
 };
 
 // --- SUBMISSÃO API ---
@@ -284,7 +445,6 @@ document
     const idiomaSelecionado = document.getElementById("idioma_escolhido").value;
     const includeProjects = document.getElementById("include-projects").checked;
 
-    // Feedback visual moderno no botão
     const originalBtnHTML = btnGerar.innerHTML;
     btnGerar.innerHTML =
       idiomaSelecionado === "en"
