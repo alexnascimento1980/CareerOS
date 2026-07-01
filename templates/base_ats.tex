@@ -31,12 +31,13 @@
     \textbf{ {{ dados.basics.label_pt if lang == 'pt' else dados.basics.label_en }} } \\
     \vspace{1mm}
     \small {{ dados.basics.location }} | {{ dados.basics.phone }} | \href{mailto:{{ dados.basics.email }}}{\texttt{ {{ dados.basics.email | replace('_', '\\_') }} }} \\
-    \small \href{https://{{ dados.basics.linkedin }}}{LinkedIn} | \href{https://{{ dados.basics.github }}}{GitHub}
+    % --- ALTERAÇÃO AQUI: Exibindo a URL completa para impressão ---
+    \small \href{https://{{ dados.basics.linkedin }}}{ {{ dados.basics.linkedin }} } | \href{https://{{ dados.basics.github }}}{ {{ dados.basics.github }} }
 \end{center}
 
 \vspace{2mm}
 
-% Resumo (Sem as bolinhas, apenas o parágrafo justificado)
+% Resumo
 \section*{ {{ 'Resumo' if lang == 'pt' else 'Summary' }} }
 {% set resumo = dados.summary.pt if lang == 'pt' else dados.summary.en %}
 {% for linha in resumo %}
@@ -80,7 +81,8 @@
 {% if dados.projects and dados.projects|length > 0 %}
 \section*{ {% if lang == 'pt' %}Projetos Técnicos{% else %}Technical Projects{% endif %} }
 {% for proj in dados.projects %}
-    \noindent \textbf{ {{ proj.name }} } | \textit{ {{ proj.technologies }} } \hfill \href{https://{{ proj.link }}}{GitHub} \\
+    % --- ALTERAÇÃO AQUI: Exibindo a URL completa do projeto para impressão ---
+    \noindent \textbf{ {{ proj.name }} } | \textit{ {{ proj.technologies }} } \hfill \href{https://{{ proj.link }}}{ {{ proj.link }} } \\
     \vspace{-1.5mm}
     \begin{itemize}
         \item {{ proj.description_pt if lang == 'pt' else proj.description_en }}
