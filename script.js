@@ -243,11 +243,10 @@ function removerElemento(id) {
   el.style.transform = "translateY(10px)";
   setTimeout(() => {
     el.remove();
-    salvarRascunho(); // Salva o estado ao deletar um bloco
+    salvarRascunho();
   }, 300);
 }
 
-// Lógica de visualização do container de projetos
 document
   .getElementById("include-projects")
   .addEventListener("change", function () {
@@ -272,8 +271,6 @@ document
 // ==========================================
 // SISTEMA DE AUTO-SAVE (LOCAL STORAGE)
 // ==========================================
-
-// Função que fotografa os dados e salva no navegador
 function salvarRascunho() {
   const rascunho = {
     basics: {
@@ -329,15 +326,12 @@ function salvarRascunho() {
     ),
   };
 
-  // Salva a string formatada no cache do navegador
   localStorage.setItem("careerOS_rascunho", JSON.stringify(rascunho));
 }
 
-// Função que puxa os dados do navegador ao recarregar a página
 async function carregarRascunho() {
   const rascunhoStr = localStorage.getItem("careerOS_rascunho");
 
-  // Se não tiver rascunho, inicia o formulário com blocos vazios (padrão)
   if (!rascunhoStr) {
     adicionarExperiencia();
     adicionarFormacao();
@@ -348,7 +342,6 @@ async function carregarRascunho() {
 
   const rascunho = JSON.parse(rascunhoStr);
 
-  // 1. Restaura Dados Básicos
   document.getElementById("name").value = rascunho.basics.name || "";
   document.getElementById("label_pt").value = rascunho.basics.label_pt || "";
   document.getElementById("email").value = rascunho.basics.email || "";
@@ -360,12 +353,10 @@ async function carregarRascunho() {
   document.getElementById("idioma_escolhido").value =
     rascunho.config.idioma || "pt";
 
-  // Dispara a lógica de ocultar/mostrar projetos com base na configuração salva
   const checkProj = document.getElementById("include-projects");
   checkProj.checked = rascunho.config.includeProjects;
   checkProj.dispatchEvent(new Event("change"));
 
-  // 2. Restaura IBGE (Estados e Cidades precisam respeitar o tempo da API)
   if (rascunho.basics.estado) {
     document.getElementById("estado").value = rascunho.basics.estado;
     await carregarCidades(rascunho.basics.estado);
@@ -374,7 +365,6 @@ async function carregarRascunho() {
     }
   }
 
-  // 3. Restaura Blocos Dinâmicos (Gera o bloco no HTML e depois injeta o valor)
   rascunho.experience.forEach((exp) => {
     adicionarExperiencia();
     const bloco = document.getElementById(`exp-${expCount - 1}`);
@@ -384,7 +374,7 @@ async function carregarRascunho() {
     const chkCurrent = bloco.querySelector(".exp-current");
     chkCurrent.checked = exp.isCurrent;
     bloco.querySelector(".exp-end").value = exp.end;
-    toggleDataFim(chkCurrent); // Bloqueia data fim se marcado como Atual
+    toggleDataFim(chkCurrent);
     bloco.querySelector(".exp-highlights-pt").value = exp.highlights;
   });
 
@@ -418,21 +408,18 @@ async function carregarRascunho() {
     bloco.querySelector(".proj-desc-pt").value = proj.desc;
   });
 
-  // Caso o usuário tenha deletado todos os blocos antes de sair, garante que tenha 1 limpo para digitar
   if (rascunho.experience.length === 0) adicionarExperiencia();
   if (rascunho.education.length === 0) adicionarFormacao();
   if (rascunho.courses.length === 0) adicionarCurso();
   if (rascunho.projects.length === 0) adicionarProjeto();
 }
 
-// "Escuta" qualquer digitação ou alteração no formulário para salvar automaticamente
 document.getElementById("cv-form").addEventListener("input", salvarRascunho);
 document.getElementById("cv-form").addEventListener("change", salvarRascunho);
 
-// --- INICIALIZAÇÃO DA TELA ---
 window.onload = async function () {
-  await carregarEstados(); // 1. Primeiro carrega a lista de estados do IBGE
-  await carregarRascunho(); // 2. Depois carrega os dados salvos e injeta no HTML
+  await carregarEstados();
+  await carregarRascunho();
 };
 
 // --- SUBMISSÃO API ---
@@ -569,6 +556,17 @@ document
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
+
+      // --- TELEMETRIA: GOOGLE ANALYTICS ---
+      if (typeof gtag === "function") {
+        gtag("event", "gerar_curriculo", {
+          app_name: "CareerOS",
+          idioma_pdf: idiomaSelecionado,
+          incluiu_projetos: includeProjects ? "sim" : "nao",
+          estado_candidato: estadoSelect,
+        });
+        console.log("Analytics: Evento disparado com sucesso.");
+      }
     } catch (error) {
       console.error("Erro:", error);
       alert("Ocorreu um erro ao gerar o PDF.");
