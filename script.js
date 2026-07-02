@@ -551,6 +551,32 @@ document
   .addEventListener("submit", async function (event) {
     event.preventDefault();
 
+    // 1. GATILHO DE VALIDAÇÃO DO BOOTSTRAP
+    if (!this.checkValidity()) {
+      event.stopPropagation();
+      this.classList.add("was-validated"); // Pinta os campos de vermelho/verde
+
+      // NOVO: Exibe um aviso claro na tela
+      alert(
+        "Atenção: Existem campos obrigatórios vazios ou preenchidos incorretamente. Verifique os campos destacados em vermelho.",
+      );
+
+      return; // Para a execução aqui mesmo se houver erro!
+    }
+
+    // Se passou na validação, garante que fica visualmente válido
+    this.classList.add("was-validated");
+
+    // 2. VERIFICAÇÃO DE LOGIN
+    if (!currentUser) {
+      alert("Por favor, faça login para gerar o currículo.");
+      if (typeof bootstrap !== "undefined") {
+        const modal = new bootstrap.Modal(document.getElementById("authModal"));
+        modal.show();
+      }
+      return;
+    }
+
     if (!currentUser) {
       alert("Por favor, faça login para gerar o currículo.");
       // Garante que o Bootstrap carregou antes de tentar usar

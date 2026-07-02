@@ -44,10 +44,14 @@
         }
       }
 
-      .card {
-        border: none;
-        border-radius: 12px;
+      /* Adicione estas regras no seu bloco <style> */
+      .card { 
+          border-radius: 16px !important; 
+          border: none !important; 
+          box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important; 
+          transition: transform 0.2s; 
       }
+      .card:hover { transform: translateY(-2px); }
       .form-control,
       .form-select {
         border-radius: 8px;
@@ -222,7 +226,7 @@
               </p>
             </div>
             <div class="card-body p-4 p-md-5">
-              <form id="cv-form">
+              <form id="cv-form" novalidate>
                 <h5 class="border-bottom pb-2 mb-4 text-primary section-title">
                   <i class="fas fa-user-circle"></i> 1. Dados Básicos
                 </h5>
