@@ -353,6 +353,7 @@ function agendarSalvamentoNuvem() {
 async function salvarDadosNuvem() {
   if (!currentUser) return;
 
+  // Captura os dados de todos os campos do formulário
   const rascunho = {
     basics: {
       name: document.getElementById("name").value,
@@ -370,6 +371,7 @@ async function salvarDadosNuvem() {
       includeProjects: document.getElementById("include-projects").checked,
       idioma: document.getElementById("idioma_escolhido").value,
     },
+    // Captura listas dinâmicas de Experiência
     experience: Array.from(document.querySelectorAll(".exp-block")).map(
       (bloco) => ({
         company: bloco.querySelector(".exp-company").value,
@@ -380,6 +382,7 @@ async function salvarDadosNuvem() {
         highlights: bloco.querySelector(".exp-highlights-pt").value,
       }),
     ),
+    // Captura listas dinâmicas de Formação
     education: Array.from(document.querySelectorAll(".edu-block")).map(
       (bloco) => ({
         institution: bloco.querySelector(".edu-institution").value,
@@ -390,6 +393,7 @@ async function salvarDadosNuvem() {
         status: bloco.querySelector(".edu-status").value,
       }),
     ),
+    // Captura listas dinâmicas de Cursos
     courses: Array.from(document.querySelectorAll(".curso-block")).map(
       (bloco) => ({
         name: bloco.querySelector(".curso-name").value,
@@ -397,6 +401,7 @@ async function salvarDadosNuvem() {
         year: bloco.querySelector(".curso-year").value,
       }),
     ),
+    // Captura listas dinâmicas de Projetos
     projects: Array.from(document.querySelectorAll(".proj-block")).map(
       (bloco) => ({
         name: bloco.querySelector(".proj-name").value,
@@ -407,6 +412,7 @@ async function salvarDadosNuvem() {
     ),
   };
 
+  // Envio para o Supabase
   const { error } = await supabaseClient
     .from("curriculos")
     .upsert(
