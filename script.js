@@ -100,6 +100,20 @@ async function fazerLogin() {
   }
 }
 
+async function loginComGoogle() {
+  const { data, error } = await supabaseClient.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: "http://127.0.0.1:5000/", // Certifique-se de que esta URL esteja autorizada no Supabase
+    },
+  });
+
+  if (error) {
+    console.error("Erro ao logar com Google:", error.message);
+    alert("Erro no login com Google: " + error.message);
+  }
+}
+
 async function fazerLogout() {
   await supabaseClient.auth.signOut();
 }
