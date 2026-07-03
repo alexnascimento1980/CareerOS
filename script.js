@@ -7,6 +7,7 @@ const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 let currentUser = null;
 let isSavingToCloud = false;
+let isLoadingResume = false;
 
 // ==========================================
 // LÓGICA DE AUTENTICAÇÃO
@@ -35,6 +36,13 @@ async function checarSessao() {
   atualizarUIAuth(session?.user || null);
   limparTokenDaURL();
   supabaseClient.auth.onAuthStateChange((_event, session) => {
+    // O Supabase dispara um evento (ex: INITIAL_SESSION) imediatamente ao
+    // registrar este listener, repetindo a mesma sessão que já processamos
+    // acima via getSession(). Sem essa checagem, carregarRascunhoNuvem()
+    // roda duas vezes em paralelo e pode deixar blocos de experiência/
+    // formação duplicados ou "fantasmas" no formulário.
+    const novoUserId = session?.user?.id || null;
+    if (novoUserId === (currentUser?.id || null)) return;
     atualizarUIAuth(session?.user || null);
     limparTokenDaURL();
   });
@@ -204,6 +212,9 @@ function toggleDataFim(checkbox) {
 
 // --- INJEÇÃO DE HTML ---
 function adicionarExperiencia() {
+  const isReq = document.getElementById("include-experience").checked
+    ? "required"
+    : "";
   const html = `
     <div class="card mb-3 exp-block shadow-sm border-start border-primary border-4 fade-in" id="exp-${expCount}">
       <div class="card-body bg-white rounded">
@@ -212,21 +223,21 @@ function adicionarExperiencia() {
           <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" onclick="removerElemento('exp-${expCount}')"><i class="fas fa-trash-alt"></i> Remover</button>
         </div>
         <div class="row mb-2">
-          <div class="col-md-6"><label class="form-label fw-bold text-muted small">Empresa</label><input type="text" class="form-control exp-company" required></div>
-          <div class="col-md-6"><label class="form-label fw-bold text-muted small">Cargo</label><input type="text" class="form-control exp-position-pt" required></div>
+          <div class="col-md-6"><label class="form-label fw-bold text-muted small">Empresa</label><input type="text" class="form-control exp-company" ${isReq}></div>
+          <div class="col-md-6"><label class="form-label fw-bold text-muted small">Cargo</label><input type="text" class="form-control exp-position-pt" ${isReq}></div>
         </div>
         <div class="row mb-3">
-          <div class="col-md-6"><label class="form-label fw-bold text-muted small">Mês/Ano Início</label><input type="month" class="form-control exp-start" required></div>
+          <div class="col-md-6"><label class="form-label fw-bold text-muted small">Mês/Ano Início</label><input type="month" class="form-control exp-start" ${isReq}></div>
           <div class="col-md-6">
             <label class="form-label fw-bold text-muted small">Mês/Ano Fim</label>
-            <input type="month" class="form-control exp-end input-data-fim" required>
+            <input type="month" class="form-control exp-end input-data-fim" ${isReq}>
             <div class="form-check mt-2">
               <input class="form-check-input exp-current" type="checkbox" onchange="toggleDataFim(this)" id="chk-exp-${expCount}">
               <label class="form-check-label text-primary fw-bold small" for="chk-exp-${expCount}">Trabalho aqui atualmente</label>
             </div>
           </div>
         </div>
-        <div class="mb-2"><label class="form-label fw-bold text-muted small">Atividades (separe por ";")</label><textarea class="form-control exp-highlights-pt" rows="3" required></textarea></div>
+        <div class="mb-2"><label class="form-label fw-bold text-muted small">Atividades (separe por ";")</label><textarea class="form-control exp-highlights-pt" rows="3" ${isReq}></textarea></div>
       </div>
     </div>`;
   document
@@ -236,6 +247,9 @@ function adicionarExperiencia() {
 }
 
 function adicionarFormacao() {
+  const isReq = document.getElementById("include-education").checked
+    ? "required"
+    : "";
   const html = `
     <div class="card mb-3 edu-block shadow-sm border-start border-info border-4 fade-in" id="edu-${eduCount}">
       <div class="card-body bg-white rounded">
@@ -244,20 +258,20 @@ function adicionarFormacao() {
           <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" onclick="removerElemento('edu-${eduCount}')"><i class="fas fa-trash-alt"></i> Remover</button>
         </div>
         <div class="row mb-2">
-          <div class="col-md-6"><label class="form-label fw-bold text-muted small">Instituição</label><input type="text" class="form-control edu-institution" required></div>
-          <div class="col-md-6"><label class="form-label fw-bold text-muted small">Curso</label><input type="text" class="form-control edu-area-pt" required></div>
+          <div class="col-md-6"><label class="form-label fw-bold text-muted small">Instituição</label><input type="text" class="form-control edu-institution" ${isReq}></div>
+          <div class="col-md-6"><label class="form-label fw-bold text-muted small">Curso</label><input type="text" class="form-control edu-area-pt" ${isReq}></div>
         </div>
         <div class="row mb-2">
-          <div class="col-md-4"><label class="form-label fw-bold text-muted small">Mês/Ano Início</label><input type="month" class="form-control edu-start" required></div>
+          <div class="col-md-4"><label class="form-label fw-bold text-muted small">Mês/Ano Início</label><input type="month" class="form-control edu-start" ${isReq}></div>
           <div class="col-md-4">
             <label class="form-label fw-bold text-muted small">Mês/Ano Término</label>
-            <input type="month" class="form-control edu-end input-data-fim" required>
+            <input type="month" class="form-control edu-end input-data-fim" ${isReq}>
             <div class="form-check mt-2">
               <input class="form-check-input edu-current" type="checkbox" onchange="toggleDataFim(this)" id="chk-edu-${eduCount}">
               <label class="form-check-label text-info fw-bold small" for="chk-edu-${eduCount}">Cursando atualmente</label>
             </div>
           </div>
-          <div class="col-md-4"><label class="form-label fw-bold text-muted small">Status</label><input type="text" class="form-control edu-status" required></div>
+          <div class="col-md-4"><label class="form-label fw-bold text-muted small">Status</label><input type="text" class="form-control edu-status" ${isReq}></div>
         </div>
       </div>
     </div>`;
@@ -268,6 +282,9 @@ function adicionarFormacao() {
 }
 
 function adicionarCurso() {
+  const isReq = document.getElementById("include-courses").checked
+    ? "required"
+    : "";
   const html = `
     <div class="card mb-3 curso-block shadow-sm border-start border-success border-4 fade-in" id="curso-${cursoCount}">
       <div class="card-body bg-white rounded">
@@ -276,9 +293,9 @@ function adicionarCurso() {
           <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" onclick="removerElemento('curso-${cursoCount}')"><i class="fas fa-trash-alt"></i> Remover</button>
         </div>
         <div class="row mb-2">
-          <div class="col-md-5"><label class="form-label fw-bold text-muted small">Nome do Curso</label><input type="text" class="form-control curso-name" required></div>
-          <div class="col-md-5"><label class="form-label fw-bold text-muted small">Instituição</label><input type="text" class="form-control curso-inst" required></div>
-          <div class="col-md-2"><label class="form-label fw-bold text-muted small">Ano</label><input type="number" class="form-control curso-year" value="2024" required></div>
+          <div class="col-md-5"><label class="form-label fw-bold text-muted small">Nome do Curso</label><input type="text" class="form-control curso-name" ${isReq}></div>
+          <div class="col-md-5"><label class="form-label fw-bold text-muted small">Instituição</label><input type="text" class="form-control curso-inst" ${isReq}></div>
+          <div class="col-md-2"><label class="form-label fw-bold text-muted small">Ano</label><input type="number" class="form-control curso-year" value="2024" ${isReq}></div>
         </div>
       </div>
     </div>`;
@@ -323,6 +340,49 @@ function removerElemento(id) {
     }, 300);
   }
 }
+
+document
+  .getElementById("include-experience")
+  .addEventListener("change", function () {
+    const isChecked = this.checked;
+    document
+      .querySelectorAll(
+        "#experiencias-container input, #experiencias-container textarea",
+      )
+      .forEach((i) =>
+        isChecked
+          ? i.setAttribute("required", "required")
+          : i.removeAttribute("required"),
+      );
+  });
+
+document
+  .getElementById("include-education")
+  .addEventListener("change", function () {
+    const isChecked = this.checked;
+    document
+      .querySelectorAll(
+        "#formacao-container input, #formacao-container textarea",
+      )
+      .forEach((i) =>
+        isChecked
+          ? i.setAttribute("required", "required")
+          : i.removeAttribute("required"),
+      );
+  });
+
+document
+  .getElementById("include-courses")
+  .addEventListener("change", function () {
+    const isChecked = this.checked;
+    document
+      .querySelectorAll("#cursos-container input, #cursos-container textarea")
+      .forEach((i) =>
+        isChecked
+          ? i.setAttribute("required", "required")
+          : i.removeAttribute("required"),
+      );
+  });
 
 document
   .getElementById("include-projects")
@@ -374,6 +434,10 @@ async function salvarDadosNuvem() {
           .filter((s) => s),
       },
       config: {
+        includeExperience:
+          document.getElementById("include-experience").checked,
+        includeEducation: document.getElementById("include-education").checked,
+        includeCourses: document.getElementById("include-courses").checked,
         includeProjects: document.getElementById("include-projects").checked,
         idioma: document.getElementById("idioma_escolhido").value,
       },
@@ -440,6 +504,9 @@ async function salvarDadosNuvem() {
 }
 
 async function carregarRascunhoNuvem(userId) {
+  if (isLoadingResume) return;
+  isLoadingResume = true;
+
   // Limpeza total antes de carregar para evitar duplicação
   document.getElementById("experiencias-container").innerHTML = "";
   document.getElementById("formacao-container").innerHTML = "";
@@ -468,6 +535,19 @@ async function carregarRascunhoNuvem(userId) {
     document.getElementById("summary_pt").value = r.summary?.pt?.[0] || "";
     document.getElementById("skills").value =
       r.skills?.technical?.join(", ") || "";
+
+    // Restaura o estado de cada toggle "Incluir no PDF?" ANTES de recriar os
+    // blocos abaixo, já que adicionarExperiencia/Formacao/Curso/Projeto leem
+    // o checkbox correspondente para decidir se os campos são obrigatórios.
+    const cfg = r.config || {};
+    document.getElementById("include-experience").checked =
+      cfg.includeExperience !== false;
+    document.getElementById("include-education").checked =
+      cfg.includeEducation !== false;
+    document.getElementById("include-courses").checked =
+      cfg.includeCourses !== false;
+    document.getElementById("include-projects").checked =
+      cfg.includeProjects !== false;
 
     if (r.basics?.estado) {
       document.getElementById("estado").value = r.basics.estado;
@@ -541,6 +621,8 @@ async function carregarRascunhoNuvem(userId) {
     if (eduCount === 0) adicionarFormacao();
     if (cursoCount === 0) adicionarCurso();
     if (projCount === 0) adicionarProjeto();
+  } finally {
+    isLoadingResume = false;
   }
 }
 
@@ -626,39 +708,39 @@ document
         github: document.getElementById("github").value,
       },
       summary: { pt: [document.getElementById("summary_pt").value] },
-      experience: Array.from(document.querySelectorAll(".exp-block")).map(
-        (b) => ({
-          company: b.querySelector(".exp-company").value,
-          position_pt: b.querySelector(".exp-position-pt").value,
-          startDate: formatarDataMesAno(b.querySelector(".exp-start").value),
-          endDate: b.querySelector(".exp-current").checked
-            ? "Presente"
-            : formatarDataMesAno(b.querySelector(".exp-end").value),
-          highlights_pt: b
-            .querySelector(".exp-highlights-pt")
-            .value.split(";")
-            .map((i) => i.trim())
-            .filter((i) => i),
-        }),
-      ),
-      education: Array.from(document.querySelectorAll(".edu-block")).map(
-        (b) => ({
-          institution: b.querySelector(".edu-institution").value,
-          area_pt: b.querySelector(".edu-area-pt").value,
-          startDate: formatarDataMesAno(b.querySelector(".edu-start").value),
-          endDate: b.querySelector(".edu-current").checked
-            ? "Presente"
-            : formatarDataMesAno(b.querySelector(".edu-end").value),
-          status_pt: b.querySelector(".edu-status").value,
-        }),
-      ),
-      courses: Array.from(document.querySelectorAll(".curso-block")).map(
-        (b) => ({
-          name_pt: b.querySelector(".curso-name").value,
-          institution: b.querySelector(".curso-inst").value,
-          year: b.querySelector(".curso-year").value,
-        }),
-      ),
+      experience: document.getElementById("include-experience").checked
+        ? Array.from(document.querySelectorAll(".exp-block")).map((b) => ({
+            company: b.querySelector(".exp-company").value,
+            position_pt: b.querySelector(".exp-position-pt").value,
+            startDate: formatarDataMesAno(b.querySelector(".exp-start").value),
+            endDate: b.querySelector(".exp-current").checked
+              ? "Presente"
+              : formatarDataMesAno(b.querySelector(".exp-end").value),
+            highlights_pt: b
+              .querySelector(".exp-highlights-pt")
+              .value.split(";")
+              .map((i) => i.trim())
+              .filter((i) => i),
+          }))
+        : [],
+      education: document.getElementById("include-education").checked
+        ? Array.from(document.querySelectorAll(".edu-block")).map((b) => ({
+            institution: b.querySelector(".edu-institution").value,
+            area_pt: b.querySelector(".edu-area-pt").value,
+            startDate: formatarDataMesAno(b.querySelector(".edu-start").value),
+            endDate: b.querySelector(".edu-current").checked
+              ? "Presente"
+              : formatarDataMesAno(b.querySelector(".edu-end").value),
+            status_pt: b.querySelector(".edu-status").value,
+          }))
+        : [],
+      courses: document.getElementById("include-courses").checked
+        ? Array.from(document.querySelectorAll(".curso-block")).map((b) => ({
+            name_pt: b.querySelector(".curso-name").value,
+            institution: b.querySelector(".curso-inst").value,
+            year: b.querySelector(".curso-year").value,
+          }))
+        : [],
       projects: document.getElementById("include-projects").checked
         ? Array.from(document.querySelectorAll(".proj-block")).map((b) => ({
             name: b.querySelector(".proj-name").value,

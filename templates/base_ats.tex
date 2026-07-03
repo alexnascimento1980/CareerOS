@@ -45,6 +45,7 @@
 {% endfor %}
 
 % Experiência Profissional
+{% if dados.experience and dados.experience|length > 0 %}
 \section*{ {{ 'Experiência Profissional' if lang == 'pt' else 'Professional Experience' }} }
 {% for xp in dados.experience %}
     \noindent \textbf{ {{ xp.company | latex }} } \hfill \textbf{ {{ xp.startDate | latex }} -- {{ xp.endDate | latex }} } \\
@@ -58,8 +59,10 @@
     \end{itemize}
     \vspace{2mm}
 {% endfor %}
+{% endif %}
 
 % Formação Acadêmica
+{% if dados.education and dados.education|length > 0 %}
 \section*{ {% if lang == 'pt' %}Formação Acadêmica{% else %}Education{% endif %} }
 {% for edu in dados.education %}
     \noindent \textbf{ {{ edu.institution | latex }} } \hfill \textbf{ {{ edu.startDate | latex }} -- {{ edu.endDate | latex }} } \\
@@ -67,6 +70,7 @@
     {{ 'Status' if lang == 'pt' else 'Status' }}: {{ (edu.status_pt if lang == 'pt' else edu.status_en) | latex }}
     \vspace{2mm}
 {% endfor %}
+{% endif %}
 
 % Cursos Complementares
 {% if dados.courses and dados.courses|length > 0 %}
