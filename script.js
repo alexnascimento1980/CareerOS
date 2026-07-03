@@ -7,14 +7,14 @@ const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 let currentUser = null;
 let isSavingToCloud = false;
+let currentResumeId = null;
+let currentResumeName = "Novo Currículo";
 
 // ==========================================
 // LÓGICA DE AUTENTICAÇÃO
 // ==========================================
 async function checarSessao() {
-  const {
-    data: { session },
-  } = await supabaseClient.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   atualizarUIAuth(session?.user || null);
   supabaseClient.auth.onAuthStateChange((_event, session) => {
     atualizarUIAuth(session?.user || null);
@@ -25,17 +25,14 @@ function atualizarUIAuth(user) {
   currentUser = user;
   const bannerLogin = document.getElementById("login-banner");
   const bannerLogged = document.getElementById("logged-banner");
-  const emailDisplay = document.getElementById("user-email-display");
 
   if (user) {
     bannerLogin.style.setProperty("display", "none", "important");
     bannerLogged.style.setProperty("display", "flex", "important");
-    emailDisplay.textContent = user.email;
-    carregarRascunhoNuvem(user.id);
+    carregarListaCurriculos();
   } else {
     bannerLogin.style.setProperty("display", "flex", "important");
     bannerLogged.style.setProperty("display", "none", "important");
-    emailDisplay.textContent = "";
     limparFormulario();
   }
 }
@@ -49,632 +46,349 @@ async function fazerCadastro() {
     errorDiv.style.display = "block";
     return;
   }
-  errorDiv.style.display = "none";
-  const btn = document.getElementById("btn-register");
-  btn.textContent = "Criando...";
   const { error } = await supabaseClient.auth.signUp({ email, password });
-  btn.textContent = "Criar Nova Conta";
-  if (error) {
-    errorDiv.textContent = error.message;
-    errorDiv.style.display = "block";
-  } else {
-    alert("Conta criada com sucesso!");
-    bootstrap.Modal.getInstance(document.getElementById("authModal")).hide();
-  }
+  if (error) { errorDiv.textContent = error.message; errorDiv.style.display = "block"; }
+  else { alert("Conta criada com sucesso!"); bootstrap.Modal.getInstance(document.getElementById("authModal")).hide(); }
 }
 
 async function fazerLogin() {
   const email = document.getElementById("auth-email").value;
   const password = document.getElementById("auth-password").value;
   const errorDiv = document.getElementById("auth-error");
-  errorDiv.style.display = "none";
-  const btn = document.getElementById("btn-login");
-  btn.textContent = "Entrando...";
-  const { error } = await supabaseClient.auth.signInWithPassword({
-    email,
-    password,
-  });
-  btn.textContent = "Entrar";
-  if (error) {
-    errorDiv.textContent = "Falha no login. Verifique e-mail e senha.";
-    errorDiv.style.display = "block";
-  } else {
-    bootstrap.Modal.getInstance(document.getElementById("authModal")).hide();
-  }
+  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  if (error) { errorDiv.textContent = "Falha no login."; errorDiv.style.display = "block"; }
+  else { bootstrap.Modal.getInstance(document.getElementById("authModal")).hide(); }
 }
 
 async function loginComGoogle() {
-  const { error } = await supabaseClient.auth.signInWithOAuth({
-    provider: "google",
-    options: { redirectTo: window.location.origin },
-  });
-  if (error) alert("Erro no login com Google: " + error.message);
+  await supabaseClient.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin } });
 }
 
 async function fazerLogout() {
   await supabaseClient.auth.signOut();
+  window.location.reload();
 }
 
 // ==========================================
-// VARIÁVEIS E IBGE
+// GESTÃO DE MÚLTIPLOS CURRÍCULOS
 // ==========================================
-let expCount = 0,
-  eduCount = 0,
-  projCount = 0,
-  cursoCount = 0;
-const linkPattern = "https?://.+";
+async function carregarListaCurriculos() {
+  if (!currentUser) return;
+  const { data, error } = await supabaseClient
+    .from("curriculos")
+    .select("id, resume_name, updated_at")
+    .eq("user_id", currentUser.id)
+    .order("updated_at", { ascending: false });
 
-async function carregarEstados() {
-  const selectEstado = document.getElementById("estado");
-  try {
-    const response = await fetch(
-      "https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome",
-    );
-    const estados = await response.json();
-    selectEstado.innerHTML =
-      '<option value="" disabled selected>Selecione um estado...</option>';
-    estados.forEach(
-      (estado) =>
-        (selectEstado.innerHTML += `<option value="${estado.sigla}">${estado.nome}</option>`),
-    );
-  } catch (e) {
-    selectEstado.innerHTML =
-      '<option value="" disabled selected>Erro ao carregar</option>';
-  }
-}
+  const list = document.getElementById("resumesList");
+  list.innerHTML = "";
 
-async function carregarCidades(uf) {
-  const selectCidade = document.getElementById("cidade");
-  selectCidade.innerHTML =
-    '<option value="" disabled selected>Carregando cidades...</option>';
-  selectCidade.disabled = true;
-  try {
-    const response = await fetch(
-      `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios?orderBy=nome`,
-    );
-    const cidades = await response.json();
-    selectCidade.innerHTML =
-      '<option value="" disabled selected>Selecione uma cidade...</option>';
-    cidades.forEach(
-      (cidade) =>
-        (selectCidade.innerHTML += `<option value="${cidade.nome}">${cidade.nome}</option>`),
-    );
-    selectCidade.disabled = false;
-  } catch (e) {
-    selectCidade.innerHTML =
-      '<option value="" disabled selected>Erro ao carregar</option>';
-  }
-}
-
-document.getElementById("estado").addEventListener("change", function () {
-  carregarCidades(this.value);
-});
-
-document.getElementById("phone").addEventListener("input", function (e) {
-  let v = e.target.value.replace(/\D/g, "");
-  if (v.length > 11) v = v.substring(0, 11);
-  if (v.length <= 10) {
-    v = v
-      .replace(/^(\d{2})(\d)/g, "($1) $2")
-      .replace(/(\d{4})(\d{1,4})$/, "$1-$2");
+  if (data && data.length > 0) {
+    data.forEach(r => {
+      const activeClass = r.id === currentResumeId ? "active" : "";
+      const date = new Date(r.updated_at).toLocaleDateString("pt-BR");
+      list.innerHTML += `
+        <div class="resume-item ${activeClass}" onclick="carregarCurriculo('${r.id}')">
+          <div>
+            <div class="fw-bold">${r.resume_name} ${r.id === currentResumeId ? '<span class="badge-current">Editando</span>' : ''}</div>
+            <div class="resume-item-date">Atualizado em ${date}</div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-outline-danger border-0" onclick="event.stopPropagation(); deletarCurriculo('${r.id}')"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>`;
+    });
+    // Se nenhum estiver selecionado, carrega o primeiro da lista
+    if (!currentResumeId) carregarCurriculo(data[0].id);
   } else {
-    v = v
-      .replace(/^(\d{2})(\d)/g, "($1) $2")
-      .replace(/(\d{5})(\d{1,4})$/, "$1-$2");
-  }
-  e.target.value = v;
-});
-
-function formatarDataMesAno(v) {
-  if (!v) return "";
-  const p = v.split("-");
-  return p.length === 2 ? `${p[1]}/${p[0]}` : v;
-}
-
-function toggleDataFim(checkbox) {
-  const input = checkbox.closest(".row").querySelector(".input-data-fim");
-  if (checkbox.checked) {
-    input.disabled = true;
-    input.removeAttribute("required");
-    input.value = "";
-  } else {
-    input.disabled = false;
-    input.setAttribute("required", "required");
+    list.innerHTML = '<div class="p-4 text-center text-muted">Nenhum currículo salvo.</div>';
+    abrirModalNovoCurriculo();
   }
 }
 
-// --- INJEÇÃO DE HTML ---
+function abrirModalNovoCurriculo() {
+  document.getElementById("resumeNameInput").value = "";
+  const modal = new bootstrap.Modal(document.getElementById("resumeModal"));
+  document.getElementById("saveResumeNameBtn").onclick = () => {
+    const nome = document.getElementById("resumeNameInput").value.trim();
+    if (nome) { criarNovoCurriculo(nome); modal.hide(); }
+  };
+  modal.show();
+}
+
+async function criarNovoCurriculo(nome) {
+  const novo = {
+    user_id: currentUser.id,
+    resume_name: nome,
+    dados: { basics: { name: "" }, summary: { pt: [""] }, experience: [], education: [], courses: [], projects: [], skills: { technical: [] } }
+  };
+  const { data, error } = await supabaseClient.from("curriculos").insert(novo).select();
+  if (!error) {
+    currentResumeId = data[0].id;
+    currentResumeName = nome;
+    carregarCurriculo(data[0].id);
+  }
+}
+
+async function carregarCurriculo(id) {
+  currentResumeId = id;
+  const { data, error } = await supabaseClient.from("curriculos").select("*").eq("id", id).single();
+  if (data) {
+    currentResumeName = data.resume_name;
+    document.getElementById("current-resume-title").textContent = data.resume_name;
+    preencherFormulario(data.dados);
+    carregarListaCurriculos();
+    bootstrap.Offcanvas.getInstance(document.getElementById("resumePanel"))?.hide();
+  }
+}
+
+async function deletarCurriculo(id) {
+  if (confirm("Deseja excluir este currículo permanentemente?")) {
+    await supabaseClient.from("curriculos").delete().eq("id", id);
+    if (currentResumeId === id) { currentResumeId = null; limparFormulario(); }
+    carregarListaCurriculos();
+  }
+}
+
+// ==========================================
+// FORMULÁRIO E DINÂMICOS
+// ==========================================
+let expCount = 0, eduCount = 0, projCount = 0, cursoCount = 0;
+
 function adicionarExperiencia() {
+  const id = expCount++;
   const html = `
-    <div class="card mb-3 exp-block shadow-sm border-start border-primary border-4 fade-in" id="exp-${expCount}">
-      <div class="card-body bg-white rounded">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h6 class="mb-0 text-primary fw-bold"><i class="fas fa-building me-2"></i>Nova Experiência</h6>
-          <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" onclick="removerElemento('exp-${expCount}')"><i class="fas fa-trash-alt"></i> Remover</button>
+    <div class="card mb-3 exp-block border-start border-primary border-4 fade-in" id="exp-${id}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between mb-3">
+          <h6 class="text-primary fw-bold">Experiência</h6>
+          <button type="button" class="btn btn-sm btn-outline-danger" onclick="document.getElementById('exp-${id}').remove(); agendarSalvamentoNuvem();">Remover</button>
         </div>
         <div class="row mb-2">
-          <div class="col-md-6"><label class="form-label fw-bold text-muted small">Empresa</label><input type="text" class="form-control exp-company" required></div>
-          <div class="col-md-6"><label class="form-label fw-bold text-muted small">Cargo</label><input type="text" class="form-control exp-position-pt" required></div>
+          <div class="col-md-6"><label class="form-label small">Empresa</label><input type="text" class="form-control exp-company" required></div>
+          <div class="col-md-6"><label class="form-label small">Cargo</label><input type="text" class="form-control exp-position-pt" required></div>
         </div>
-        <div class="row mb-3">
-          <div class="col-md-6"><label class="form-label fw-bold text-muted small">Mês/Ano Início</label><input type="month" class="form-control exp-start" required></div>
-          <div class="col-md-6">
-            <label class="form-label fw-bold text-muted small">Mês/Ano Fim</label>
-            <input type="month" class="form-control exp-end input-data-fim" required>
-            <div class="form-check mt-2">
-              <input class="form-check-input exp-current" type="checkbox" onchange="toggleDataFim(this)" id="chk-exp-${expCount}">
-              <label class="form-check-label text-primary fw-bold small" for="chk-exp-${expCount}">Trabalho aqui atualmente</label>
-            </div>
+        <div class="row mb-2">
+          <div class="col-md-6"><label class="form-label small">Início</label><input type="month" class="form-control exp-start" required></div>
+          <div class="col-md-6"><label class="form-label small">Fim</label><input type="month" class="form-control exp-end" required>
+            <div class="form-check mt-1"><input class="form-check-input exp-current" type="checkbox" onchange="this.previousElementSibling.disabled = this.checked"> <label class="small">Atual</label></div>
           </div>
         </div>
-        <div class="mb-2"><label class="form-label fw-bold text-muted small">Atividades (separe por ";")</label><textarea class="form-control exp-highlights-pt" rows="3" required></textarea></div>
+        <textarea class="form-control exp-highlights-pt" rows="2" placeholder="Atividades..."></textarea>
       </div>
     </div>`;
-  document
-    .getElementById("experiencias-container")
-    .insertAdjacentHTML("beforeend", html);
-  expCount++;
+  document.getElementById("experiencias-container").insertAdjacentHTML("beforeend", html);
 }
 
 function adicionarFormacao() {
+  const id = eduCount++;
   const html = `
-    <div class="card mb-3 edu-block shadow-sm border-start border-info border-4 fade-in" id="edu-${eduCount}">
-      <div class="card-body bg-white rounded">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h6 class="mb-0 text-info fw-bold"><i class="fas fa-university me-2"></i>Nova Formação</h6>
-          <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" onclick="removerElemento('edu-${eduCount}')"><i class="fas fa-trash-alt"></i> Remover</button>
-        </div>
+    <div class="card mb-3 edu-block border-start border-info border-4 fade-in" id="edu-${id}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between mb-3"><h6>Formação</h6><button type="button" class="btn btn-sm btn-outline-danger" onclick="document.getElementById('edu-${id}').remove(); agendarSalvamentoNuvem();">Remover</button></div>
         <div class="row mb-2">
-          <div class="col-md-6"><label class="form-label fw-bold text-muted small">Instituição</label><input type="text" class="form-control edu-institution" required></div>
-          <div class="col-md-6"><label class="form-label fw-bold text-muted small">Curso</label><input type="text" class="form-control edu-area-pt" required></div>
+          <div class="col-md-6"><input type="text" class="form-control edu-institution" placeholder="Instituição"></div>
+          <div class="col-md-6"><input type="text" class="form-control edu-area-pt" placeholder="Curso"></div>
         </div>
-        <div class="row mb-2">
-          <div class="col-md-4"><label class="form-label fw-bold text-muted small">Mês/Ano Início</label><input type="month" class="form-control edu-start" required></div>
-          <div class="col-md-4">
-            <label class="form-label fw-bold text-muted small">Mês/Ano Término</label>
-            <input type="month" class="form-control edu-end input-data-fim" required>
-            <div class="form-check mt-2">
-              <input class="form-check-input edu-current" type="checkbox" onchange="toggleDataFim(this)" id="chk-edu-${eduCount}">
-              <label class="form-check-label text-info fw-bold small" for="chk-edu-${eduCount}">Cursando atualmente</label>
-            </div>
-          </div>
-          <div class="col-md-4"><label class="form-label fw-bold text-muted small">Status</label><input type="text" class="form-control edu-status" required></div>
+        <div class="row">
+          <div class="col-md-4"><input type="month" class="form-control edu-start"></div>
+          <div class="col-md-4"><input type="month" class="form-control edu-end"></div>
+          <div class="col-md-4"><input type="text" class="form-control edu-status" placeholder="Status"></div>
         </div>
       </div>
     </div>`;
-  document
-    .getElementById("formacao-container")
-    .insertAdjacentHTML("beforeend", html);
-  eduCount++;
+  document.getElementById("formacao-container").insertAdjacentHTML("beforeend", html);
 }
 
 function adicionarCurso() {
-  const html = `
-    <div class="card mb-3 curso-block shadow-sm border-start border-success border-4 fade-in" id="curso-${cursoCount}">
-      <div class="card-body bg-white rounded">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h6 class="mb-0 text-success fw-bold"><i class="fas fa-award me-2"></i>Novo Curso</h6>
-          <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" onclick="removerElemento('curso-${cursoCount}')"><i class="fas fa-trash-alt"></i> Remover</button>
-        </div>
-        <div class="row mb-2">
-          <div class="col-md-5"><label class="form-label fw-bold text-muted small">Nome do Curso</label><input type="text" class="form-control curso-name" required></div>
-          <div class="col-md-5"><label class="form-label fw-bold text-muted small">Instituição</label><input type="text" class="form-control curso-inst" required></div>
-          <div class="col-md-2"><label class="form-label fw-bold text-muted small">Ano</label><input type="number" class="form-control curso-year" value="2024" required></div>
-        </div>
-      </div>
-    </div>`;
-  document
-    .getElementById("cursos-container")
-    .insertAdjacentHTML("beforeend", html);
-  cursoCount++;
+  const id = cursoCount++;
+  const html = `<div class="card mb-3 curso-block border-start border-success border-4" id="curso-${id}"><div class="card-body d-flex gap-2 align-items-center"><input type="text" class="form-control curso-name" placeholder="Curso"><input type="text" class="form-control curso-inst" placeholder="Instituição"><input type="number" class="form-control curso-year" style="width:100px"><button type="button" class="btn btn-sm btn-outline-danger" onclick="document.getElementById('curso-${id}').remove(); agendarSalvamentoNuvem();">X</button></div></div>`;
+  document.getElementById("cursos-container").insertAdjacentHTML("beforeend", html);
 }
 
 function adicionarProjeto() {
-  const isReq = document.getElementById("include-projects").checked
-    ? "required"
-    : "";
-  const html = `
-    <div class="card mb-3 proj-block shadow-sm border-start border-warning border-4 fade-in" id="proj-${projCount}">
-      <div class="card-body bg-white rounded">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h6 class="mb-0 text-warning fw-bold"><i class="fas fa-code-branch me-2"></i>Novo Projeto</h6>
-          <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" onclick="removerElemento('proj-${projCount}')"><i class="fas fa-trash-alt"></i> Remover</button>
-        </div>
-        <div class="row mb-2">
-          <div class="col-md-4"><label class="form-label fw-bold text-muted small">Nome</label><input type="text" class="form-control proj-name" ${isReq}></div>
-          <div class="col-md-4"><label class="form-label fw-bold text-muted small">Tecnologias</label><input type="text" class="form-control proj-tech" ${isReq}></div>
-          <div class="col-md-4"><label class="form-label fw-bold text-muted small">Link</label><input type="text" class="form-control proj-link" ${isReq} pattern="${linkPattern}"></div>
-        </div>
-        <div class="mb-2"><label class="form-label fw-bold text-muted small">Descrição</label><textarea class="form-control proj-desc-pt" rows="2" ${isReq}></textarea></div>
-      </div>
-    </div>`;
-  document
-    .getElementById("projetos-container")
-    .insertAdjacentHTML("beforeend", html);
-  projCount++;
+  const id = projCount++;
+  const html = `<div class="card mb-3 proj-block border-start border-warning border-4" id="proj-${id}"><div class="card-body"><div class="d-flex justify-content-between mb-2"><h6>Projeto</h6><button type="button" class="btn btn-sm btn-outline-danger" onclick="document.getElementById('proj-${id}').remove(); agendarSalvamentoNuvem();">X</button></div><div class="row mb-2"><div class="col-md-4"><input type="text" class="form-control proj-name" placeholder="Nome"></div><div class="col-md-4"><input type="text" class="form-control proj-tech" placeholder="Techs"></div><div class="col-md-4"><input type="text" class="form-control proj-link" placeholder="Link"></div></div><textarea class="form-control proj-desc-pt" rows="2" placeholder="Descrição..."></textarea></div></div>`;
+  document.getElementById("projetos-container").insertAdjacentHTML("beforeend", html);
 }
-
-function removerElemento(id) {
-  const el = document.getElementById(id);
-  if (el) {
-    el.style.opacity = "0";
-    setTimeout(() => {
-      el.remove();
-      agendarSalvamentoNuvem();
-    }, 300);
-  }
-}
-
-document
-  .getElementById("include-projects")
-  .addEventListener("change", function () {
-    const isChecked = this.checked;
-    document
-      .querySelectorAll(
-        "#projetos-container input, #projetos-container textarea",
-      )
-      .forEach((i) =>
-        isChecked
-          ? i.setAttribute("required", "required")
-          : i.removeAttribute("required"),
-      );
-  });
 
 // ==========================================
-// PERSISTÊNCIA NA NUVEM
+// PERSISTÊNCIA
 // ==========================================
 let timeoutSalvar;
 function agendarSalvamentoNuvem() {
-  if (!currentUser) return;
+  if (!currentUser || !currentResumeId) return;
   clearTimeout(timeoutSalvar);
   timeoutSalvar = setTimeout(salvarDadosNuvem, 1500);
 }
 
 async function salvarDadosNuvem() {
-  if (!currentUser || isSavingToCloud) return;
-  try {
-    isSavingToCloud = true;
-    mostrarStatusSalvamento(true);
-    const r = {
-      basics: {
-        name: document.getElementById("name").value,
-        label_pt: document.getElementById("label_pt").value,
-        email: document.getElementById("email").value,
-        phone: document.getElementById("phone").value,
-        estado: document.getElementById("estado").value,
-        cidade: document.getElementById("cidade").value,
-        linkedin: document.getElementById("linkedin").value,
-        github: document.getElementById("github").value,
-      },
-      summary: { pt: [document.getElementById("summary_pt").value] },
-      skills: {
-        technical: document
-          .getElementById("skills")
-          .value.split(",")
-          .map((s) => s.trim())
-          .filter((s) => s),
-      },
-      config: {
-        includeProjects: document.getElementById("include-projects").checked,
-        idioma: document.getElementById("idioma_escolhido").value,
-      },
-      experience: Array.from(document.querySelectorAll(".exp-block")).map(
-        (b) => ({
-          company: b.querySelector(".exp-company").value,
-          position: b.querySelector(".exp-position-pt").value,
-          start: b.querySelector(".exp-start").value,
-          end: b.querySelector(".exp-end").value,
-          isCurrent: b.querySelector(".exp-current").checked,
-          highlights: b.querySelector(".exp-highlights-pt").value,
-        }),
-      ),
-      education: Array.from(document.querySelectorAll(".edu-block")).map(
-        (b) => ({
-          institution: b.querySelector(".edu-institution").value,
-          area: b.querySelector(".edu-area-pt").value,
-          start: b.querySelector(".edu-start").value,
-          end: b.querySelector(".edu-end").value,
-          isCurrent: b.querySelector(".edu-current").checked,
-          status: b.querySelector(".edu-status").value,
-        }),
-      ),
-      courses: Array.from(document.querySelectorAll(".curso-block")).map(
-        (b) => ({
-          name: b.querySelector(".curso-name").value,
-          institution: b.querySelector(".curso-inst").value,
-          year: b.querySelector(".curso-year").value,
-        }),
-      ),
-      projects: Array.from(document.querySelectorAll(".proj-block")).map(
-        (b) => ({
-          name: b.querySelector(".proj-name").value,
-          tech: b.querySelector(".proj-tech").value,
-          link: b.querySelector(".proj-link").value,
-          desc: b.querySelector(".proj-desc-pt").value,
-        }),
-      ),
-    };
-    // const { error } = await supabaseClient
-    //   .from("curriculos")
-    //   .upsert({
-    //     user_id: currentUser.id,
-    //     dados: r,
-    //     updated_at: new Date().toISOString(),
-    //   });
-    // Substitua a parte do .upsert por esta versão:
-    const { error } = await supabaseClient
-      .from("curriculos")
-      .upsert(
-        { 
-          user_id: currentUser.id, 
-          dados: r, 
-          updated_at: new Date().toISOString() 
-        }, 
-        { onConflict: 'user_id' } // Esta linha diz ao Supabase: "Se o user_id já existir, apenas atualize os dados"
-      );
+  if (!currentUser || !currentResumeId || isSavingToCloud) return;
+  isSavingToCloud = true;
+  mostrarStatusSalvamento(true);
 
-    if (error) console.error("Erro ao salvar:", error);
-  } catch (e) {
-    console.error("Erro inesperado:", e);
-  } finally {
-    isSavingToCloud = false;
-    mostrarStatusSalvamento(false);
-  }
+  const r = {
+    basics: {
+      name: document.getElementById("name").value,
+      label_pt: document.getElementById("label_pt").value,
+      email: document.getElementById("email").value,
+      phone: document.getElementById("phone").value,
+      estado: document.getElementById("estado").value,
+      cidade: document.getElementById("cidade").value,
+      linkedin: document.getElementById("linkedin").value,
+      github: document.getElementById("github").value,
+    },
+    summary: { pt: [document.getElementById("summary_pt").value] },
+    skills: { technical: document.getElementById("skills").value.split(",").map(s => s.trim()).filter(s => s) },
+    experience: Array.from(document.querySelectorAll(".exp-block")).map(b => ({
+      company: b.querySelector(".exp-company").value,
+      position: b.querySelector(".exp-position-pt").value,
+      start: b.querySelector(".exp-start").value,
+      end: b.querySelector(".exp-end").value,
+      isCurrent: b.querySelector(".exp-current").checked,
+      highlights: b.querySelector(".exp-highlights-pt").value,
+    })),
+    education: Array.from(document.querySelectorAll(".edu-block")).map(b => ({
+      institution: b.querySelector(".edu-institution").value,
+      area: b.querySelector(".edu-area-pt").value,
+      start: b.querySelector(".edu-start").value,
+      end: b.querySelector(".edu-end").value,
+      status: b.querySelector(".edu-status").value,
+    })),
+    courses: Array.from(document.querySelectorAll(".curso-block")).map(b => ({
+      name: b.querySelector(".curso-name").value,
+      institution: b.querySelector(".curso-inst").value,
+      year: b.querySelector(".curso-year").value,
+    })),
+    projects: Array.from(document.querySelectorAll(".proj-block")).map(b => ({
+      name: b.querySelector(".proj-name").value,
+      tech: b.querySelector(".proj-tech").value,
+      link: b.querySelector(".proj-link").value,
+      desc: b.querySelector(".proj-desc-pt").value,
+    })),
+  };
+
+  await supabaseClient.from("curriculos").update({ dados: r, updated_at: new Date().toISOString() }).eq("id", currentResumeId);
+  isSavingToCloud = false;
+  mostrarStatusSalvamento(false);
 }
 
-async function carregarRascunhoNuvem(userId) {
-  // Limpeza total antes de carregar para evitar duplicação
-  document.getElementById("experiencias-container").innerHTML = "";
-  document.getElementById("formacao-container").innerHTML = "";
-  document.getElementById("cursos-container").innerHTML = "";
-  document.getElementById("projetos-container").innerHTML = "";
-  expCount = 0;
-  eduCount = 0;
-  projCount = 0;
-  cursoCount = 0;
-
-  try {
-    const { data, error } = await supabaseClient
-      .from("curriculos")
-      .select("dados")
-      .eq("user_id", userId)
-      .maybeSingle();
-    if (error || !data || !data.dados) throw new Error("Sem dados");
-    const r = data.dados;
-
-    document.getElementById("name").value = r.basics?.name || "";
-    document.getElementById("label_pt").value = r.basics?.label_pt || "";
-    document.getElementById("email").value = r.basics?.email || "";
-    document.getElementById("phone").value = r.basics?.phone || "";
-    document.getElementById("linkedin").value = r.basics?.linkedin || "";
-    document.getElementById("github").value = r.basics?.github || "";
-    document.getElementById("summary_pt").value = r.summary?.pt?.[0] || "";
-    document.getElementById("skills").value =
-      r.skills?.technical?.join(", ") || "";
-
-    if (r.basics?.estado) {
-      document.getElementById("estado").value = r.basics.estado;
-      await carregarCidades(r.basics.estado);
-      if (r.basics.cidade)
-        document.getElementById("cidade").value = r.basics.cidade;
-    }
-
-    // Carregamento dinâmico
-    if (r.experience?.length) {
-      r.experience.forEach((e) => {
-        adicionarExperiencia();
-        const b = document.getElementById(`exp-${expCount - 1}`);
-        b.querySelector(".exp-company").value = e.company || "";
-        b.querySelector(".exp-position-pt").value = e.position || "";
-        b.querySelector(".exp-start").value = e.start || "";
-        b.querySelector(".exp-current").checked = e.isCurrent || false;
-        toggleDataFim(b.querySelector(".exp-current"));
-        b.querySelector(".exp-end").value = e.end || "";
-        b.querySelector(".exp-highlights-pt").value = e.highlights || "";
-      });
-    } else {
-      adicionarExperiencia();
-    }
-
-    if (r.education?.length) {
-      r.education.forEach((e) => {
-        adicionarFormacao();
-        const b = document.getElementById(`edu-${eduCount - 1}`);
-        b.querySelector(".edu-institution").value = e.institution || "";
-        b.querySelector(".edu-area-pt").value = e.area || "";
-        b.querySelector(".edu-start").value = e.start || "";
-        b.querySelector(".edu-current").checked = e.isCurrent || false;
-        toggleDataFim(b.querySelector(".edu-current"));
-        b.querySelector(".edu-end").value = e.end || "";
-        b.querySelector(".edu-status").value = e.status || "";
-      });
-    } else {
-      adicionarFormacao();
-    }
-
-    if (r.courses?.length) {
-      r.courses.forEach((c) => {
-        adicionarCurso();
-        const b = document.getElementById(`curso-${cursoCount - 1}`);
-        b.querySelector(".curso-name").value = c.name || "";
-        b.querySelector(".curso-inst").value = c.institution || "";
-        b.querySelector(".curso-year").value = c.year || "";
-      });
-    } else {
-      adicionarCurso();
-    }
-
-    if (r.projects?.length) {
-      r.projects.forEach((p) => {
-        adicionarProjeto();
-        const b = document.getElementById(`proj-${projCount - 1}`);
-        b.querySelector(".proj-name").value = p.name || "";
-        b.querySelector(".proj-tech").value = p.tech || "";
-        b.querySelector(".proj-link").value = p.link || "";
-        b.querySelector(".proj-desc-pt").value = p.desc || "";
-      });
-    } else {
-      adicionarProjeto();
-    }
-
-    mostrarNotificacao("Currículo carregado com sucesso!", "info");
-  } catch (e) {
-    // Se der erro ou não tiver dados, garante que o formulário tenha exatamente um bloco de cada
-    if (expCount === 0) adicionarExperiencia();
-    if (eduCount === 0) adicionarFormacao();
-    if (cursoCount === 0) adicionarCurso();
-    if (projCount === 0) adicionarProjeto();
-  }
-}
-
-function limparFormulario() {
+function preencherFormulario(r) {
   document.getElementById("cv-form").reset();
   document.getElementById("experiencias-container").innerHTML = "";
   document.getElementById("formacao-container").innerHTML = "";
   document.getElementById("cursos-container").innerHTML = "";
   document.getElementById("projetos-container").innerHTML = "";
-  expCount = 0;
-  eduCount = 0;
-  projCount = 0;
-  cursoCount = 0;
-  adicionarExperiencia();
-  adicionarFormacao();
-  adicionarCurso();
-  adicionarProjeto();
-}
+  expCount = 0; eduCount = 0; projCount = 0; cursoCount = 0;
 
-function mostrarStatusSalvamento(s = true) {
-  const i = document.getElementById("save-status-indicator");
-  if (!i) return;
-  if (s) {
-    i.classList.add("saving");
-    i.style.display = "block";
-    document.getElementById("save-status-text").textContent = "Salvando...";
-  } else {
-    i.classList.remove("saving");
-    document.getElementById("save-status-text").textContent = "Salvo";
-    setTimeout(() => (i.style.display = "none"), 2000);
+  if (!r) return;
+  document.getElementById("name").value = r.basics?.name || "";
+  document.getElementById("label_pt").value = r.basics?.label_pt || "";
+  document.getElementById("email").value = r.basics?.email || "";
+  document.getElementById("phone").value = r.basics?.phone || "";
+  document.getElementById("linkedin").value = r.basics?.linkedin || "";
+  document.getElementById("github").value = r.basics?.github || "";
+  document.getElementById("summary_pt").value = r.summary?.pt?.[0] || "";
+  document.getElementById("skills").value = r.skills?.technical?.join(", ") || "";
+  
+  if (r.basics?.estado) {
+    document.getElementById("estado").value = r.basics.estado;
+    carregarCidades(r.basics.estado).then(() => { if (r.basics.cidade) document.getElementById("cidade").value = r.basics.cidade; });
   }
+
+  r.experience?.forEach(e => {
+    adicionarExperiencia();
+    const b = document.getElementById(`exp-${expCount-1}`);
+    b.querySelector(".exp-company").value = e.company;
+    b.querySelector(".exp-position-pt").value = e.position;
+    b.querySelector(".exp-start").value = e.start;
+    b.querySelector(".exp-current").checked = e.isCurrent;
+    b.querySelector(".exp-end").value = e.end;
+    b.querySelector(".exp-highlights-pt").value = e.highlights;
+  });
+
+  r.education?.forEach(e => {
+    adicionarFormacao();
+    const b = document.getElementById(`edu-${eduCount-1}`);
+    b.querySelector(".edu-institution").value = e.institution;
+    b.querySelector(".edu-area-pt").value = e.area;
+    b.querySelector(".edu-start").value = e.start;
+    b.querySelector(".edu-end").value = e.end;
+    b.querySelector(".edu-status").value = e.status;
+  });
+
+  r.courses?.forEach(c => {
+    adicionarCurso();
+    const b = document.getElementById(`curso-${cursoCount-1}`);
+    b.querySelector(".curso-name").value = c.name;
+    b.querySelector(".curso-inst").value = c.institution;
+    b.querySelector(".curso-year").value = c.year;
+  });
+
+  r.projects?.forEach(p => {
+    adicionarProjeto();
+    const b = document.getElementById(`proj-${projCount-1}`);
+    b.querySelector(".proj-name").value = p.name;
+    b.querySelector(".proj-tech").value = p.tech;
+    b.querySelector(".proj-link").value = p.link;
+    b.querySelector(".proj-desc-pt").value = p.desc;
+  });
+
+  // Garante pelo menos um bloco se vazio
+  if (expCount === 0) adicionarExperiencia();
+  if (eduCount === 0) adicionarFormacao();
 }
 
-function mostrarNotificacao(m, t = "info") {
+function limparFormulario() {
+  document.getElementById("cv-form").reset();
+  document.getElementById("current-resume-title").textContent = "Nenhum selecionado";
+  currentResumeId = null;
+  preencherFormulario(null);
+}
+
+function mostrarStatusSalvamento(s) {
+  const i = document.getElementById("save-status-indicator");
+  if (s) { i.classList.add("saving"); i.style.display = "block"; }
+  else { i.classList.remove("saving"); setTimeout(() => i.style.display = "none", 2000); }
+}
+
+function mostrarNotificacao(m, t) {
   const c = document.getElementById("notificacoes-container");
-  if (!c) return;
   const a = document.createElement("div");
   a.className = `alert alert-${t} alert-dismissible fade show`;
   a.innerHTML = `${m}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
   c.appendChild(a);
-  setTimeout(() => a.remove(), 5000);
+  setTimeout(() => a.remove(), 4000);
 }
 
-document
-  .getElementById("cv-form")
-  .addEventListener("input", agendarSalvamentoNuvem);
-document
-  .getElementById("cv-form")
-  .addEventListener("change", agendarSalvamentoNuvem);
+async function carregarEstados() {
+  const res = await fetch("https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome");
+  const data = await res.json();
+  const s = document.getElementById("estado");
+  s.innerHTML = '<option value="" disabled selected>Estado...</option>';
+  data.forEach(e => s.innerHTML += `<option value="${e.sigla}">${e.nome}</option>`);
+}
 
-window.onload = async function () {
-  await carregarEstados();
-  await checarSessao();
-};
+async function carregarCidades(uf) {
+  const res = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios?orderBy=nome`);
+  const data = await res.json();
+  const s = document.getElementById("cidade");
+  s.innerHTML = '<option value="" disabled selected>Cidade...</option>';
+  data.forEach(c => s.innerHTML += `<option value="${c.nome}">${c.nome}</option>`);
+  s.disabled = false;
+}
 
-document
-  .getElementById("cv-form")
-  .addEventListener("submit", async function (e) {
-    e.preventDefault();
-    if (!this.checkValidity()) {
-      this.classList.add("was-validated");
-      alert("Verifique os campos obrigatórios.");
-      return;
-    }
-    if (!currentUser) {
-      new bootstrap.Modal(document.getElementById("authModal")).show();
-      return;
-    }
-    const b = document.getElementById("btn-gerar");
-    const h = b.innerHTML;
-    b.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Gerando...';
-    b.disabled = true;
-    await salvarDadosNuvem();
-    const p = {
-      lang: document.getElementById("idioma_escolhido").value,
-      basics: {
-        name: document.getElementById("name").value,
-        label_pt: document.getElementById("label_pt").value,
-        email: document.getElementById("email").value,
-        phone: document.getElementById("phone").value,
-        location: `${document.getElementById("cidade").value}, ${document.getElementById("estado").value}`,
-        linkedin: document.getElementById("linkedin").value,
-        github: document.getElementById("github").value,
-      },
-      summary: { pt: [document.getElementById("summary_pt").value] },
-      experience: Array.from(document.querySelectorAll(".exp-block")).map(
-        (b) => ({
-          company: b.querySelector(".exp-company").value,
-          position_pt: b.querySelector(".exp-position-pt").value,
-          startDate: formatarDataMesAno(b.querySelector(".exp-start").value),
-          endDate: b.querySelector(".exp-current").checked
-            ? "Presente"
-            : formatarDataMesAno(b.querySelector(".exp-end").value),
-          highlights_pt: b
-            .querySelector(".exp-highlights-pt")
-            .value.split(";")
-            .map((i) => i.trim())
-            .filter((i) => i),
-        }),
-      ),
-      education: Array.from(document.querySelectorAll(".edu-block")).map(
-        (b) => ({
-          institution: b.querySelector(".edu-institution").value,
-          area_pt: b.querySelector(".edu-area-pt").value,
-          startDate: formatarDataMesAno(b.querySelector(".edu-start").value),
-          endDate: b.querySelector(".edu-current").checked
-            ? "Presente"
-            : formatarDataMesAno(b.querySelector(".edu-end").value),
-          status_pt: b.querySelector(".edu-status").value,
-        }),
-      ),
-      courses: Array.from(document.querySelectorAll(".curso-block")).map(
-        (b) => ({
-          name_pt: b.querySelector(".curso-name").value,
-          institution: b.querySelector(".curso-inst").value,
-          year: b.querySelector(".curso-year").value,
-        }),
-      ),
-      projects: document.getElementById("include-projects").checked
-        ? Array.from(document.querySelectorAll(".proj-block")).map((b) => ({
-            name: b.querySelector(".proj-name").value,
-            technologies: b.querySelector(".proj-tech").value,
-            link: b.querySelector(".proj-link").value,
-            description_pt: b.querySelector(".proj-desc-pt").value,
-          }))
-        : [],
-      skills: {
-        technical: document
-          .getElementById("skills")
-          .value.split(",")
-          .map((s) => s.trim())
-          .filter((s) => s),
-      },
-    };
-    try {
-      const res = await fetch("/generate-cv", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(p),
-      });
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${document.getElementById("name").value.trim().replace(/\s+/g, "_")}_curriculo.pdf`;
-      a.click();
-      mostrarNotificacao("PDF gerado com sucesso!", "success");
-    } catch (err) {
-      alert("Erro ao gerar PDF.");
-    } finally {
-      b.innerHTML = h;
-      b.disabled = false;
-    }
-  });
+document.getElementById("estado").addEventListener("change", (e) => carregarCidades(e.target.value));
+document.getElementById("cv-form").addEventListener("input", agendarSalvamentoNuvem);
+
+window.onload = () => { carregarEstados(); checarSessao(); };
+
+document.getElementById("cv-form").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  if (!this.checkValidity()) { this.classList.add("was-validated"); return; }
+  const b = document.getElementById("btn-gerar");
+  b.disabled = true;
+  await salvarDadosNuvem();
+  alert("Gerando PDF... (Simulação)");
+  b.disabled = false;
+});

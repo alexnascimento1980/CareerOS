@@ -6,6 +6,7 @@ from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 from jinja2 import Environment, FileSystemLoader
 from deep_translator import GoogleTranslator
+import concurrent.futures
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
@@ -42,31 +43,92 @@ def traduzir_texto(texto):
         return texto
 
 
+# def traduzir_payload(data):
+#     data['basics']['label_en'] = traduzir_texto(
+#         data['basics'].get('label_pt', ''))
+
+#     if 'summary' in data and 'pt' in data['summary']:
+#         data['summary']['en'] = [traduzir_texto(
+#             p) for p in data['summary']['pt']]
+
+#     for exp in data.get('experience', []):
+#         exp['position_en'] = traduzir_texto(exp.get('position_pt', ''))
+#         exp['highlights_en'] = [traduzir_texto(
+#             h) for h in exp.get('highlights_pt', [])]
+
+#     for edu in data.get('education', []):
+#         edu['area_en'] = traduzir_texto(edu.get('area_pt', ''))
+#         edu['status_en'] = traduzir_texto(edu.get('status_pt', ''))
+
+#     for proj in data.get('projects', []):
+#         proj['description_en'] = traduzir_texto(proj.get('description_pt', ''))
+
+#     for curso in data.get('courses', []):
+#         curso['name_en'] = traduzir_texto(curso.get('name_pt', ''))
+
+#     return data
 def traduzir_payload(data):
-    data['basics']['label_en'] = traduzir_texto(
-        data['basics'].get('label_pt', ''))
+    # Usamos ThreadPoolExecutor para disparar TODAS as traduções ao mesmo tempo
+    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+        
+        # 1. DISPARAR TAREFAS (Gatilhos simultâneos)
+        
+        # Básicos
+        label_fut = executor.submit(traduzir_texto, data.get('basics', {}).get('label_pt', ''))
+        
+        # Resumo
+        summary_futs = []
+        if 'summary' in data and 'pt' in data['summary']:
+            summary_futs = [executor.submit(traduzir_texto, p) for p in data['summary']['pt']]
+            
+        # Experiências
+        exp_futs = []
+        for exp in data.get('experience', []):
+            pos_fut = executor.submit(traduzir_texto, exp.get('position_pt', ''))
+            hl_futs = [executor.submit(traduzir_texto, h) for h in exp.get('highlights_pt', [])]
+            exp_futs.append((exp, pos_fut, hl_futs))
+            
+        # Educação
+        edu_futs = []
+        for edu in data.get('education', []):
+            area_fut = executor.submit(traduzir_texto, edu.get('area_pt', ''))
+            status_fut = executor.submit(traduzir_texto, edu.get('status_pt', ''))
+            edu_futs.append((edu, area_fut, status_fut))
+            
+        # Projetos
+        proj_futs = []
+        for proj in data.get('projects', []):
+            desc_fut = executor.submit(traduzir_texto, proj.get('description_pt', ''))
+            proj_futs.append((proj, desc_fut))
+            
+        # Cursos
+        curso_futs = []
+        for curso in data.get('courses', []):
+            name_fut = executor.submit(traduzir_texto, curso.get('name_pt', ''))
+            curso_futs.append((curso, name_fut))
 
-    if 'summary' in data and 'pt' in data['summary']:
-        data['summary']['en'] = [traduzir_texto(
-            p) for p in data['summary']['pt']]
-
-    for exp in data.get('experience', []):
-        exp['position_en'] = traduzir_texto(exp.get('position_pt', ''))
-        exp['highlights_en'] = [traduzir_texto(
-            h) for h in exp.get('highlights_pt', [])]
-
-    for edu in data.get('education', []):
-        edu['area_en'] = traduzir_texto(edu.get('area_pt', ''))
-        edu['status_en'] = traduzir_texto(edu.get('status_pt', ''))
-
-    for proj in data.get('projects', []):
-        proj['description_en'] = traduzir_texto(proj.get('description_pt', ''))
-
-    for curso in data.get('courses', []):
-        curso['name_en'] = traduzir_texto(curso.get('name_pt', ''))
+        # 2. RECOLHER RESULTADOS (O Python aguarda todos terminarem e atribui)
+        
+        data['basics']['label_en'] = label_fut.result()
+        
+        if summary_futs:
+            data['summary']['en'] = [f.result() for f in summary_futs]
+            
+        for exp, pos_fut, hl_futs in exp_futs:
+            exp['position_en'] = pos_fut.result()
+            exp['highlights_en'] = [f.result() for f in hl_futs]
+            
+        for edu, area_fut, status_fut in edu_futs:
+            edu['area_en'] = area_fut.result()
+            edu['status_en'] = status_fut.result()
+            
+        for proj, desc_fut in proj_futs:
+            proj['description_en'] = desc_fut.result()
+            
+        for curso, name_fut in curso_futs:
+            curso['name_en'] = name_fut.result()
 
     return data
-
 
 @app.route('/generate-cv', methods=['POST'])
 def generate_cv():

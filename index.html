@@ -5,242 +5,111 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CareerOS - Gerador de Currículo Premium</title>
 
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-      body {
-        background-color: #f4f6f9;
-      }
-      .bg-gradient-primary {
-        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
-      }
-      .section-title {
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .fade-in {
-        animation: fadeIn 0.4s ease-in-out;
-      }
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(-10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .card { 
-          border-radius: 16px !important; 
-          border: none !important; 
-          box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important; 
-          transition: transform 0.2s; 
-      }
+      body { background-color: #f4f6f9; }
+      .bg-gradient-primary { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); }
+      .section-title { font-weight: 700; display: flex; align-items: center; gap: 10px; }
+      .fade-in { animation: fadeIn 0.4s ease-in-out; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+      .card { border-radius: 16px !important; border: none !important; box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important; transition: transform 0.2s; }
       .card:hover { transform: translateY(-2px); }
-      .form-control,
-      .form-select {
-        border-radius: 8px;
-        border: 1px solid #ced4da;
-      }
-      .form-control:focus,
-      .form-select:focus {
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
-      }
-      .btn-add {
-        border-radius: 20px;
-        font-weight: 600;
-        padding: 6px 16px;
-      }
+      .form-control, .form-select { border-radius: 8px; border: 1px solid #ced4da; }
+      .btn-add { border-radius: 20px; font-weight: 600; padding: 6px 16px; }
 
-      /* Estilo da barra de Autenticação */
-      #auth-banner {
-        display: none;
-      }
+      /* FEEDBACK VISUAL */
+      @keyframes pulse-save { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+      #save-status-indicator.saving { display: block !important; animation: pulse-save 1s infinite; }
+      .alert { border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); animation: slideIn 0.3s ease-out; }
+      @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-      /* --- NOVOS ESTILOS DE FEEDBACK --- */
-      @keyframes pulse-save {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.6; }
-      }
-
-      #save-status-indicator.saving {
-        display: block !important;
-        animation: pulse-save 1s infinite;
-      }
-
-      .alert {
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        animation: slideIn 0.3s ease-out;
-      }
-
-      @keyframes slideIn {
-        from { transform: translateX(400px); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-      }
-
-      .alert-success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
-      .alert-danger { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
-      .alert-info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
-
-      .logged-banner-status {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background-color: #28a745;
-        margin-left: 8px;
-        animation: pulse 2s infinite;
-      }
-
-      @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
-      }
+      /* PAINEL DE CURRÍCULOS */
+      .resume-item { padding: 12px 16px; border-left: 4px solid #0d6efd; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
+      .resume-item:hover { background-color: #f8f9fa; }
+      .resume-item.active { background-color: #e7f1ff; border-left-color: #0a58ca; font-weight: 600; }
+      .resume-item-date { font-size: 0.75rem; color: #6c757d; }
+      .badge-current { background-color: #28a745; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin-left: 5px; }
     </style>
-
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-SEU_CODIGO_AQUI"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
-      gtag("config", "G-SEU_CODIGO_AQUI");
-    </script>
   </head>
   <body>
+    <!-- Modal de Nomeação -->
+    <div class="modal fade" id="resumeModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-gradient-primary text-white">
+            <h5 class="modal-title fw-bold"><i class="fas fa-file-alt me-2"></i><span id="resumeModalTitle">Novo Currículo</span></h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-4">
+            <label class="form-label fw-bold">Nome do Currículo</label>
+            <input type="text" class="form-control" id="resumeNameInput" placeholder="Ex: Currículo para TI, Vaga Designer..." required>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="saveResumeNameBtn">Salvar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Painel Lateral -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="resumePanel">
+      <div class="offcanvas-header bg-gradient-primary text-white">
+        <h5 class="offcanvas-title fw-bold"><i class="fas fa-folder-open me-2"></i> Meus Currículos</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+      </div>
+      <div class="offcanvas-body p-0">
+        <div class="list-group list-group-flush" id="resumesList"></div>
+        <div class="p-3 border-top"><button class="btn btn-primary w-100" onclick="abrirModalNovoCurriculo()"><i class="fas fa-plus me-2"></i> Criar Novo</button></div>
+      </div>
+    </div>
+
+    <!-- Auth Modal -->
     <div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header bg-gradient-primary text-white">
-            <h5 class="modal-title fw-bold">
-              <i class="fas fa-lock me-2"></i> Área do Candidato
-            </h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+            <h5 class="modal-title fw-bold"><i class="fas fa-lock me-2"></i> Área do Candidato</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body p-4">
-            <p class="text-muted small mb-4">
-              Crie uma conta gratuita ou faça login para salvar seu currículo na
-              nuvem com segurança.
-            </p>
-            <div class="mb-3">
-              <label class="form-label fw-bold">E-mail</label>
-              <input
-                type="email"
-                class="form-control"
-                id="auth-email"
-                placeholder="seu@email.com"
-              />
-            </div>
-            <div class="mb-4">
-              <label class="form-label fw-bold">Senha</label>
-              <input
-                type="password"
-                class="form-control"
-                id="auth-password"
-                placeholder="Mínimo 6 caracteres"
-              />
-            </div>
-            <div
-              id="auth-error"
-              class="text-danger small mb-3 fw-bold"
-              style="display: none"
-            ></div>
+            <div class="mb-3"><label class="form-label fw-bold">E-mail</label><input type="email" class="form-control" id="auth-email" placeholder="seu@email.com"></div>
+            <div class="mb-4"><label class="form-label fw-bold">Senha</label><input type="password" class="form-control" id="auth-password" placeholder="Mínimo 6 caracteres"></div>
+            <div id="auth-error" class="text-danger small mb-3 fw-bold" style="display: none"></div>
             <div class="d-grid gap-2">
-              <button class="btn btn-primary" type="button" id="btn-login" onclick="fazerLogin()">
-                Entrar
-              </button>
-              <button class="btn btn-outline-secondary" type="button" id="btn-register" onclick="fazerCadastro()">
-                Criar Nova Conta
-              </button>
-              
-              <button class="btn btn-outline-danger w-100" type="button" onclick="loginComGoogle()">
-                <i class="fab fa-google me-2"></i> Entrar com Google
-              </button>
+              <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
+              <button class="btn btn-outline-secondary" onclick="fazerCadastro()">Criar Conta</button>
+              <button class="btn btn-outline-danger" onclick="loginComGoogle()"><i class="fab fa-google me-2"></i> Google</button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Container de Notificações -->
-    <div id="notificacoes-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
-      <!-- As notificações aparecerão aqui -->
-    </div>
-
-    <!-- Indicador de Status de Salvamento -->
+    <div id="notificacoes-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1100"></div>
     <div id="save-status-indicator" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1000; display: none;">
-      <div class="badge bg-info p-2 shadow">
-        <i class="fas fa-cloud-upload-alt me-2"></i>
-        <span id="save-status-text">Salvando...</span>
-      </div>
+      <div class="badge bg-info p-2 shadow"><i class="fas fa-cloud-upload-alt me-2"></i><span id="save-status-text">Salvando...</span></div>
     </div>
 
     <div class="container mt-4 mb-5 fade-in">
       <div class="row justify-content-center mb-3">
         <div class="col-md-10">
-          <div
-            class="alert alert-warning d-flex justify-content-between align-items-center shadow-sm rounded-3"
-            id="login-banner"
-          >
-            <div>
-              <i class="fas fa-info-circle me-2"></i>
-              <strong>Atenção:</strong> Faça login para não perder os dados
-              digitados.
-            </div>
-            <button
-              class="btn btn-sm btn-dark fw-bold px-4"
-              data-bs-toggle="modal"
-              data-bs-target="#authModal"
-            >
-              Fazer Login
-            </button>
+          <div class="alert alert-warning d-flex justify-content-between align-items-center shadow-sm" id="login-banner">
+            <div><i class="fas fa-info-circle me-2"></i><strong>Atenção:</strong> Faça login para gerenciar múltiplos currículos.</div>
+            <button class="btn btn-sm btn-dark fw-bold px-4" data-bs-toggle="modal" data-bs-target="#authModal">Fazer Login</button>
           </div>
 
-          <div
-            class="alert alert-success d-flex justify-content-between align-items-center shadow-sm rounded-3"
-            id="logged-banner"
-            style="display: none !important"
-          >
-            <div>
-              <i class="fas fa-cloud-check me-2"></i>
-              <strong>Conectado!</strong> Seus dados estão sendo salvos na nuvem
-              em tempo real.
+          <div class="alert alert-success d-flex justify-content-between align-items-center shadow-sm" id="logged-banner" style="display: none !important">
+            <div class="d-flex align-items-center">
+              <i class="fas fa-check-circle me-2"></i>
+              <div><strong>Logado!</strong> Editando: <span id="current-resume-title" class="fw-bold text-primary">Nenhum selecionado</span></div>
             </div>
-            <div>
-              <span
-                class="text-muted me-3 small fw-bold"
-                id="user-email-display"
-              ></span>
-              <button
-                class="btn btn-sm btn-outline-danger fw-bold"
-                onclick="fazerLogout()"
-              >
-                Sair
-              </button>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-primary" data-bs-toggle="offcanvas" data-bs-target="#resumePanel"><i class="fas fa-list me-1"></i> Meus Currículos</button>
+              <button class="btn btn-sm btn-outline-danger" onclick="fazerLogout()">Sair</button>
             </div>
           </div>
         </div>
@@ -249,270 +118,65 @@
       <div class="row justify-content-center">
         <div class="col-md-10">
           <div class="card shadow-lg">
-            <div
-              class="card-header bg-gradient-primary text-white p-4 rounded-top"
-            >
-              <h3 class="mb-0 fw-bold">
-                <i class="fas fa-file-signature me-2"></i> CareerOS
-              </h3>
-              <p class="mb-0 text-light opacity-75">
-                Gerador de Currículo ATS Inteligente
-              </p>
+            <div class="card-header bg-gradient-primary text-white p-4 rounded-top">
+              <h3 class="mb-0 fw-bold"><i class="fas fa-file-signature me-2"></i> CareerOS</h3>
+              <p class="mb-0 text-light opacity-75">Gerador de Currículo ATS Inteligente</p>
             </div>
             <div class="card-body p-4 p-md-5">
               <form id="cv-form" novalidate>
-                <h5 class="border-bottom pb-2 mb-4 text-primary section-title">
-                  <i class="fas fa-user-circle"></i> 1. Dados Básicos
-                </h5>
+                <!-- DADOS BÁSICOS -->
+                <h5 class="border-bottom pb-2 mb-4 text-primary section-title"><i class="fas fa-user-circle"></i> 1. Dados Básicos</h5>
                 <div class="row mb-3">
-                  <div class="col-md-6">
-                    <label class="form-label fw-bold">Nome Completo</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="name"
-                      placeholder="Ex: Alex Nascimento"
-                      required
-                    />
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label fw-bold"
-                      >Título Profissional</label
-                    >
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="label_pt"
-                      placeholder="Ex: Logística | Ciência de Dados"
-                      required
-                    />
-                  </div>
+                  <div class="col-md-6"><label class="form-label fw-bold">Nome Completo</label><input type="text" class="form-control" id="name" required /></div>
+                  <div class="col-md-6"><label class="form-label fw-bold">Título Profissional</label><input type="text" class="form-control" id="label_pt" required /></div>
                 </div>
                 <div class="row mb-3">
-                  <div class="col-md-6">
-                    <label class="form-label fw-bold"
-                      ><i class="fas fa-envelope text-secondary me-1"></i>
-                      E-mail</label
-                    >
-                    <input
-                      type="email"
-                      class="form-control"
-                      id="email"
-                      required
-                      title="Insira um endereço de e-mail válido"
-                    />
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label fw-bold"
-                      ><i class="fas fa-phone text-secondary me-1"></i>
-                      Telefone</label
-                    >
-                    <input
-                      type="tel"
-                      class="form-control"
-                      id="phone"
-                      required
-                      maxlength="15"
-                      placeholder="(99) 99999-9999"
-                      pattern="^\(\d{2}\) \d{4,5}-\d{4}$"
-                    />
-                  </div>
+                  <div class="col-md-6"><label class="form-label fw-bold">E-mail</label><input type="email" class="form-control" id="email" required /></div>
+                  <div class="col-md-6"><label class="form-label fw-bold">Telefone</label><input type="tel" class="form-control" id="phone" required /></div>
                 </div>
                 <div class="row mb-4">
-                  <div class="col-md-3">
-                    <label class="form-label fw-bold"
-                      ><i class="fas fa-map-marker-alt text-secondary me-1"></i>
-                      Estado</label
-                    >
-                    <select class="form-select" id="estado" required>
-                      <option value="" disabled selected>Carregando...</option>
-                    </select>
-                  </div>
-                  <div class="col-md-3">
-                    <label class="form-label fw-bold"
-                      ><i class="fas fa-city text-secondary me-1"></i>
-                      Cidade</label
-                    >
-                    <select class="form-select" id="cidade" required disabled>
-                      <option value="" disabled selected>
-                        Selecione o estado
-                      </option>
-                    </select>
-                  </div>
-                  <div class="col-md-3">
-                    <label class="form-label fw-bold"
-                      ><i class="fab fa-linkedin text-secondary me-1"></i>
-                      LinkedIn</label
-                    >
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="linkedin"
-                      placeholder="linkedin.com/in/..."
-                      required
-                      pattern="^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?$"
-                    />
-                  </div>
-                  <div class="col-md-3">
-                    <label class="form-label fw-bold"
-                      ><i class="fab fa-github text-secondary me-1"></i>
-                      GitHub</label
-                    >
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="github"
-                      placeholder="github.com/..."
-                      required
-                      pattern="^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?$"
-                    />
-                  </div>
+                  <div class="col-md-3"><label class="form-label fw-bold">Estado</label><select class="form-select" id="estado" required><option value="" disabled selected>Carregando...</option></select></div>
+                  <div class="col-md-3"><label class="form-label fw-bold">Cidade</label><select class="form-select" id="cidade" required disabled><option value="" disabled selected>Selecione o estado</option></select></div>
+                  <div class="col-md-3"><label class="form-label fw-bold">LinkedIn</label><input type="text" class="form-control" id="linkedin" required /></div>
+                  <div class="col-md-3"><label class="form-label fw-bold">GitHub</label><input type="text" class="form-control" id="github" required /></div>
                 </div>
 
-                <h5
-                  class="border-bottom pb-2 mb-4 text-primary section-title mt-5"
-                >
-                  <i class="fas fa-align-left"></i> 2. Resumo Profissional
-                </h5>
-                <div class="mb-4">
-                  <textarea
-                    class="form-control"
-                    id="summary_pt"
-                    rows="4"
-                    placeholder="Descreva sua trajetória, principais conquistas e objetivos..."
-                    required
-                  ></textarea>
-                </div>
+                <!-- RESUMO -->
+                <h5 class="border-bottom pb-2 mb-4 text-primary section-title mt-5"><i class="fas fa-align-left"></i> 2. Resumo Profissional</h5>
+                <div class="mb-4"><textarea class="form-control" id="summary_pt" rows="4" required></textarea></div>
 
-                <h5
-                  class="border-bottom pb-2 mb-4 text-primary section-title mt-5"
-                >
-                  <i class="fas fa-briefcase"></i> 3. Experiência Profissional
-                </h5>
+                <!-- EXPERIÊNCIA -->
+                <h5 class="border-bottom pb-2 mb-4 text-primary section-title mt-5"><i class="fas fa-briefcase"></i> 3. Experiência Profissional</h5>
                 <div id="experiencias-container"></div>
-                <div class="mb-4">
-                  <button
-                    type="button"
-                    class="btn btn-outline-primary btn-add"
-                    onclick="adicionarExperiencia()"
-                  >
-                    <i class="fas fa-plus"></i> Adicionar Experiência
-                  </button>
-                </div>
+                <button type="button" class="btn btn-outline-primary btn-add mb-4" onclick="adicionarExperiencia()"><i class="fas fa-plus"></i> Adicionar Experiência</button>
 
-                <h5
-                  class="border-bottom pb-2 mb-4 text-primary section-title mt-5"
-                >
-                  <i class="fas fa-graduation-cap"></i> 4. Formação Acadêmica
-                </h5>
+                <!-- FORMAÇÃO -->
+                <h5 class="border-bottom pb-2 mb-4 text-primary section-title mt-5"><i class="fas fa-graduation-cap"></i> 4. Formação Acadêmica</h5>
                 <div id="formacao-container"></div>
-                <div class="mb-4">
-                  <button
-                    type="button"
-                    class="btn btn-outline-info btn-add"
-                    onclick="adicionarFormacao()"
-                  >
-                    <i class="fas fa-plus"></i> Adicionar Formação
-                  </button>
-                </div>
+                <button type="button" class="btn btn-outline-info btn-add mb-4" onclick="adicionarFormacao()"><i class="fas fa-plus"></i> Adicionar Formação</button>
 
-                <h5
-                  class="border-bottom pb-2 mb-4 text-primary section-title mt-5"
-                >
-                  <i class="fas fa-certificate"></i> 5. Cursos Complementares
-                </h5>
+                <!-- CURSOS -->
+                <h5 class="border-bottom pb-2 mb-4 text-primary section-title mt-5"><i class="fas fa-certificate"></i> 5. Cursos Complementares</h5>
                 <div id="cursos-container"></div>
-                <div class="mb-4">
-                  <button
-                    type="button"
-                    class="btn btn-outline-success btn-add"
-                    onclick="adicionarCurso()"
-                  >
-                    <i class="fas fa-plus"></i> Adicionar Curso
-                  </button>
-                </div>
+                <button type="button" class="btn btn-outline-success btn-add mb-4" onclick="adicionarCurso()"><i class="fas fa-plus"></i> Adicionar Curso</button>
 
-                <div
-                  class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4 mt-5"
-                >
-                  <h5 class="mb-0 text-primary section-title">
-                    <i class="fas fa-laptop-code"></i> 6. Projetos Técnicos
-                  </h5>
-                  <div class="form-check form-switch fs-5">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      id="include-projects"
-                      checked
-                      style="cursor: pointer"
-                    />
-                    <label
-                      class="form-check-label"
-                      for="include-projects"
-                      >Incluir no PDF?</label
-                    >
-                  </div>
+                <!-- PROJETOS -->
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4 mt-5">
+                  <h5 class="mb-0 text-primary section-title"><i class="fas fa-laptop-code"></i> 6. Projetos Técnicos</h5>
+                  <div class="form-check form-switch fs-5"><input class="form-check-input" type="checkbox" id="include-projects" checked /><label class="form-check-label" for="include-projects">Incluir no PDF?</label></div>
                 </div>
                 <div id="projetos-container"></div>
-                <div class="mb-4">
-                  <button
-                    type="button"
-                    class="btn btn-outline-warning btn-add"
-                    id="btn-add-proj"
-                    onclick="adicionarProjeto()"
-                  >
-                    <i class="fas fa-plus"></i> Adicionar Projeto
-                  </button>
-                </div>
+                <button type="button" class="btn btn-outline-warning btn-add mb-4" onclick="adicionarProjeto()"><i class="fas fa-plus"></i> Adicionar Projeto</button>
 
-                <h5
-                  class="border-bottom pb-2 mb-4 text-primary section-title mt-5"
-                >
-                  <i class="fas fa-tools"></i> 7. Habilidades e Ferramentas
-                </h5>
-                <div class="mb-4">
-                  <label class="form-label fw-bold text-muted"
-                    >Tecnologias (Separe por vírgula)</label
-                  >
-                  <input
-                    type="text"
-                    class="form-control form-control-lg"
-                    id="skills"
-                    placeholder="Ex: Python, SQL, Power BI, Excel, SAP"
-                    required
-                  />
-                </div>
+                <!-- HABILIDADES -->
+                <h5 class="border-bottom pb-2 mb-4 text-primary section-title mt-5"><i class="fas fa-tools"></i> 7. Habilidades e Ferramentas</h5>
+                <div class="mb-4"><input type="text" class="form-control form-control-lg" id="skills" placeholder="Ex: Python, SQL, Excel..." required /></div>
 
+                <!-- EXPORTAR -->
                 <div class="bg-light p-4 rounded-3 border mt-5 mb-4">
-                  <h5 class="text-success section-title mb-3">
-                    <i class="fas fa-file-export"></i> 8. Exportar Documento
-                  </h5>
                   <div class="row align-items-center">
-                    <div class="col-md-8">
-                      <label class="form-label fw-bold"
-                        >Idioma de Saída (Tradução via IA no Backend):</label
-                      >
-                      <select
-                        class="form-select border-success form-select-lg"
-                        id="idioma_escolhido"
-                      >
-                        <option value="pt" selected>
-                          🇧🇷 Português (Geração Rápida)
-                        </option>
-                        <option value="en">
-                          🇺🇸 Inglês (Tradução Automática)
-                        </option>
-                      </select>
-                    </div>
-                    <div class="col-md-4 mt-4 mt-md-0 d-grid">
-                      <button
-                        type="submit"
-                        class="btn btn-success btn-lg shadow-sm rounded-pill"
-                        id="btn-gerar"
-                      >
-                        <i class="fas fa-file-pdf me-2"></i> Gerar Currículo
-                      </button>
-                    </div>
+                    <div class="col-md-8"><label class="form-label fw-bold">Idioma de Saída:</label><select class="form-select form-select-lg" id="idioma_escolhido"><option value="pt" selected>🇧🇷 Português</option><option value="en">🇺🇸 Inglês</option></select></div>
+                    <div class="col-md-4 mt-4 mt-md-0 d-grid"><button type="submit" class="btn btn-success btn-lg rounded-pill" id="btn-gerar"><i class="fas fa-file-pdf me-2"></i> Gerar Currículo</button></div>
                   </div>
                 </div>
               </form>
@@ -521,7 +185,6 @@
         </div>
       </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
   </body>
