@@ -1,7 +1,7 @@
 import os
 import json
 from jinja2 import Environment, FileSystemLoader
-from app import escapar_latex
+from latex_utils import escapar_latex
 
 
 def gerar_curriculos():

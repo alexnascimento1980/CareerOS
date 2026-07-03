@@ -7,6 +7,7 @@ from flask_cors import CORS
 from jinja2 import Environment, FileSystemLoader
 from deep_translator import GoogleTranslator
 import concurrent.futures
+from latex_utils import escapar_latex
 
 app = Flask(__name__, static_folder='.')
 
@@ -19,33 +20,6 @@ _origins_env = os.environ.get('ALLOWED_ORIGINS', '*')
 _allowed_origins = '*' if _origins_env == '*' else [
     o.strip() for o in _origins_env.split(',') if o.strip()]
 CORS(app, resources={r"/generate-cv": {"origins": _allowed_origins}})
-
-# Caracteres com significado especial no LaTeX. A ordem importa: a barra
-# invertida precisa ser tratada primeiro para não escapar duplicado o que
-# as outras substituições geram.
-_LATEX_ESCAPE_MAP = {
-    '\\': r'\textbackslash{}',
-    '{': r'\{',
-    '}': r'\}',
-    '$': r'\$',
-    '&': r'\&',
-    '#': r'\#',
-    '_': r'\_',
-    '%': r'\%',
-    '~': r'\textasciitilde{}',
-    '^': r'\textasciicircum{}',
-}
-
-
-def escapar_latex(texto):
-    """Escapa caracteres especiais do LaTeX em texto vindo do usuário.
-
-    Sem isso, valores como 'P&D', '100%' ou 'C#' quebram a compilação do
-    PDF (ou, em teoria, poderiam injetar comandos LaTeX arbitrários).
-    """
-    if texto is None:
-        return ''
-    return ''.join(_LATEX_ESCAPE_MAP.get(ch, ch) for ch in str(texto))
 
 
 @app.route('/')
