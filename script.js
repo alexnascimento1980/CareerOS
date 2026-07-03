@@ -53,7 +53,7 @@ async function fazerCadastro() {
   const btn = document.getElementById("btn-register");
   btn.textContent = "Criando...";
   const { error } = await supabaseClient.auth.signUp({ email, password });
-  btn.textContent = "Criar Nova Conta";
+  btn.textContent = "Criar Conta";
   if (error) {
     errorDiv.textContent = error.message;
     errorDiv.style.display = "block";
@@ -662,6 +662,17 @@ document
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(p),
       });
+      if (!res.ok) {
+        let mensagem = "Erro ao gerar PDF.";
+        try {
+          const erroJson = await res.json();
+          mensagem = erroJson.erro || mensagem;
+        } catch (_) {
+          // resposta de erro não veio em JSON, mantém mensagem padrão
+        }
+        mostrarNotificacao(mensagem, "danger");
+        return;
+      }
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -670,7 +681,7 @@ document
       a.click();
       mostrarNotificacao("PDF gerado com sucesso!", "success");
     } catch (err) {
-      alert("Erro ao gerar PDF.");
+      mostrarNotificacao("Erro ao gerar PDF.", "danger");
     } finally {
       b.innerHTML = h;
       b.disabled = false;

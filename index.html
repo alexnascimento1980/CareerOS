@@ -80,8 +80,8 @@
             <div class="mb-4"><label class="form-label fw-bold">Senha</label><input type="password" class="form-control" id="auth-password" placeholder="Mínimo 6 caracteres"></div>
             <div id="auth-error" class="text-danger small mb-3 fw-bold" style="display: none"></div>
             <div class="d-grid gap-2">
-              <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
-              <button class="btn btn-outline-secondary" onclick="fazerCadastro()">Criar Conta</button>
+              <button class="btn btn-primary" id="btn-login" onclick="fazerLogin()">Entrar</button>
+              <button class="btn btn-outline-secondary" id="btn-register" onclick="fazerCadastro()">Criar Conta</button>
               <button class="btn btn-outline-danger" onclick="loginComGoogle()"><i class="fab fa-google me-2"></i> Google</button>
             </div>
           </div>
@@ -105,7 +105,7 @@
           <div class="alert alert-success d-flex justify-content-between align-items-center shadow-sm" id="logged-banner" style="display: none !important">
             <div class="d-flex align-items-center">
               <i class="fas fa-check-circle me-2"></i>
-              <div><strong>Logado!</strong> Editando: <span id="current-resume-title" class="fw-bold text-primary">Nenhum selecionado</span></div>
+              <div><strong>Logado!</strong> (<span id="user-email-display" class="fw-bold"></span>) Editando: <span id="current-resume-title" class="fw-bold text-primary">Nenhum selecionado</span></div>
             </div>
             <div class="d-flex gap-2">
               <button class="btn btn-sm btn-primary" data-bs-toggle="offcanvas" data-bs-target="#resumePanel"><i class="fas fa-list me-1"></i> Meus Currículos</button>

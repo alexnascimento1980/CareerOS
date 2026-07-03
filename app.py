@@ -9,7 +9,40 @@ from deep_translator import GoogleTranslator
 import concurrent.futures
 
 app = Flask(__name__, static_folder='.')
-CORS(app)
+
+# Em produção, defina ALLOWED_ORIGINS (separado por vírgulas) para restringir
+# quem pode chamar a API. Em desenvolvimento, libera tudo por padrão.
+_origins_env = os.environ.get('ALLOWED_ORIGINS', '*')
+_allowed_origins = '*' if _origins_env == '*' else [
+    o.strip() for o in _origins_env.split(',') if o.strip()]
+CORS(app, resources={r"/generate-cv": {"origins": _allowed_origins}})
+
+# Caracteres com significado especial no LaTeX. A ordem importa: a barra
+# invertida precisa ser tratada primeiro para não escapar duplicado o que
+# as outras substituições geram.
+_LATEX_ESCAPE_MAP = {
+    '\\': r'\textbackslash{}',
+    '{': r'\{',
+    '}': r'\}',
+    '$': r'\$',
+    '&': r'\&',
+    '#': r'\#',
+    '_': r'\_',
+    '%': r'\%',
+    '~': r'\textasciitilde{}',
+    '^': r'\textasciicircum{}',
+}
+
+
+def escapar_latex(texto):
+    """Escapa caracteres especiais do LaTeX em texto vindo do usuário.
+
+    Sem isso, valores como 'P&D', '100%' ou 'C#' quebram a compilação do
+    PDF (ou, em teoria, poderiam injetar comandos LaTeX arbitrários).
+    """
+    if texto is None:
+        return ''
+    return ''.join(_LATEX_ESCAPE_MAP.get(ch, ch) for ch in str(texto))
 
 
 @app.route('/')
@@ -144,6 +177,7 @@ def generate_cv():
 
     try:
         env = Environment(loader=FileSystemLoader('templates'))
+        env.filters['latex'] = escapar_latex
         template = env.get_template('base_ats.tex')
         rendered_tex = template.render(dados=data, lang=lang)
 
@@ -156,11 +190,15 @@ def generate_cv():
             with open(tex_path, 'w', encoding='utf-8') as f:
                 f.write(rendered_tex)
 
-            result = subprocess.run(
-                ['pdflatex', '-interaction=nonstopmode',
-                    '-output-directory', tmpdir, tex_path],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
-            )
+            try:
+                result = subprocess.run(
+                    ['pdflatex', '-interaction=nonstopmode',
+                        '-output-directory', tmpdir, tex_path],
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                    timeout=30
+                )
+            except subprocess.TimeoutExpired:
+                return jsonify({"erro": "Tempo limite excedido ao compilar o PDF."}), 504
 
             if result.returncode != 0:
                 return jsonify({"erro": "Erro na compilação do LaTeX.", "detalhes": result.stdout}), 500
