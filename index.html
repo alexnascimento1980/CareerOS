@@ -44,7 +44,6 @@
         }
       }
 
-      /* Adicione estas regras no seu bloco <style> */
       .card { 
           border-radius: 16px !important; 
           border: none !important; 
@@ -70,6 +69,47 @@
       /* Estilo da barra de Autenticação */
       #auth-banner {
         display: none;
+      }
+
+      /* --- NOVOS ESTILOS DE FEEDBACK --- */
+      @keyframes pulse-save {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+      }
+
+      #save-status-indicator.saving {
+        display: block !important;
+        animation: pulse-save 1s infinite;
+      }
+
+      .alert {
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        animation: slideIn 0.3s ease-out;
+      }
+
+      @keyframes slideIn {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+
+      .alert-success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+      .alert-danger { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+      .alert-info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+
+      .logged-banner-status {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #28a745;
+        margin-left: 8px;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
       }
     </style>
 
@@ -141,27 +181,21 @@
                 <i class="fab fa-google me-2"></i> Entrar com Google
               </button>
             </div>
-            
-            <!-- <div class="d-grid gap-2">
-              <button
-                class="btn btn-primary"
-                type="button"
-                id="btn-login"
-                onclick="fazerLogin()"
-              >
-                Entrar
-              </button>
-              <button
-                class="btn btn-outline-secondary"
-                type="button"
-                id="btn-register"
-                onclick="fazerCadastro()"
-              >
-                Criar Nova Conta
-              </button> -->
-            </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Container de Notificações -->
+    <div id="notificacoes-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+      <!-- As notificações aparecerão aqui -->
+    </div>
+
+    <!-- Indicador de Status de Salvamento -->
+    <div id="save-status-indicator" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1000; display: none;">
+      <div class="badge bg-info p-2 shadow">
+        <i class="fas fa-cloud-upload-alt me-2"></i>
+        <span id="save-status-text">Salvando...</span>
       </div>
     </div>
 
@@ -413,7 +447,7 @@
                       style="cursor: pointer"
                     />
                     <label
-                      class="form-check-label fw-bold text-warning fs-6"
+                      class="form-check-label"
                       for="include-projects"
                       >Incluir no PDF?</label
                     >
