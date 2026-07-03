@@ -11,13 +11,32 @@ let isSavingToCloud = false;
 // ==========================================
 // LÓGICA DE AUTENTICAÇÃO
 // ==========================================
+
+// Depois do login via OAuth (Google), o Supabase redireciona de volta com
+// os tokens de sessão expostos no #hash da URL (ex: #access_token=...).
+// O client do Supabase já lê e usa esses tokens automaticamente, mas eles
+// continuam visíveis na barra de endereço até serem removidos manualmente.
+// Isso é sensível: qualquer pessoa que veja essa URL (histórico do
+// navegador, print de tela, link compartilhado) teria acesso à sessão.
+function limparTokenDaURL() {
+  if (window.location.hash && window.location.hash.includes("access_token")) {
+    const urlLimpa =
+      window.location.origin +
+      window.location.pathname +
+      window.location.search;
+    window.history.replaceState({}, document.title, urlLimpa);
+  }
+}
+
 async function checarSessao() {
   const {
     data: { session },
   } = await supabaseClient.auth.getSession();
   atualizarUIAuth(session?.user || null);
+  limparTokenDaURL();
   supabaseClient.auth.onAuthStateChange((_event, session) => {
     atualizarUIAuth(session?.user || null);
+    limparTokenDaURL();
   });
 }
 
