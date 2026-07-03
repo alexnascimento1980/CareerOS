@@ -10,6 +10,9 @@ import concurrent.futures
 
 app = Flask(__name__, static_folder='.')
 
+# Protege contra payloads absurdamente grandes (abuso/DoS via pdflatex).
+app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # 2 MB
+
 # Em produção, defina ALLOWED_ORIGINS (separado por vírgulas) para restringir
 # quem pode chamar a API. Em desenvolvimento, libera tudo por padrão.
 _origins_env = os.environ.get('ALLOWED_ORIGINS', '*')
@@ -56,13 +59,65 @@ def script():
 
 
 def validar_dados_cv(data):
-    chaves_obrigatorias = ['basics', 'summary',
-                           'experience', 'education', 'skills']
     if not data or not isinstance(data, dict):
         return False, "O payload deve ser um objeto JSON válido."
-    for chave in chaves_obrigatorias:
-        if chave not in data:
-            return False, f"Falta o bloco obrigatório: '{chave}'"
+
+    lang = data.get('lang', 'pt')
+    if lang not in ('pt', 'en'):
+        return False, "O campo 'lang' deve ser 'pt' ou 'en'."
+
+    # --- basics (obrigatório) ---
+    basics = data.get('basics')
+    if not isinstance(basics, dict):
+        return False, "O bloco 'basics' é obrigatório e deve ser um objeto."
+    if not str(basics.get('name', '')).strip():
+        return False, "O campo 'basics.name' é obrigatório."
+    if len(str(basics.get('name', ''))) > 200:
+        return False, "O campo 'basics.name' excede o tamanho máximo permitido."
+    email = str(basics.get('email', '')).strip()
+    if not email or '@' not in email or ' ' in email:
+        return False, "O campo 'basics.email' deve ser um e-mail válido."
+
+    # --- summary (obrigatório) ---
+    summary = data.get('summary')
+    if not isinstance(summary, dict):
+        return False, "O bloco 'summary' é obrigatório e deve ser um objeto."
+    if not isinstance(summary.get('pt', []), list):
+        return False, "O campo 'summary.pt' deve ser uma lista de textos."
+
+    # --- skills (obrigatório) ---
+    skills = data.get('skills')
+    if not isinstance(skills, dict):
+        return False, "O bloco 'skills' é obrigatório e deve ser um objeto."
+    if not isinstance(skills.get('technical', []), list):
+        return False, "O campo 'skills.technical' deve ser uma lista."
+
+    # --- blocos em lista (obrigatórios: experience/education; opcionais: courses/projects) ---
+    listas_obrigatorias = ['experience', 'education']
+    listas_opcionais = ['courses', 'projects']
+    limites_itens = {'experience': 30, 'education': 15,
+                     'courses': 30, 'projects': 30}
+
+    for campo in listas_obrigatorias:
+        if campo not in data:
+            return False, f"Falta o bloco obrigatório: '{campo}'"
+
+    for campo in listas_obrigatorias + listas_opcionais:
+        valor = data.get(campo, [])
+        if not isinstance(valor, list):
+            return False, f"O campo '{campo}' deve ser uma lista."
+        if len(valor) > limites_itens[campo]:
+            return False, f"O campo '{campo}' excede o limite de {limites_itens[campo]} itens."
+        for i, item in enumerate(valor):
+            if not isinstance(item, dict):
+                return False, f"O item {i + 1} de '{campo}' deve ser um objeto."
+
+    # 'company' é usado como cabeçalho de cada experiência no template;
+    # sem ele o PDF sai com uma linha em branco sem indicar o motivo.
+    for i, xp in enumerate(data.get('experience', [])):
+        if not str(xp.get('company', '')).strip():
+            return False, f"O item {i + 1} de 'experience' precisa do campo 'company'."
+
     return True, "Dados validados com sucesso"
 
 
@@ -103,65 +158,73 @@ def traduzir_texto(texto):
 def traduzir_payload(data):
     # Usamos ThreadPoolExecutor para disparar TODAS as traduções ao mesmo tempo
     with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
-        
+
         # 1. DISPARAR TAREFAS (Gatilhos simultâneos)
-        
+
         # Básicos
-        label_fut = executor.submit(traduzir_texto, data.get('basics', {}).get('label_pt', ''))
-        
+        label_fut = executor.submit(
+            traduzir_texto, data.get('basics', {}).get('label_pt', ''))
+
         # Resumo
         summary_futs = []
         if 'summary' in data and 'pt' in data['summary']:
-            summary_futs = [executor.submit(traduzir_texto, p) for p in data['summary']['pt']]
-            
+            summary_futs = [executor.submit(
+                traduzir_texto, p) for p in data['summary']['pt']]
+
         # Experiências
         exp_futs = []
         for exp in data.get('experience', []):
-            pos_fut = executor.submit(traduzir_texto, exp.get('position_pt', ''))
-            hl_futs = [executor.submit(traduzir_texto, h) for h in exp.get('highlights_pt', [])]
+            pos_fut = executor.submit(
+                traduzir_texto, exp.get('position_pt', ''))
+            hl_futs = [executor.submit(traduzir_texto, h)
+                       for h in exp.get('highlights_pt', [])]
             exp_futs.append((exp, pos_fut, hl_futs))
-            
+
         # Educação
         edu_futs = []
         for edu in data.get('education', []):
             area_fut = executor.submit(traduzir_texto, edu.get('area_pt', ''))
-            status_fut = executor.submit(traduzir_texto, edu.get('status_pt', ''))
+            status_fut = executor.submit(
+                traduzir_texto, edu.get('status_pt', ''))
             edu_futs.append((edu, area_fut, status_fut))
-            
+
         # Projetos
         proj_futs = []
         for proj in data.get('projects', []):
-            desc_fut = executor.submit(traduzir_texto, proj.get('description_pt', ''))
+            desc_fut = executor.submit(
+                traduzir_texto, proj.get('description_pt', ''))
             proj_futs.append((proj, desc_fut))
-            
+
         # Cursos
         curso_futs = []
         for curso in data.get('courses', []):
-            name_fut = executor.submit(traduzir_texto, curso.get('name_pt', ''))
+            name_fut = executor.submit(
+                traduzir_texto, curso.get('name_pt', ''))
             curso_futs.append((curso, name_fut))
 
         # 2. RECOLHER RESULTADOS (O Python aguarda todos terminarem e atribui)
-        
+
         data['basics']['label_en'] = label_fut.result()
-        
+
         if summary_futs:
             data['summary']['en'] = [f.result() for f in summary_futs]
-            
+
         for exp, pos_fut, hl_futs in exp_futs:
             exp['position_en'] = pos_fut.result()
             exp['highlights_en'] = [f.result() for f in hl_futs]
-            
+
         for edu, area_fut, status_fut in edu_futs:
             edu['area_en'] = area_fut.result()
             edu['status_en'] = status_fut.result()
-            
+
         for proj, desc_fut in proj_futs:
             proj['description_en'] = desc_fut.result()
-            
+
         for curso, name_fut in curso_futs:
             curso['name_en'] = name_fut.result()
 
     return data
+
 
 @app.route('/generate-cv', methods=['POST'])
 def generate_cv():
