@@ -2,6 +2,7 @@ import os
 import subprocess
 import tempfile
 import io
+import time
 from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 from flask_limiter import Limiter
@@ -108,14 +109,27 @@ def validar_dados_cv(data):
     return True, "Dados validados com sucesso"
 
 
-def traduzir_texto(texto):
+def traduzir_texto(texto, tentativas=2):
+    """Traduz um texto PT->EN. Retorna (texto_traduzido, sucesso).
+
+    Faz uma segunda tentativa antes de desistir, já que o serviço por trás
+    (scraping não-oficial do Google Translate, sem SLA) falha de vez em
+    quando por instabilidade transitória. Se mesmo assim falhar, devolve o
+    texto original e sucesso=False, para o chamador decidir o que fazer —
+    nunca deve virar um "sucesso" silencioso com conteúdo não traduzido.
+    """
     if not texto:
-        return ""
-    try:
-        return GoogleTranslator(source='pt', target='en').translate(texto)
-    except Exception as e:
-        app.logger.warning(f"Erro ao traduzir texto: {e}")
-        return texto
+        return "", True
+    ultimo_erro = None
+    for tentativa in range(tentativas):
+        try:
+            return GoogleTranslator(source='pt', target='en').translate(texto), True
+        except Exception as e:
+            ultimo_erro = e
+            time.sleep(0.4)
+    app.logger.warning(
+        f"Falha ao traduzir texto após {tentativas} tentativas: {ultimo_erro}")
+    return texto, False
 
 
 # def traduzir_payload(data):
@@ -143,6 +157,8 @@ def traduzir_texto(texto):
 
 #     return data
 def traduzir_payload(data):
+    falhas = []
+
     # Usamos ThreadPoolExecutor para disparar TODAS as traduções ao mesmo tempo
     with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
 
@@ -191,26 +207,32 @@ def traduzir_payload(data):
 
         # 2. RECOLHER RESULTADOS (O Python aguarda todos terminarem e atribui)
 
-        data['basics']['label_en'] = label_fut.result()
+        def coletar(fut):
+            texto, ok = fut.result()
+            if not ok:
+                falhas.append(True)
+            return texto
+
+        data['basics']['label_en'] = coletar(label_fut)
 
         if summary_futs:
-            data['summary']['en'] = [f.result() for f in summary_futs]
+            data['summary']['en'] = [coletar(f) for f in summary_futs]
 
         for exp, pos_fut, hl_futs in exp_futs:
-            exp['position_en'] = pos_fut.result()
-            exp['highlights_en'] = [f.result() for f in hl_futs]
+            exp['position_en'] = coletar(pos_fut)
+            exp['highlights_en'] = [coletar(f) for f in hl_futs]
 
         for edu, area_fut, status_fut in edu_futs:
-            edu['area_en'] = area_fut.result()
-            edu['status_en'] = status_fut.result()
+            edu['area_en'] = coletar(area_fut)
+            edu['status_en'] = coletar(status_fut)
 
         for proj, desc_fut in proj_futs:
-            proj['description_en'] = desc_fut.result()
+            proj['description_en'] = coletar(desc_fut)
 
         for curso, name_fut in curso_futs:
-            curso['name_en'] = name_fut.result()
+            curso['name_en'] = coletar(name_fut)
 
-    return data
+    return data, len(falhas) == 0
 
 
 @app.route('/generate-cv', methods=['POST'])
@@ -224,7 +246,12 @@ def generate_cv():
 
     lang = data.get('lang', 'pt')
     if lang == 'en':
-        data = traduzir_payload(data)
+        data, traducao_ok = traduzir_payload(data)
+        if not traducao_ok:
+            return jsonify({
+                "erro": "Não foi possível traduzir o currículo para inglês no momento "
+                        "(serviço de tradução instável). Tente novamente em alguns minutos."
+            }), 502
 
     try:
         env = Environment(loader=FileSystemLoader('templates'))
