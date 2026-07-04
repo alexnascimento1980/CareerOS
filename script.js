@@ -23,7 +23,7 @@ let modalTargetId = null;
 // Isso é sensível: qualquer pessoa que veja essa URL (histórico do
 // navegador, print de tela, link compartilhado) teria acesso à sessão.
 function limparTokenDaURL() {
-  if (window.location.hash && window.location.hash.includes("access_token")) {
+  if (window.location.hash) {
     const urlLimpa =
       window.location.origin +
       window.location.pathname +
@@ -92,8 +92,9 @@ async function fazerCadastro() {
     errorDiv.textContent = error.message;
     errorDiv.style.display = "block";
   } else {
-    alert("Conta criada com sucesso!");
+    btn.blur();
     bootstrap.Modal.getInstance(document.getElementById("authModal")).hide();
+    mostrarNotificacao("Conta criada com sucesso!", "success");
   }
 }
 
@@ -113,6 +114,7 @@ async function fazerLogin() {
     errorDiv.textContent = "Falha no login. Verifique e-mail e senha.";
     errorDiv.style.display = "block";
   } else {
+    btn.blur();
     bootstrap.Modal.getInstance(document.getElementById("authModal")).hide();
   }
 }
@@ -122,7 +124,8 @@ async function loginComGoogle() {
     provider: "google",
     options: { redirectTo: window.location.origin },
   });
-  if (error) alert("Erro no login com Google: " + error.message);
+  if (error)
+    mostrarNotificacao("Erro no login com Google: " + error.message, "danger");
 }
 
 async function fazerLogout() {
@@ -354,7 +357,7 @@ document
     const isChecked = this.checked;
     document
       .querySelectorAll(
-        "#experiencias-container input, #experiencias-container textarea",
+        "#experiencias-container input:not([type=checkbox]), #experiencias-container textarea",
       )
       .forEach((i) =>
         isChecked
@@ -369,7 +372,7 @@ document
     const isChecked = this.checked;
     document
       .querySelectorAll(
-        "#formacao-container input, #formacao-container textarea",
+        "#formacao-container input:not([type=checkbox]), #formacao-container textarea",
       )
       .forEach((i) =>
         isChecked
@@ -383,7 +386,9 @@ document
   .addEventListener("change", function () {
     const isChecked = this.checked;
     document
-      .querySelectorAll("#cursos-container input, #cursos-container textarea")
+      .querySelectorAll(
+        "#cursos-container input:not([type=checkbox]), #cursos-container textarea",
+      )
       .forEach((i) =>
         isChecked
           ? i.setAttribute("required", "required")
@@ -397,7 +402,7 @@ document
     const isChecked = this.checked;
     document
       .querySelectorAll(
-        "#projetos-container input, #projetos-container textarea",
+        "#projetos-container input:not([type=checkbox]), #projetos-container textarea",
       )
       .forEach((i) =>
         isChecked
@@ -906,7 +911,7 @@ document
     e.preventDefault();
     if (!this.checkValidity()) {
       this.classList.add("was-validated");
-      alert("Verifique os campos obrigatórios.");
+      mostrarNotificacao("Verifique os campos obrigatórios.", "danger");
       return;
     }
     if (!currentUser) {

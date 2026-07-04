@@ -210,48 +210,59 @@
             ></button>
           </div>
           <div class="modal-body p-4">
-            <div class="mb-3">
-              <label class="form-label fw-bold">E-mail</label
-              ><input
-                type="email"
-                class="form-control"
-                id="auth-email"
-                placeholder="seu@email.com"
-              />
-            </div>
-            <div class="mb-4">
-              <label class="form-label fw-bold">Senha</label
-              ><input
-                type="password"
-                class="form-control"
-                id="auth-password"
-                placeholder="Mínimo 6 caracteres"
-              />
-            </div>
-            <div
-              id="auth-error"
-              class="text-danger small mb-3 fw-bold"
-              style="display: none"
-            ></div>
-            <div class="d-grid gap-2">
-              <button
-                class="btn btn-primary"
-                id="btn-login"
-                onclick="fazerLogin()"
-              >
-                Entrar
-              </button>
-              <button
-                class="btn btn-outline-secondary"
-                id="btn-register"
-                onclick="fazerCadastro()"
-              >
-                Criar Conta
-              </button>
-              <button class="btn btn-outline-danger" onclick="loginComGoogle()">
-                <i class="fab fa-google me-2"></i> Google
-              </button>
-            </div>
+            <form
+              id="authForm"
+              onsubmit="
+                event.preventDefault();
+                fazerLogin();
+              "
+            >
+              <div class="mb-3">
+                <label class="form-label fw-bold">E-mail</label
+                ><input
+                  type="email"
+                  class="form-control"
+                  id="auth-email"
+                  placeholder="seu@email.com"
+                  autocomplete="email"
+                />
+              </div>
+              <div class="mb-4">
+                <label class="form-label fw-bold">Senha</label
+                ><input
+                  type="password"
+                  class="form-control"
+                  id="auth-password"
+                  placeholder="Mínimo 6 caracteres"
+                  autocomplete="current-password"
+                />
+              </div>
+              <div
+                id="auth-error"
+                class="text-danger small mb-3 fw-bold"
+                style="display: none"
+              ></div>
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary" id="btn-login">
+                  Entrar
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  id="btn-register"
+                  onclick="fazerCadastro()"
+                >
+                  Criar Conta
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-danger"
+                  onclick="loginComGoogle()"
+                >
+                  <i class="fab fa-google me-2"></i> Google
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>

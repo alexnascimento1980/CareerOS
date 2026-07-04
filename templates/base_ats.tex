@@ -97,6 +97,6 @@
 
 % Habilidades
 \section*{ {% if lang == 'pt' %}Habilidades{% else %}Skills{% endif %} }
-\noindent \textbf{ {{ 'Técnicas' if lang == 'pt' else 'Technical' }}: } {{ dados.skills.technical | map('latex') | join(', ') }}
+\noindent \textbf{ {{ 'Técnicas' if lang == 'pt' else 'Technical' }}: } {{ (dados.skills.technical if lang == 'pt' else dados.skills.get('technical_en', dados.skills.technical)) | map('latex') | join(', ') }}
 
 \end{document}

@@ -84,7 +84,7 @@ def validar_dados_cv(data):
     listas_obrigatorias = ['experience', 'education']
     listas_opcionais = ['courses', 'projects']
     limites_itens = {'experience': 30, 'education': 15,
-                     'courses': 30, 'projects': 30}
+                      'courses': 30, 'projects': 30}
 
     for campo in listas_obrigatorias:
         if campo not in data:
@@ -165,45 +165,44 @@ def traduzir_payload(data):
         # 1. DISPARAR TAREFAS (Gatilhos simultâneos)
 
         # Básicos
-        label_fut = executor.submit(
-            traduzir_texto, data.get('basics', {}).get('label_pt', ''))
+        label_fut = executor.submit(traduzir_texto, data.get('basics', {}).get('label_pt', ''))
 
         # Resumo
         summary_futs = []
         if 'summary' in data and 'pt' in data['summary']:
-            summary_futs = [executor.submit(
-                traduzir_texto, p) for p in data['summary']['pt']]
+            summary_futs = [executor.submit(traduzir_texto, p) for p in data['summary']['pt']]
 
         # Experiências
         exp_futs = []
         for exp in data.get('experience', []):
-            pos_fut = executor.submit(
-                traduzir_texto, exp.get('position_pt', ''))
-            hl_futs = [executor.submit(traduzir_texto, h)
-                       for h in exp.get('highlights_pt', [])]
+            pos_fut = executor.submit(traduzir_texto, exp.get('position_pt', ''))
+            hl_futs = [executor.submit(traduzir_texto, h) for h in exp.get('highlights_pt', [])]
             exp_futs.append((exp, pos_fut, hl_futs))
 
         # Educação
         edu_futs = []
         for edu in data.get('education', []):
             area_fut = executor.submit(traduzir_texto, edu.get('area_pt', ''))
-            status_fut = executor.submit(
-                traduzir_texto, edu.get('status_pt', ''))
+            status_fut = executor.submit(traduzir_texto, edu.get('status_pt', ''))
             edu_futs.append((edu, area_fut, status_fut))
 
         # Projetos
         proj_futs = []
         for proj in data.get('projects', []):
-            desc_fut = executor.submit(
-                traduzir_texto, proj.get('description_pt', ''))
+            desc_fut = executor.submit(traduzir_texto, proj.get('description_pt', ''))
             proj_futs.append((proj, desc_fut))
 
         # Cursos
         curso_futs = []
         for curso in data.get('courses', []):
-            name_fut = executor.submit(
-                traduzir_texto, curso.get('name_pt', ''))
+            name_fut = executor.submit(traduzir_texto, curso.get('name_pt', ''))
             curso_futs.append((curso, name_fut))
+
+        # Habilidades técnicas
+        skills_futs = []
+        if 'skills' in data and 'technical' in data['skills']:
+            skills_futs = [executor.submit(traduzir_texto, s)
+                            for s in data['skills']['technical']]
 
         # 2. RECOLHER RESULTADOS (O Python aguarda todos terminarem e atribui)
 
@@ -232,8 +231,10 @@ def traduzir_payload(data):
         for curso, name_fut in curso_futs:
             curso['name_en'] = coletar(name_fut)
 
-    return data, len(falhas) == 0
+        if skills_futs:
+            data['skills']['technical_en'] = [coletar(f) for f in skills_futs]
 
+    return data, len(falhas) == 0
 
 @app.route('/generate-cv', methods=['POST'])
 @limiter.limit("10 per minute; 60 per hour")
