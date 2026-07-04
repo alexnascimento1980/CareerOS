@@ -6,8 +6,11 @@ const supabaseKey = "sb_publishable_K1kdVFqNe9olG91GCEe-rg_D6BcQZk8";
 const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 let currentUser = null;
+let currentResumeId = null;
 let isSavingToCloud = false;
 let isLoadingResume = false;
+let modalMode = "new"; // "new" | "rename"
+let modalTargetId = null;
 
 // ==========================================
 // LÓGICA DE AUTENTICAÇÃO
@@ -38,7 +41,7 @@ async function checarSessao() {
   supabaseClient.auth.onAuthStateChange((_event, session) => {
     // O Supabase dispara um evento (ex: INITIAL_SESSION) imediatamente ao
     // registrar este listener, repetindo a mesma sessão que já processamos
-    // acima via getSession(). Sem essa checagem, carregarRascunhoNuvem()
+    // acima via getSession(). Sem essa checagem, iniciarCurriculosDoUsuario()
     // roda duas vezes em paralelo e pode deixar blocos de experiência/
     // formação duplicados ou "fantasmas" no formulário.
     const novoUserId = session?.user?.id || null;
@@ -58,11 +61,15 @@ function atualizarUIAuth(user) {
     bannerLogin.style.setProperty("display", "none", "important");
     bannerLogged.style.setProperty("display", "flex", "important");
     emailDisplay.textContent = user.email;
-    carregarRascunhoNuvem(user.id);
+    iniciarCurriculosDoUsuario(user.id);
   } else {
     bannerLogin.style.setProperty("display", "flex", "important");
     bannerLogged.style.setProperty("display", "none", "important");
     emailDisplay.textContent = "";
+    currentResumeId = null;
+    document.getElementById("resumesList").innerHTML = "";
+    document.getElementById("current-resume-title").textContent =
+      "Nenhum selecionado";
     limparFormulario();
   }
 }
@@ -410,7 +417,7 @@ function agendarSalvamentoNuvem() {
 }
 
 async function salvarDadosNuvem() {
-  if (!currentUser || isSavingToCloud) return;
+  if (!currentUser || !currentResumeId || isSavingToCloud) return;
   try {
     isSavingToCloud = true;
     mostrarStatusSalvamento(true);
@@ -477,22 +484,13 @@ async function salvarDadosNuvem() {
         }),
       ),
     };
-    // const { error } = await supabaseClient
-    //   .from("curriculos")
-    //   .upsert({
-    //     user_id: currentUser.id,
-    //     dados: r,
-    //     updated_at: new Date().toISOString(),
-    //   });
-    // Substitua a parte do .upsert por esta versão:
-    const { error } = await supabaseClient.from("curriculos").upsert(
-      {
-        user_id: currentUser.id,
+    const { error } = await supabaseClient
+      .from("curriculos")
+      .update({
         dados: r,
         updated_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id" }, // Esta linha diz ao Supabase: "Se o user_id já existir, apenas atualize os dados"
-    );
+      })
+      .eq("id", currentResumeId);
 
     if (error) console.error("Erro ao salvar:", error);
   } catch (e) {
@@ -503,7 +501,228 @@ async function salvarDadosNuvem() {
   }
 }
 
-async function carregarRascunhoNuvem(userId) {
+// ==========================================
+// GERENCIAMENTO DE MÚLTIPLOS CURRÍCULOS
+// ==========================================
+
+// Roda uma vez no login: descobre quais currículos o usuário já tem, escolhe
+// qual carregar (o mais recente) e, se for a primeira vez dele no app, cria
+// um currículo inicial automaticamente para não deixar o formulário travado
+// sem nada pra salvar.
+async function iniciarCurriculosDoUsuario(userId) {
+  try {
+    const { data, error } = await supabaseClient
+      .from("curriculos")
+      .select("id")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(1);
+    if (error) throw error;
+
+    if (data && data.length > 0) {
+      currentResumeId = data[0].id;
+    } else {
+      currentResumeId = await criarCurriculoNoBanco(userId, "Meu Currículo");
+    }
+    if (currentResumeId) {
+      await carregarCurriculoPorId(currentResumeId);
+    }
+  } catch (e) {
+    console.error("Erro ao iniciar currículos do usuário:", e);
+    limparFormulario();
+  }
+  await carregarListaCurriculos(userId);
+}
+
+async function criarCurriculoNoBanco(userId, nome) {
+  const { data, error } = await supabaseClient
+    .from("curriculos")
+    .insert({ user_id: userId, resume_name: nome, dados: {} })
+    .select("id")
+    .single();
+  if (error) {
+    console.error("Erro ao criar currículo:", error);
+    mostrarNotificacao("Erro ao criar currículo.", "danger");
+    return null;
+  }
+  return data.id;
+}
+
+// Preenche o painel lateral "Meus Currículos" com todos os currículos do
+// usuário logado, destacando qual está aberto no formulário no momento.
+async function carregarListaCurriculos(userId) {
+  const lista = document.getElementById("resumesList");
+  const { data, error } = await supabaseClient
+    .from("curriculos")
+    .select("id, resume_name, updated_at")
+    .eq("user_id", userId)
+    .order("updated_at", { ascending: false });
+
+  lista.innerHTML = "";
+  if (error || !data) return;
+
+  data.forEach((r) => {
+    const isActive = r.id === currentResumeId;
+
+    const item = document.createElement("div");
+    item.className = "resume-item" + (isActive ? " active" : "");
+
+    const info = document.createElement("div");
+    info.style.cursor = "pointer";
+    info.style.flex = "1";
+    info.addEventListener("click", () => selecionarCurriculo(r.id));
+
+    const nomeEl = document.createElement("div");
+    nomeEl.textContent = r.resume_name || "Sem nome";
+    if (isActive) {
+      const badge = document.createElement("span");
+      badge.className = "badge-current";
+      badge.textContent = "atual";
+      nomeEl.appendChild(badge);
+    }
+
+    const dataEl = document.createElement("div");
+    dataEl.className = "resume-item-date";
+    dataEl.textContent =
+      "Atualizado em " + new Date(r.updated_at).toLocaleString("pt-BR");
+
+    info.appendChild(nomeEl);
+    info.appendChild(dataEl);
+
+    const acoes = document.createElement("div");
+
+    const btnRenomear = document.createElement("button");
+    btnRenomear.type = "button";
+    btnRenomear.className = "btn btn-sm btn-outline-secondary me-1";
+    btnRenomear.innerHTML = '<i class="fas fa-pen"></i>';
+    btnRenomear.title = "Renomear";
+    btnRenomear.addEventListener("click", (e) => {
+      e.stopPropagation();
+      abrirModalRenomear(r.id, r.resume_name || "");
+    });
+
+    const btnExcluir = document.createElement("button");
+    btnExcluir.type = "button";
+    btnExcluir.className = "btn btn-sm btn-outline-danger";
+    btnExcluir.innerHTML = '<i class="fas fa-trash-alt"></i>';
+    btnExcluir.title = "Excluir";
+    btnExcluir.addEventListener("click", (e) => {
+      e.stopPropagation();
+      excluirCurriculo(r.id);
+    });
+
+    acoes.appendChild(btnRenomear);
+    acoes.appendChild(btnExcluir);
+
+    item.appendChild(info);
+    item.appendChild(acoes);
+    lista.appendChild(item);
+  });
+}
+
+// Troca o currículo em edição no formulário para outro já existente.
+async function selecionarCurriculo(id) {
+  if (id === currentResumeId) return;
+  currentResumeId = id;
+  await carregarCurriculoPorId(id);
+  await carregarListaCurriculos(currentUser.id);
+  const painel = document.getElementById("resumePanel");
+  const instancia =
+    bootstrap.Offcanvas.getInstance(painel) || new bootstrap.Offcanvas(painel);
+  instancia.hide();
+}
+
+async function excluirCurriculo(id) {
+  if (!confirm("Excluir este currículo? Essa ação não pode ser desfeita."))
+    return;
+
+  const { error } = await supabaseClient
+    .from("curriculos")
+    .delete()
+    .eq("id", id);
+  if (error) {
+    mostrarNotificacao("Erro ao excluir currículo.", "danger");
+    return;
+  }
+
+  if (id === currentResumeId) {
+    // Precisa de outro currículo pra assumir a edição (ou criar um novo se
+    // esse era o único que o usuário tinha).
+    const { data } = await supabaseClient
+      .from("curriculos")
+      .select("id")
+      .eq("user_id", currentUser.id)
+      .order("updated_at", { ascending: false })
+      .limit(1);
+    if (data && data.length > 0) {
+      currentResumeId = data[0].id;
+      await carregarCurriculoPorId(currentResumeId);
+    } else {
+      currentResumeId = await criarCurriculoNoBanco(
+        currentUser.id,
+        "Meu Currículo",
+      );
+      if (currentResumeId) await carregarCurriculoPorId(currentResumeId);
+    }
+  }
+  await carregarListaCurriculos(currentUser.id);
+  mostrarNotificacao("Currículo excluído.", "info");
+}
+
+function abrirModalNovoCurriculo() {
+  modalMode = "new";
+  modalTargetId = null;
+  document.getElementById("resumeModalTitle").textContent = "Novo Currículo";
+  document.getElementById("resumeNameInput").value = "";
+  new bootstrap.Modal(document.getElementById("resumeModal")).show();
+}
+
+function abrirModalRenomear(id, nomeAtual) {
+  modalMode = "rename";
+  modalTargetId = id;
+  document.getElementById("resumeModalTitle").textContent =
+    "Renomear Currículo";
+  document.getElementById("resumeNameInput").value = nomeAtual;
+  new bootstrap.Modal(document.getElementById("resumeModal")).show();
+}
+
+document
+  .getElementById("saveResumeNameBtn")
+  .addEventListener("click", async () => {
+    const nome = document.getElementById("resumeNameInput").value.trim();
+    if (!nome) {
+      mostrarNotificacao("Informe um nome para o currículo.", "danger");
+      return;
+    }
+    if (!currentUser) return;
+
+    if (modalMode === "new") {
+      const novoId = await criarCurriculoNoBanco(currentUser.id, nome);
+      if (!novoId) return;
+      currentResumeId = novoId;
+      limparFormulario();
+      document.getElementById("current-resume-title").textContent = nome;
+      await carregarListaCurriculos(currentUser.id);
+      mostrarNotificacao("Currículo criado! Comece a preencher.", "success");
+    } else if (modalMode === "rename") {
+      const { error } = await supabaseClient
+        .from("curriculos")
+        .update({ resume_name: nome })
+        .eq("id", modalTargetId);
+      if (error) {
+        mostrarNotificacao("Erro ao renomear currículo.", "danger");
+        return;
+      }
+      if (modalTargetId === currentResumeId) {
+        document.getElementById("current-resume-title").textContent = nome;
+      }
+      await carregarListaCurriculos(currentUser.id);
+    }
+
+    bootstrap.Modal.getInstance(document.getElementById("resumeModal")).hide();
+  });
+
+async function carregarCurriculoPorId(id) {
   if (isLoadingResume) return;
   isLoadingResume = true;
 
@@ -520,11 +739,14 @@ async function carregarRascunhoNuvem(userId) {
   try {
     const { data, error } = await supabaseClient
       .from("curriculos")
-      .select("dados")
-      .eq("user_id", userId)
+      .select("dados, resume_name")
+      .eq("id", id)
       .maybeSingle();
-    if (error || !data || !data.dados) throw new Error("Sem dados");
-    const r = data.dados;
+    if (error || !data) throw new Error("Sem dados");
+
+    document.getElementById("current-resume-title").textContent =
+      data.resume_name || "Sem nome";
+    const r = data.dados || {};
 
     document.getElementById("name").value = r.basics?.name || "";
     document.getElementById("label_pt").value = r.basics?.label_pt || "";
