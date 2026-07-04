@@ -7,6 +7,7 @@ colorama==0.4.6
 deep-translator==1.11.4
 Flask==3.0.2
 Flask-Cors==4.0.0
+Flask-Limiter==3.8.0
 gunicorn==21.2.0
 idna==3.18
 itsdangerous==2.2.0

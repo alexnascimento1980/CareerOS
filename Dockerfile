@@ -24,5 +24,9 @@ COPY . .
 # 7. Informa que o container vai se comunicar pela porta 5000
 EXPOSE 5000
 
-# 8. Liga o servidor usando o Gunicorn em vez do Flask puro
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "app:app"]
+# 8. Liga o servidor usando o Gunicorn em vez do Flask puro.
+# --timeout 90: cada requisição pode envolver chamadas de tradução (rede) +
+# compilação LaTeX (até 30s pelo próprio timeout do subprocess em app.py);
+# o padrão do Gunicorn (30s) poderia matar o worker no meio do processo,
+# gerando um 502 feio em vez do erro tratado que o app.py devolveria sozinho.
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--timeout", "90", "app:app"]

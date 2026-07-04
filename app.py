@@ -4,6 +4,8 @@ import tempfile
 import io
 from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from jinja2 import Environment, FileSystemLoader
 from deep_translator import GoogleTranslator
 import concurrent.futures
@@ -20,6 +22,17 @@ _origins_env = os.environ.get('ALLOWED_ORIGINS', '*')
 _allowed_origins = '*' if _origins_env == '*' else [
     o.strip() for o in _origins_env.split(',') if o.strip()]
 CORS(app, resources={r"/generate-cv": {"origins": _allowed_origins}})
+
+# Cada chamada a /generate-cv dispara tradução (chamadas de rede) + compilação
+# LaTeX (uso pesado de CPU). Sem limite, uma única pessoa poderia sobrecarregar
+# o servidor repetindo a requisição. Os limites usam o IP por padrão; em
+# produção atrás de um proxy/load balancer, configure X-Forwarded-For.
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app,
+    default_limits=[],
+    storage_uri="memory://",
+)
 
 
 @app.route('/')
@@ -101,7 +114,7 @@ def traduzir_texto(texto):
     try:
         return GoogleTranslator(source='pt', target='en').translate(texto)
     except Exception as e:
-        print(f"Erro ao traduzir '{texto}': {e}")
+        app.logger.warning(f"Erro ao traduzir texto: {e}")
         return texto
 
 
@@ -201,6 +214,7 @@ def traduzir_payload(data):
 
 
 @app.route('/generate-cv', methods=['POST'])
+@limiter.limit("10 per minute; 60 per hour")
 def generate_cv():
     data = request.json
     valido, mensagem = validar_dados_cv(data)
@@ -256,10 +270,19 @@ def generate_cv():
         return send_file(mem_pdf, mimetype='application/pdf', as_attachment=True, download_name=nome_arquivo)
 
     except Exception as e:
-        return jsonify({"erro": f"Erro interno: {str(e)}"}), 500
+        # Loga o detalhe real só no servidor; o cliente recebe uma mensagem
+        # genérica para não vazar caminhos de arquivo, versões de biblioteca
+        # ou outros detalhes internos que ajudariam um atacante.
+        app.logger.exception("Erro inesperado em /generate-cv")
+        return jsonify({"erro": "Erro interno ao gerar o PDF. Tente novamente."}), 500
 
 
 if __name__ == '__main__':
     if not os.path.exists('templates'):
         os.makedirs('templates')
-    app.run(debug=True)
+    # debug=True só liga se você explicitamente pedir (FLASK_DEBUG=1). Isso
+    # evita expor o debugger interativo do Werkzeug (execução de código
+    # arbitrário via console) caso alguém rode "python app.py" por engano
+    # fora do ambiente de desenvolvimento local.
+    modo_debug = os.environ.get('FLASK_DEBUG', '0') == '1'
+    app.run(debug=modo_debug)
