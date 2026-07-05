@@ -5,6 +5,19 @@ const supabaseUrl = "https://vaiedrsonmktbnkcktqv.supabase.co";
 const supabaseKey = "sb_publishable_K1kdVFqNe9olG91GCEe-rg_D6BcQZk8";
 const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+// ==========================================
+// CONFIGURAÇÃO DA API (backend Flask)
+// ==========================================
+// No navegador (site normal), o frontend é servido pelo próprio Flask, então
+// um caminho relativo como "/generate-cv" já aponta pro lugar certo. Dentro
+// do app empacotado pelo Capacitor, o HTML/JS roda numa origem própria
+// (https://localhost no Android/iOS), então precisa da URL completa do
+// backend hospedado.
+const API_BASE_URL =
+  window.Capacitor && window.Capacitor.isNativePlatform()
+    ? "https://careeros-mcau.onrender.com"
+    : "";
+
 let currentUser = null;
 let currentResumeId = null;
 let isSavingToCloud = false;
@@ -1134,7 +1147,7 @@ document
       },
     };
     try {
-      const res = await fetch("/generate-cv", {
+      const res = await fetch(`${API_BASE_URL}/generate-cv`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(p),
