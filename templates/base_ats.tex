@@ -51,12 +51,14 @@
     \noindent \textbf{ {{ xp.company | latex }} } \hfill \textbf{ {{ xp.startDate | latex }} -- {{ xp.endDate | latex }} } \\
     \textit{ {{ (xp.position_pt if lang == 'pt' else xp.position_en) | latex }} }
     \vspace{-1.5mm}
+    {% set destaques = xp.highlights_pt if lang == 'pt' else xp.highlights_en %}
+    {% if destaques and destaques|length > 0 %}
     \begin{itemize}
-        {% set destaques = xp.highlights_pt if lang == 'pt' else xp.highlights_en %}
         {% for item in destaques %}
             \item {{ item | latex }}
         {% endfor %}
     \end{itemize}
+    {% endif %}
     \vspace{2mm}
 {% endfor %}
 {% endif %}

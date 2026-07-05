@@ -155,30 +155,6 @@ def traduzir_texto(texto, tentativas=2):
     return texto, False
 
 
-# def traduzir_payload(data):
-#     data['basics']['label_en'] = traduzir_texto(
-#         data['basics'].get('label_pt', ''))
-
-#     if 'summary' in data and 'pt' in data['summary']:
-#         data['summary']['en'] = [traduzir_texto(
-#             p) for p in data['summary']['pt']]
-
-#     for exp in data.get('experience', []):
-#         exp['position_en'] = traduzir_texto(exp.get('position_pt', ''))
-#         exp['highlights_en'] = [traduzir_texto(
-#             h) for h in exp.get('highlights_pt', [])]
-
-#     for edu in data.get('education', []):
-#         edu['area_en'] = traduzir_texto(edu.get('area_pt', ''))
-#         edu['status_en'] = traduzir_texto(edu.get('status_pt', ''))
-
-#     for proj in data.get('projects', []):
-#         proj['description_en'] = traduzir_texto(proj.get('description_pt', ''))
-
-#     for curso in data.get('courses', []):
-#         curso['name_en'] = traduzir_texto(curso.get('name_pt', ''))
-
-#     return data
 def traduzir_payload(data):
     falhas = []
 
