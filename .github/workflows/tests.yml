@@ -27,3 +27,4 @@ jobs:
 
       - name: Rodar testes
         run: pytest tests/ -v
+        
