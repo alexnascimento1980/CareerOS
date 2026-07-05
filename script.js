@@ -76,6 +76,8 @@ function atualizarUIAuth(user) {
     bannerLogin.style.setProperty("display", "flex", "important");
     bannerLogged.style.setProperty("display", "none", "important");
     emailDisplay.textContent = "";
+    clearTimeout(timeoutSalvar);
+    timeoutSalvar = null;
     currentResumeId = null;
     document.getElementById("resumesList").innerHTML = "";
     document.getElementById("current-resume-title").textContent =
@@ -546,6 +548,21 @@ function agendarSalvamentoNuvem() {
   timeoutSalvar = setTimeout(salvarDadosNuvem, 1500);
 }
 
+// Se houver uma edição aguardando o debounce de 1.5s, salva IMEDIATAMENTE
+// no currículo que ainda está ativo (chame isso antes de trocar de
+// currículo). Sem isso, o timer antigo dispararia depois da troca e
+// salvaria os dados errados (ou incompletos) por cima do novo currículo
+// selecionado, já que salvarDadosNuvem() sempre usa o currentResumeId
+// no momento em que ele efetivamente roda, não no momento em que foi
+// agendado.
+async function flushSalvamentoPendente() {
+  if (timeoutSalvar) {
+    clearTimeout(timeoutSalvar);
+    timeoutSalvar = null;
+    await salvarDadosNuvem();
+  }
+}
+
 async function salvarDadosNuvem() {
   if (!currentUser || !currentResumeId || isSavingToCloud) return;
   try {
@@ -753,6 +770,7 @@ async function carregarListaCurriculos(userId) {
 // Troca o currículo em edição no formulário para outro já existente.
 async function selecionarCurriculo(id) {
   if (id === currentResumeId) return;
+  await flushSalvamentoPendente();
   currentResumeId = id;
   await carregarCurriculoPorId(id);
   await carregarListaCurriculos(currentUser.id);
@@ -776,6 +794,11 @@ async function excluirCurriculo(id) {
   }
 
   if (id === currentResumeId) {
+    // Cancela qualquer autosave pendente sem salvar: não faz sentido gravar
+    // dados num currículo que acabamos de excluir.
+    clearTimeout(timeoutSalvar);
+    timeoutSalvar = null;
+
     // Precisa de outro currículo pra assumir a edição (ou criar um novo se
     // esse era o único que o usuário tinha).
     const { data } = await supabaseClient
@@ -827,6 +850,7 @@ document
     if (!currentUser) return;
 
     if (modalMode === "new") {
+      await flushSalvamentoPendente();
       const novoId = await criarCurriculoNoBanco(currentUser.id, nome);
       if (!novoId) return;
       currentResumeId = novoId;
