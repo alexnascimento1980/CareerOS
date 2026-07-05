@@ -1,0 +1,8 @@
+{
+  "appId": "com.alexnascimento.careeros",
+  "appName": "CareerOS",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}

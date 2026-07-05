@@ -1,9 +1,45 @@
+# ==========================
+# Python
+# ==========================
 venv/
 testenv/
+.venv/
 __pycache__/
 .pytest_cache/
+*.py[cod]
+
+# ==========================
+# Node.js
+# ==========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==========================
+# Variáveis de ambiente
+# ==========================
+.env
+.env.*
+
+# ==========================
+# VS Code
+# ==========================
+.vscode/
+
+# ==========================
+# Sistema Operacional
+# ==========================
 .DS_Store
+Thumbs.db
 
+# ==========================
+# Build
+# ==========================
+dist/
+build/
 
-# Ignorar a pasta de documentação temporariamente
+# ==========================
+# Documentação (temporário)
+# ==========================
 docs/

@@ -1,0 +1,19 @@
+{
+  "name": "careeros",
+  "version": "1.0.0",
+  "description": "CareerOS - Gerador de Currículo ATS Bilíngue",
+  "scripts": {
+    "test": "echo \"sem testes JS por enquanto\" && exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexnascimento1980/CareerOS.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/cli": "^8.4.1",
+    "@capacitor/core": "^8.4.1"
+  }
+}
