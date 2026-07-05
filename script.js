@@ -38,7 +38,17 @@ async function checarSessao() {
   } = await supabaseClient.auth.getSession();
   atualizarUIAuth(session?.user || null);
   limparTokenDaURL();
-  supabaseClient.auth.onAuthStateChange((_event, session) => {
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    // Chegou aqui através do link de recuperação de senha do e-mail: o
+    // Supabase já autentica a pessoa com uma sessão temporária só pra
+    // permitir trocar a senha. Mostramos o modal de nova senha em vez do
+    // fluxo normal de login.
+    if (event === "PASSWORD_RECOVERY") {
+      limparTokenDaURL();
+      new bootstrap.Modal(document.getElementById("newPasswordModal")).show();
+      return;
+    }
+
     // O Supabase dispara um evento (ex: INITIAL_SESSION) imediatamente ao
     // registrar este listener, repetindo a mesma sessão que já processamos
     // acima via getSession(). Sem essa checagem, iniciarCurriculosDoUsuario()
@@ -130,6 +140,94 @@ async function loginComGoogle() {
 
 async function fazerLogout() {
   await supabaseClient.auth.signOut();
+}
+
+// ==========================================
+// RECUPERAÇÃO DE SENHA
+// ==========================================
+function abrirModalRecuperarSenha() {
+  bootstrap.Modal.getInstance(document.getElementById("authModal"))?.hide();
+  document.getElementById("reset-email").value =
+    document.getElementById("auth-email").value || "";
+  document.getElementById("reset-error").style.display = "none";
+  new bootstrap.Modal(document.getElementById("resetPasswordModal")).show();
+}
+
+async function enviarLinkRecuperacao() {
+  const email = document.getElementById("reset-email").value.trim();
+  const errorDiv = document.getElementById("reset-error");
+  errorDiv.style.display = "none";
+
+  if (!email || !email.includes("@")) {
+    errorDiv.textContent = "Digite um e-mail válido.";
+    errorDiv.style.display = "block";
+    return;
+  }
+
+  const btn = document.getElementById("btn-send-reset");
+  btn.disabled = true;
+  btn.textContent = "Enviando...";
+
+  const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin,
+  });
+
+  btn.disabled = false;
+  btn.textContent = "Enviar link de recuperação";
+
+  if (error) {
+    errorDiv.textContent = "Erro ao enviar e-mail: " + error.message;
+    errorDiv.style.display = "block";
+    return;
+  }
+
+  bootstrap.Modal.getInstance(
+    document.getElementById("resetPasswordModal"),
+  ).hide();
+  mostrarNotificacao(
+    "Se esse e-mail estiver cadastrado, você vai receber um link para redefinir a senha.",
+    "success",
+  );
+}
+
+async function salvarNovaSenha() {
+  const novaSenha = document.getElementById("new-password").value;
+  const confirmacao = document.getElementById("new-password-confirm").value;
+  const errorDiv = document.getElementById("new-password-error");
+  errorDiv.style.display = "none";
+
+  if (!novaSenha || novaSenha.length < 6) {
+    errorDiv.textContent = "A senha precisa ter pelo menos 6 caracteres.";
+    errorDiv.style.display = "block";
+    return;
+  }
+  if (novaSenha !== confirmacao) {
+    errorDiv.textContent = "As senhas não coincidem.";
+    errorDiv.style.display = "block";
+    return;
+  }
+
+  const btn = document.getElementById("btn-save-new-password");
+  btn.disabled = true;
+  btn.textContent = "Salvando...";
+
+  const { error } = await supabaseClient.auth.updateUser({
+    password: novaSenha,
+  });
+
+  btn.disabled = false;
+  btn.textContent = "Salvar nova senha";
+
+  if (error) {
+    errorDiv.textContent = "Erro ao salvar nova senha: " + error.message;
+    errorDiv.style.display = "block";
+    return;
+  }
+
+  bootstrap.Modal.getInstance(
+    document.getElementById("newPasswordModal"),
+  ).hide();
+  mostrarNotificacao("Senha atualizada com sucesso!", "success");
 }
 
 // ==========================================
@@ -473,10 +571,9 @@ async function salvarDadosNuvem() {
           .filter((s) => s),
       },
       config: {
-        includeExperience: document.getElementById("include-experience")
-          .checked,
-        includeEducation: document.getElementById("include-education")
-          .checked,
+        includeExperience:
+          document.getElementById("include-experience").checked,
+        includeEducation: document.getElementById("include-education").checked,
         includeCourses: document.getElementById("include-courses").checked,
         includeProjects: document.getElementById("include-projects").checked,
         idioma: document.getElementById("idioma_escolhido").value,
@@ -666,11 +763,7 @@ async function selecionarCurriculo(id) {
 }
 
 async function excluirCurriculo(id) {
-  if (
-    !confirm(
-      "Excluir este currículo? Essa ação não pode ser desfeita.",
-    )
-  )
+  if (!confirm("Excluir este currículo? Essa ação não pode ser desfeita."))
     return;
 
   const { error } = await supabaseClient
@@ -756,9 +849,7 @@ document
       await carregarListaCurriculos(currentUser.id);
     }
 
-    bootstrap.Modal.getInstance(
-      document.getElementById("resumeModal"),
-    ).hide();
+    bootstrap.Modal.getInstance(document.getElementById("resumeModal")).hide();
   });
 
 async function carregarCurriculoPorId(id) {

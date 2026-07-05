@@ -262,6 +262,144 @@
                   <i class="fab fa-google me-2"></i> Google
                 </button>
               </div>
+              <div class="text-center mt-3">
+                <a
+                  href="#"
+                  class="small text-muted"
+                  onclick="
+                    event.preventDefault();
+                    abrirModalRecuperarSenha();
+                  "
+                  >Esqueci minha senha</a
+                >
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="resetPasswordModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-gradient-primary text-white">
+            <h5 class="modal-title fw-bold">
+              <i class="fas fa-key me-2"></i> Recuperar Senha
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body p-4">
+            <p class="small text-muted">
+              Digite o e-mail da sua conta. Vamos enviar um link pra você
+              definir uma nova senha.
+            </p>
+            <form
+              id="resetPasswordForm"
+              onsubmit="
+                event.preventDefault();
+                enviarLinkRecuperacao();
+              "
+            >
+              <div class="mb-3">
+                <label class="form-label fw-bold">E-mail</label
+                ><input
+                  type="email"
+                  class="form-control"
+                  id="reset-email"
+                  placeholder="seu@email.com"
+                  autocomplete="email"
+                />
+              </div>
+              <div
+                id="reset-error"
+                class="text-danger small mb-3 fw-bold"
+                style="display: none"
+              ></div>
+              <div class="d-grid">
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  id="btn-send-reset"
+                >
+                  Enviar link de recuperação
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="newPasswordModal"
+      tabindex="-1"
+      aria-hidden="true"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-gradient-primary text-white">
+            <h5 class="modal-title fw-bold">
+              <i class="fas fa-key me-2"></i> Definir Nova Senha
+            </h5>
+          </div>
+          <div class="modal-body p-4">
+            <p class="small text-muted">
+              Você clicou num link de recuperação de senha. Escolha uma nova
+              senha pra continuar.
+            </p>
+            <form
+              id="newPasswordForm"
+              onsubmit="
+                event.preventDefault();
+                salvarNovaSenha();
+              "
+            >
+              <div class="mb-3">
+                <label class="form-label fw-bold">Nova senha</label
+                ><input
+                  type="password"
+                  class="form-control"
+                  id="new-password"
+                  placeholder="Mínimo 6 caracteres"
+                  autocomplete="new-password"
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold">Confirmar nova senha</label
+                ><input
+                  type="password"
+                  class="form-control"
+                  id="new-password-confirm"
+                  placeholder="Repita a nova senha"
+                  autocomplete="new-password"
+                />
+              </div>
+              <div
+                id="new-password-error"
+                class="text-danger small mb-3 fw-bold"
+                style="display: none"
+              ></div>
+              <div class="d-grid">
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  id="btn-save-new-password"
+                >
+                  Salvar nova senha
+                </button>
+              </div>
             </form>
           </div>
         </div>
