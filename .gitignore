@@ -39,6 +39,16 @@ Thumbs.db
 dist/
 build/
 
+# Android Studio
+.idea/
+android/.idea/
+
+# Gradle
+.gradle/
+
+# Arquivos locais
+android/local.properties
+
 # ==========================
 # Documentação (temporário)
 # ==========================
