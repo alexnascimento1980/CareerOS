@@ -229,7 +229,21 @@ function toggleDataFim(checkbox) {
     input.value = "";
   } else {
     input.disabled = false;
-    input.setAttribute("required", "required");
+    // Só volta a ser obrigatório se a seção (Experiência/Formação) também
+    // estiver marcada para entrar no PDF — sem isso, desmarcar "Incluir no
+    // PDF?" e depois mexer nessa caixinha reativava a obrigatoriedade à
+    // revelia do toggle da seção.
+    const secaoId = checkbox.closest("#experiencias-container")
+      ? "include-experience"
+      : checkbox.closest("#formacao-container")
+        ? "include-education"
+        : null;
+    const secaoIncluida = secaoId
+      ? document.getElementById(secaoId).checked
+      : true;
+    if (secaoIncluida) {
+      input.setAttribute("required", "required");
+    }
   }
 }
 
