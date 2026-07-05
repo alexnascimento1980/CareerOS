@@ -33,7 +33,7 @@ jobs:
           echo "Backup gerado com $(python3 -c "import json; print(len(json.load(open('backup_curriculos_${DATA}.json'))))") registro(s)."
 
       - name: Enviar como artefato do workflow
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backup-curriculos-${{ github.run_id }}
           path: backup_curriculos_*.json
