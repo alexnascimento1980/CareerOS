@@ -202,6 +202,19 @@ document.getElementById("phone").addEventListener("input", function (e) {
   e.target.value = v;
 });
 
+// Se a pessoa colar a URL completa (o normal ao copiar do navegador), tira
+// o https://www. automaticamente — o backend já monta esse prefixo sozinho,
+// então mantê-lo aqui faria o link final sair duplicado e quebrado.
+function limparUrlPerfil(valor) {
+  return valor.replace(/^https?:\/\//i, "").replace(/^www\./i, "");
+}
+
+["linkedin", "github"].forEach((id) => {
+  document.getElementById(id).addEventListener("blur", function () {
+    this.value = limparUrlPerfil(this.value.trim());
+  });
+});
+
 function formatarDataMesAno(v) {
   if (!v) return "";
   const p = v.split("-");
@@ -446,9 +459,10 @@ async function salvarDadosNuvem() {
           .filter((s) => s),
       },
       config: {
-        includeExperience:
-          document.getElementById("include-experience").checked,
-        includeEducation: document.getElementById("include-education").checked,
+        includeExperience: document.getElementById("include-experience")
+          .checked,
+        includeEducation: document.getElementById("include-education")
+          .checked,
         includeCourses: document.getElementById("include-courses").checked,
         includeProjects: document.getElementById("include-projects").checked,
         idioma: document.getElementById("idioma_escolhido").value,
@@ -638,7 +652,11 @@ async function selecionarCurriculo(id) {
 }
 
 async function excluirCurriculo(id) {
-  if (!confirm("Excluir este currículo? Essa ação não pode ser desfeita."))
+  if (
+    !confirm(
+      "Excluir este currículo? Essa ação não pode ser desfeita.",
+    )
+  )
     return;
 
   const { error } = await supabaseClient
@@ -724,7 +742,9 @@ document
       await carregarListaCurriculos(currentUser.id);
     }
 
-    bootstrap.Modal.getInstance(document.getElementById("resumeModal")).hide();
+    bootstrap.Modal.getInstance(
+      document.getElementById("resumeModal"),
+    ).hide();
   });
 
 async function carregarCurriculoPorId(id) {

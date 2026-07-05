@@ -46,6 +46,21 @@ def script():
     return send_from_directory('.', 'script.js')
 
 
+def normalizar_url_perfil(valor):
+    """Remove https://, http:// e www. do início, já que o template monta
+    o link como https://{{ valor }} — se o usuário colar a URL completa
+    (o normal ao copiar do navegador), o link final ficaria duplicado e
+    quebrado (https://https://...)."""
+    valor = str(valor or '').strip()
+    for prefixo in ('https://', 'http://'):
+        if valor.lower().startswith(prefixo):
+            valor = valor[len(prefixo):]
+            break
+    if valor.lower().startswith('www.'):
+        valor = valor[4:]
+    return valor
+
+
 def validar_dados_cv(data):
     if not data or not isinstance(data, dict):
         return False, "O payload deve ser um objeto JSON válido."
@@ -65,6 +80,14 @@ def validar_dados_cv(data):
     email = str(basics.get('email', '')).strip()
     if not email or '@' not in email or ' ' in email:
         return False, "O campo 'basics.email' deve ser um e-mail válido."
+
+    linkedin = normalizar_url_perfil(basics.get('linkedin', ''))
+    if linkedin and 'linkedin.com' not in linkedin.lower():
+        return False, "O campo 'basics.linkedin' deve ser um link do linkedin.com."
+
+    github = normalizar_url_perfil(basics.get('github', ''))
+    if github and 'github.com' not in github.lower():
+        return False, "O campo 'basics.github' deve ser um link do github.com."
 
     # --- summary (obrigatório) ---
     summary = data.get('summary')
@@ -244,6 +267,15 @@ def generate_cv():
 
     if not valido:
         return jsonify({"erro": mensagem}), 400
+
+    # Normaliza depois de validado: se a pessoa colou a URL completa (comum
+    # ao copiar do navegador), removemos o https://www. daqui, já que o
+    # template monta o link como https://{{ valor }} — sem isso o link do
+    # PDF sairia duplicado e quebrado (https://https://linkedin.com/...).
+    data['basics']['linkedin'] = normalizar_url_perfil(
+        data['basics'].get('linkedin', ''))
+    data['basics']['github'] = normalizar_url_perfil(
+        data['basics'].get('github', ''))
 
     lang = data.get('lang', 'pt')
     if lang == 'en':
