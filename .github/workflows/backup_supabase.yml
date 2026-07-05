@@ -1,0 +1,42 @@
+name: Backup Supabase (curriculos)
+
+# Roda todo dia às 03:00 UTC (00:00 no horário de Brasília) e também pode
+# ser disparado manualmente pela aba Actions do GitHub, a qualquer momento.
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar dados da tabela curriculos via API do Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set -e
+          DATA=$(date +%Y-%m-%d)
+          curl -sf "$SUPABASE_URL/rest/v1/curriculos?select=*" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -o "backup_curriculos_${DATA}.json"
+
+          # Falha o job se o backup vier vazio/corrompido, em vez de
+          # silenciosamente arquivar um backup inútil.
+          if [ ! -s "backup_curriculos_${DATA}.json" ]; then
+            echo "Backup veio vazio — algo deu errado na requisição."
+            exit 1
+          fi
+          python3 -c "import json; json.load(open('backup_curriculos_${DATA}.json'))"
+          echo "Backup gerado com $(python3 -c "import json; print(len(json.load(open('backup_curriculos_${DATA}.json'))))") registro(s)."
+
+      - name: Enviar como artefato do workflow
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-curriculos-${{ github.run_id }}
+          path: backup_curriculos_*.json
+          # Artefatos ficam disponíveis pra download na aba Actions do
+          # GitHub por 90 dias; depois disso são apagados automaticamente.
+          retention-days: 90
