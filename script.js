@@ -19,6 +19,17 @@ const API_BASE_URL =
     : "";
 
 let currentUser = null;
+
+// Converte um Blob (o PDF recebido do backend) para base64, formato que o
+// plugin Filesystem do Capacitor exige para gravar arquivos binários.
+function blobParaBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result.split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
 let currentResumeId = null;
 let isSavingToCloud = false;
 let isLoadingResume = false;
@@ -1216,11 +1227,32 @@ document
         return;
       }
       const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${document.getElementById("name").value.trim().replace(/\s+/g, "_")}_curriculo.pdf`;
-      a.click();
+      const nomeArquivo = `${document.getElementById("name").value.trim().replace(/\s+/g, "_")}_curriculo.pdf`;
+
+      if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+        // Dentro do app, o truque de <a download> do navegador não funciona
+        // (o WebView não tem gerenciador de downloads). Em vez disso,
+        // gravamos o PDF no armazenamento do app e abrimos a folha nativa
+        // de compartilhamento/salvamento do Android/iOS.
+        const base64Data = await blobParaBase64(blob);
+        const { Filesystem, Directory, Share } = window.Capacitor.Plugins;
+        const arquivo = await Filesystem.writeFile({
+          path: nomeArquivo,
+          data: base64Data,
+          directory: Directory.Cache,
+        });
+        await Share.share({
+          title: "Currículo em PDF",
+          url: arquivo.uri,
+          dialogTitle: "Salvar ou compartilhar currículo",
+        });
+      } else {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = nomeArquivo;
+        a.click();
+      }
       mostrarNotificacao("PDF gerado com sucesso!", "success");
     } catch (err) {
       mostrarNotificacao("Erro ao gerar PDF.", "danger");
