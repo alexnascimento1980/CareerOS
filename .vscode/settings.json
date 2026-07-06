@@ -1,3 +1,17 @@
 {
-    "git.ignoreLimitWarning": true
+    "editor.formatOnSave": true,
+
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "always"
+    },
+
+    "python.analysis.typeCheckingMode": "basic",
+
+    "python.testing.pytestEnabled": true,
+
+    "files.trimTrailingWhitespace": true,
+
+    "files.insertFinalNewline": true,
+
+    "files.eol": "\n"
 }

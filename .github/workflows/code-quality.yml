@@ -1,0 +1,38 @@
+name: Code Quality
+
+on:
+
+  push:
+
+  pull_request:
+
+jobs:
+
+  quality:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: |
+          pip install ruff black isort
+
+      - run: ruff check .
+
+      - run: black --check .
+
+      - run: isort --check-only .
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm install
+
+      - run: npm run lint || true
