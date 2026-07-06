@@ -203,6 +203,7 @@ if (window.Capacitor && window.Capacitor.isNativePlatform()) {
     const params = new URLSearchParams(hash);
     const access_token = params.get("access_token");
     const refresh_token = params.get("refresh_token");
+    const ehRecuperacaoSenha = params.get("type") === "recovery";
 
     if (access_token && refresh_token) {
       const { error } = await supabaseClient.auth.setSession({
@@ -211,6 +212,14 @@ if (window.Capacitor && window.Capacitor.isNativePlatform()) {
       });
       if (error) {
         mostrarNotificacao("Erro ao concluir login: " + error.message, "danger");
+        return;
+      }
+      // setSession() feito manualmente aqui não dispara o evento automático
+      // PASSWORD_RECOVERY do Supabase (esse evento só ocorre quando o
+      // próprio client detecta e interpreta a URL sozinho) — por isso
+      // precisamos checar o parâmetro "type" e abrir o modal na mão.
+      if (ehRecuperacaoSenha) {
+        new bootstrap.Modal(document.getElementById("newPasswordModal")).show();
       }
     }
   });
@@ -246,8 +255,9 @@ async function enviarLinkRecuperacao() {
   btn.disabled = true;
   btn.textContent = "Enviando...";
 
+  const isNative = window.Capacitor && window.Capacitor.isNativePlatform();
   const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin,
+    redirectTo: isNative ? OAUTH_CALLBACK_URL : window.location.origin,
   });
 
   btn.disabled = false;
@@ -1235,11 +1245,11 @@ document
         // gravamos o PDF no armazenamento do app e abrimos a folha nativa
         // de compartilhamento/salvamento do Android/iOS.
         const base64Data = await blobParaBase64(blob);
-        const { Filesystem, Directory, Share } = window.Capacitor.Plugins;
+        const { Filesystem, Share } = window.Capacitor.Plugins;
         const arquivo = await Filesystem.writeFile({
           path: nomeArquivo,
           data: base64Data,
-          directory: Directory.Cache,
+          directory: "CACHE",
         });
         await Share.share({
           title: "Currículo em PDF",
@@ -1255,6 +1265,7 @@ document
       }
       mostrarNotificacao("PDF gerado com sucesso!", "success");
     } catch (err) {
+      console.error("Erro ao gerar/salvar PDF:", err);
       mostrarNotificacao("Erro ao gerar PDF.", "danger");
     } finally {
       b.innerHTML = h;
