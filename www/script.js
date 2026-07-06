@@ -223,6 +223,32 @@ if (window.Capacitor && window.Capacitor.isNativePlatform()) {
       }
     }
   });
+
+  // O Capacitor não fecha/minimiza o app sozinho quando o botão (ou gesto)
+  // Voltar do Android é usado — precisa ser tratado explicitamente. Aqui:
+  // se tiver algum modal ou painel aberto, o Voltar fecha ele primeiro
+  // (como o usuário espera); só sai do app de verdade quando não há mais
+  // nada aberto, seguindo a convenção do Android (sem botão de "Sair" na
+  // interface).
+  window.Capacitor.Plugins.App.addListener("backButton", ({ canGoBack }) => {
+    const modalAberto = document.querySelector(".modal.show");
+    if (modalAberto) {
+      bootstrap.Modal.getInstance(modalAberto)?.hide();
+      return;
+    }
+
+    const painelAberto = document.querySelector(".offcanvas.show");
+    if (painelAberto) {
+      bootstrap.Offcanvas.getInstance(painelAberto)?.hide();
+      return;
+    }
+
+    if (canGoBack) {
+      window.history.back();
+    } else {
+      window.Capacitor.Plugins.App.exitApp();
+    }
+  });
 }
 
 async function fazerLogout() {
