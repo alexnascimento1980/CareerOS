@@ -313,7 +313,7 @@ def generate_cv():
 
         return send_file(mem_pdf, mimetype='application/pdf', as_attachment=True, download_name=nome_arquivo)
 
-    except Exception as e:
+    except Exception:
         # Loga o detalhe real só no servidor; o cliente recebe uma mensagem
         # genérica para não vazar caminhos de arquivo, versões de biblioteca
         # ou outros detalhes internos que ajudariam um atacante.
