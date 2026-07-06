@@ -22,4 +22,3 @@ Descreva o objetivo desta Pull Request.
 - [ ] Não gera conflitos
 
 - [ ] Build funcionando
-

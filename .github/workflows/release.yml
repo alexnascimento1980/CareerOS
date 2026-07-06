@@ -1,17 +1,13 @@
 name: Release
 
 on:
-
   workflow_dispatch:
 
 jobs:
-
   release:
-
     runs-on: ubuntu-latest
 
     steps:
-
       - uses: actions/checkout@v4
 
       - name: Build
@@ -27,7 +23,6 @@ jobs:
         uses: actions/upload-artifact@v4
 
         with:
-
           name: CareerOS
 
           path: .
