@@ -144,13 +144,65 @@ async function fazerLogin() {
   }
 }
 
+// Esquema de URL customizado que o Android/iOS usa pra "devolver" o
+// controle ao app depois do login OAuth (configurado no AndroidManifest.xml
+// e, futuramente, no Info.plist do iOS).
+const OAUTH_CALLBACK_URL = "com.alexnascimento.careeros://auth-callback";
+
 async function loginComGoogle() {
-  const { error } = await supabaseClient.auth.signInWithOAuth({
-    provider: "google",
-    options: { redirectTo: window.location.origin },
+  const isNative = window.Capacitor && window.Capacitor.isNativePlatform();
+
+  if (isNative) {
+    // Dentro do app: pedimos a URL de login sem redirecionar automaticamente
+    // (skipBrowserRedirect), abrimos ela numa aba do navegador do sistema
+    // via plugin Browser, e esperamos o Google devolver o controle pro app
+    // através do esquema de URL customizado (ver appUrlOpen mais abaixo).
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: OAUTH_CALLBACK_URL,
+        skipBrowserRedirect: true,
+      },
+    });
+    if (error) {
+      mostrarNotificacao("Erro no login com Google: " + error.message, "danger");
+      return;
+    }
+    await window.Capacitor.Plugins.Browser.open({ url: data.url });
+  } else {
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
+    });
+    if (error)
+      mostrarNotificacao("Erro no login com Google: " + error.message, "danger");
+  }
+}
+
+// Só existe dentro do app nativo: escuta o momento em que o Android/iOS
+// reabre o app através do esquema de URL customizado (depois do login no
+// navegador do sistema), extrai os tokens da URL e conclui a sessão.
+if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+  window.Capacitor.Plugins.App.addListener("appUrlOpen", async (evento) => {
+    if (!evento.url || !evento.url.startsWith(OAUTH_CALLBACK_URL)) return;
+
+    await window.Capacitor.Plugins.Browser.close().catch(() => {});
+
+    const hash = evento.url.split("#")[1] || "";
+    const params = new URLSearchParams(hash);
+    const access_token = params.get("access_token");
+    const refresh_token = params.get("refresh_token");
+
+    if (access_token && refresh_token) {
+      const { error } = await supabaseClient.auth.setSession({
+        access_token,
+        refresh_token,
+      });
+      if (error) {
+        mostrarNotificacao("Erro ao concluir login: " + error.message, "danger");
+      }
+    }
   });
-  if (error)
-    mostrarNotificacao("Erro no login com Google: " + error.message, "danger");
 }
 
 async function fazerLogout() {
