@@ -2,16 +2,16 @@
 # invertida precisa ser tratada primeiro para não escapar duplicado o que
 # as outras substituições geram.
 _LATEX_ESCAPE_MAP = {
-    '\\': r'\textbackslash{}',
-    '{': r'\{',
-    '}': r'\}',
-    '$': r'\$',
-    '&': r'\&',
-    '#': r'\#',
-    '_': r'\_',
-    '%': r'\%',
-    '~': r'\textasciitilde{}',
-    '^': r'\textasciicircum{}',
+    "\\": r"\textbackslash{}",
+    "{": r"\{",
+    "}": r"\}",
+    "$": r"\$",
+    "&": r"\&",
+    "#": r"\#",
+    "_": r"\_",
+    "%": r"\%",
+    "~": r"\textasciitilde{}",
+    "^": r"\textasciicircum{}",
 }
 
 
@@ -22,5 +22,5 @@ def escapar_latex(texto):
     PDF (ou, em teoria, poderiam injetar comandos LaTeX arbitrários).
     """
     if texto is None:
-        return ''
-    return ''.join(_LATEX_ESCAPE_MAP.get(ch, ch) for ch in str(texto))
+        return ""
+    return "".join(_LATEX_ESCAPE_MAP.get(ch, ch) for ch in str(texto))
