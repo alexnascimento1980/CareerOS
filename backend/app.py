@@ -11,10 +11,16 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from jinja2 import Environment, FileSystemLoader
-
 from latex_utils import escapar_latex
 
-app = Flask(__name__, static_folder=".")
+# Caminhos calculados a partir da localização deste arquivo, não da pasta
+# de onde o comando é executado — assim o app funciona igual rodando
+# localmente (python backend/app.py) ou dentro do Docker.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIR = os.path.join(BASE_DIR, "..", "frontend")
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
+
+app = Flask(__name__, static_folder=FRONTEND_DIR)
 
 # Protege contra payloads absurdamente grandes (abuso/DoS via pdflatex).
 app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024  # 2 MB
@@ -43,12 +49,12 @@ limiter = Limiter(
 
 @app.route("/")
 def index():
-    return send_from_directory(".", "index.html")
+    return send_from_directory(FRONTEND_DIR, "index.html")
 
 
 @app.route("/script.js")
 def script():
-    return send_from_directory(".", "script.js")
+    return send_from_directory(FRONTEND_DIR, "script.js")
 
 
 def normalizar_url_perfil(valor):
@@ -284,7 +290,7 @@ def generate_cv():
             )
 
     try:
-        env = Environment(loader=FileSystemLoader("templates"))
+        env = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
         env.filters["latex"] = escapar_latex
         template = env.get_template("base_ats.tex")
         rendered_tex = template.render(dados=data, lang=lang)
@@ -359,8 +365,8 @@ def generate_cv():
 
 
 if __name__ == "__main__":
-    if not os.path.exists("templates"):
-        os.makedirs("templates")
+    if not os.path.exists(TEMPLATES_DIR):
+        os.makedirs(TEMPLATES_DIR)
     # debug=True só liga se você explicitamente pedir (FLASK_DEBUG=1). Isso
     # evita expor o debugger interativo do Werkzeug (execução de código
     # arbitrário via console) caso alguém rode "python app.py" por engano

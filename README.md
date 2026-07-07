@@ -54,22 +54,35 @@ CareerOS/
 ├── .github/
 │   └── workflows/
 │       ├── tests.yml              # CI: roda a suíte de testes a cada push/PR
+│       ├── code-quality.yml       # CI: lint (ruff, black, isort, eslint)
 │       └── backup_supabase.yml    # Backup diário automático da tabela curriculos
-├── templates/
-│   └── base_ats.tex               # Template do currículo em LaTeX
-├── tests/
-│   └── test_app.py                # Suíte de testes automatizados (pytest)
-├── app.py                         # Servidor Flask e rotas da API
-├── latex_utils.py                 # Escaping de caracteres especiais do LaTeX
-├── index.html                     # Interface do usuário (formulário)
-├── script.js                      # Lógica de frontend (auth, currículos, envio de dados)
-├── requirements.txt                # Dependências de produção
-├── requirements-dev.txt           # Dependências de desenvolvimento/teste
+├── backend/
+│   ├── app.py                     # Servidor Flask e rotas da API
+│   ├── latex_utils.py             # Escaping de caracteres especiais do LaTeX
+│   ├── gerador.py                 # Script standalone de geração (fora do fluxo web)
+│   ├── templates/
+│   │   └── base_ats.tex           # Template do currículo em LaTeX
+│   ├── tests/
+│   │   └── test_app.py            # Suíte de testes automatizados (pytest)
+│   ├── sample-data/
+│   │   └── dados.json             # Dado de exemplo usado pelo gerador.py
+│   ├── requirements.txt           # Dependências de produção
+│   └── requirements-dev.txt       # Dependências de desenvolvimento/teste
+├── frontend/
+│   ├── index.html                 # Interface do usuário (formulário)
+│   └── script.js                  # Lógica de frontend (auth, currículos, envio de dados)
+├── android/                       # Projeto nativo Android (Capacitor)
+├── www/                           # Cópia web empacotada pelo Capacitor (sincronizada de frontend/)
+├── docs/                          # Documentação estendida do projeto
+├── capacitor.config.json
+├── package.json
 ├── Dockerfile                     # Receita de infraestrutura para nuvem
 ├── .dockerignore
 ├── .gitignore
 └── README.md
 ```
+
+> **Nota:** `www/` é uma cópia gerada pelo Capacitor a partir de `frontend/` — sempre edite os arquivos em `frontend/` e rode `npx cap sync android` para propagar a mudança pro app mobile.
 
 ## ▶️ Como rodar localmente
 
@@ -84,13 +97,13 @@ venv\Scripts\activate        # Windows
 source venv/bin/activate     # Linux/Mac
 
 # 3. Instale as dependências
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
 
-# 4. Configure as credenciais do Supabase em script.js
+# 4. Configure as credenciais do Supabase em frontend/script.js
 #    (supabaseUrl e supabaseKey no topo do arquivo)
 
 # 5. Rode o servidor
-python app.py
+python backend/app.py
 ```
 
 Acesse `http://127.0.0.1:5000`. É necessário ter o TeX Live (`pdflatex`) instalado no sistema para a geração de PDF funcionar.
@@ -98,10 +111,14 @@ Acesse `http://127.0.0.1:5000`. É necessário ter o TeX Live (`pdflatex`) insta
 Para rodar os testes automatizados:
 
 ```bash
-pip install -r requirements-dev.txt
-pytest tests/ -v
+pip install -r backend/requirements-dev.txt
+pytest backend/tests/ -v
 ```
+
+## 📱 Aplicativo Mobile
+
+O app Android (via Capacitor) já está funcional — login (e-mail/senha e Google), múltiplos currículos, geração de PDF bilíngue e recuperação de senha testados em aparelho físico. Veja `docs/mobile.md` para detalhes de build e configuração.
 
 ## 🗺️ Roadmap
 
-- [ ] Aplicativo mobile (Android/iOS) reaproveitando a interface atual via Capacitor
+- [ ] Versão iOS (requer Mac + Xcode)

@@ -2,8 +2,10 @@
   "name": "careeros",
   "version": "1.0.0",
   "description": "CareerOS - Gerador de Currículo ATS Bilíngue",
+  "type": "module",
   "scripts": {
-    "test": "echo \"sem testes JS por enquanto\" && exit 0"
+    "test": "echo \"sem testes JS por enquanto\" && exit 0",
+    "lint": "eslint frontend"
   },
   "repository": {
     "type": "git",
@@ -11,6 +13,9 @@
   },
   "author": "",
   "license": "ISC",
+  "devDependencies": {
+    "eslint": "^9.15.0"
+  },
   "dependencies": {
     "@capacitor/android": "^8.4.1",
     "@capacitor/app": "^8.1.0",

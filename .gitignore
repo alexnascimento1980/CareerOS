@@ -25,6 +25,7 @@ pnpm-debug.log*
 dist/
 build/
 coverage/
+saida/
 
 # Capacitor
 .capacitor/

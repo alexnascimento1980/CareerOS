@@ -33,7 +33,7 @@ source venv/bin/activate
 ### Dependências
 
 ```bash
-pip install -r requirements-dev.txt
+pip install -r backend/requirements-dev.txt
 ```
 
 ```bash
@@ -43,7 +43,7 @@ npm install
 ## Executar
 
 ```bash
-python app.py
+python backend/app.py
 ```
 
 ## Mobile

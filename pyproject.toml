@@ -10,5 +10,5 @@ line-length = 88
 target-version = "py311"
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["backend/tests"]
 python_files = ["test_*.py"]

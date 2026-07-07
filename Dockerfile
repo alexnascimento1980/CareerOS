@@ -13,18 +13,21 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # 4. Copia apenas o arquivo de dependências primeiro
-COPY requirements.txt .
+COPY backend/requirements.txt backend/requirements.txt
 
 # 5. Instala as bibliotecas do Python (Flask, Jinja2, tradutor, etc.)
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r backend/requirements.txt
 
-# 6. Copia todo o resto do seu projeto (HTML, JS, app.py, pasta templates)
+# 6. Copia todo o resto do seu projeto (backend/, frontend/, etc.)
 COPY . .
 
 # 7. Informa que o container vai se comunicar pela porta 5000
 EXPOSE 5000
 
-# 8. Liga o servidor usando o Gunicorn em vez do Flask puro.
+# 8. Roda a partir da pasta backend/, onde o app.py de fato mora.
+WORKDIR /app/backend
+
+# 9. Liga o servidor usando o Gunicorn em vez do Flask puro.
 # --timeout 90: cada requisição pode envolver chamadas de tradução (rede) +
 # compilação LaTeX (até 30s pelo próprio timeout do subprocess em app.py);
 # o padrão do Gunicorn (30s) poderia matar o worker no meio do processo,

@@ -361,21 +361,21 @@ async function carregarEstados() {
     );
     const estados = await response.json();
     selectEstado.innerHTML =
-      '<option value="" disabled selected>Selecione um estado...</option>';
+      "<option value=\"\" disabled selected>Selecione um estado...</option>";
     estados.forEach(
       (estado) =>
         (selectEstado.innerHTML += `<option value="${estado.sigla}">${estado.nome}</option>`),
     );
   } catch (e) {
     selectEstado.innerHTML =
-      '<option value="" disabled selected>Erro ao carregar</option>';
+      "<option value=\"\" disabled selected>Erro ao carregar</option>";
   }
 }
 
 async function carregarCidades(uf) {
   const selectCidade = document.getElementById("cidade");
   selectCidade.innerHTML =
-    '<option value="" disabled selected>Carregando cidades...</option>';
+    "<option value=\"\" disabled selected>Carregando cidades...</option>";
   selectCidade.disabled = true;
   try {
     const response = await fetch(
@@ -383,7 +383,7 @@ async function carregarCidades(uf) {
     );
     const cidades = await response.json();
     selectCidade.innerHTML =
-      '<option value="" disabled selected>Selecione uma cidade...</option>';
+      "<option value=\"\" disabled selected>Selecione uma cidade...</option>";
     cidades.forEach(
       (cidade) =>
         (selectCidade.innerHTML += `<option value="${cidade.nome}">${cidade.nome}</option>`),
@@ -391,7 +391,7 @@ async function carregarCidades(uf) {
     selectCidade.disabled = false;
   } catch (e) {
     selectCidade.innerHTML =
-      '<option value="" disabled selected>Erro ao carregar</option>';
+      "<option value=\"\" disabled selected>Erro ao carregar</option>";
   }
 }
 
@@ -853,7 +853,7 @@ async function carregarListaCurriculos(userId) {
     const btnRenomear = document.createElement("button");
     btnRenomear.type = "button";
     btnRenomear.className = "btn btn-sm btn-outline-secondary me-1";
-    btnRenomear.innerHTML = '<i class="fas fa-pen"></i>';
+    btnRenomear.innerHTML = "<i class=\"fas fa-pen\"></i>";
     btnRenomear.title = "Renomear";
     btnRenomear.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -863,7 +863,7 @@ async function carregarListaCurriculos(userId) {
     const btnExcluir = document.createElement("button");
     btnExcluir.type = "button";
     btnExcluir.className = "btn btn-sm btn-outline-danger";
-    btnExcluir.innerHTML = '<i class="fas fa-trash-alt"></i>';
+    btnExcluir.innerHTML = "<i class=\"fas fa-trash-alt\"></i>";
     btnExcluir.title = "Excluir";
     btnExcluir.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -1181,7 +1181,7 @@ document
     }
     const b = document.getElementById("btn-gerar");
     const h = b.innerHTML;
-    b.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Gerando...';
+    b.innerHTML = "<i class=\"fas fa-spinner fa-spin me-2\"></i> Gerando...";
     b.disabled = true;
     await salvarDadosNuvem();
     const p = {
@@ -1198,44 +1198,44 @@ document
       summary: { pt: [document.getElementById("summary_pt").value] },
       experience: document.getElementById("include-experience").checked
         ? Array.from(document.querySelectorAll(".exp-block")).map((b) => ({
-            company: b.querySelector(".exp-company").value,
-            position_pt: b.querySelector(".exp-position-pt").value,
-            startDate: formatarDataMesAno(b.querySelector(".exp-start").value),
-            endDate: b.querySelector(".exp-current").checked
-              ? "Presente"
-              : formatarDataMesAno(b.querySelector(".exp-end").value),
-            highlights_pt: b
-              .querySelector(".exp-highlights-pt")
-              .value.split(";")
-              .map((i) => i.trim())
-              .filter((i) => i),
-          }))
+          company: b.querySelector(".exp-company").value,
+          position_pt: b.querySelector(".exp-position-pt").value,
+          startDate: formatarDataMesAno(b.querySelector(".exp-start").value),
+          endDate: b.querySelector(".exp-current").checked
+            ? "Presente"
+            : formatarDataMesAno(b.querySelector(".exp-end").value),
+          highlights_pt: b
+            .querySelector(".exp-highlights-pt")
+            .value.split(";")
+            .map((i) => i.trim())
+            .filter((i) => i),
+        }))
         : [],
       education: document.getElementById("include-education").checked
         ? Array.from(document.querySelectorAll(".edu-block")).map((b) => ({
-            institution: b.querySelector(".edu-institution").value,
-            area_pt: b.querySelector(".edu-area-pt").value,
-            startDate: formatarDataMesAno(b.querySelector(".edu-start").value),
-            endDate: b.querySelector(".edu-current").checked
-              ? "Presente"
-              : formatarDataMesAno(b.querySelector(".edu-end").value),
-            status_pt: b.querySelector(".edu-status").value,
-          }))
+          institution: b.querySelector(".edu-institution").value,
+          area_pt: b.querySelector(".edu-area-pt").value,
+          startDate: formatarDataMesAno(b.querySelector(".edu-start").value),
+          endDate: b.querySelector(".edu-current").checked
+            ? "Presente"
+            : formatarDataMesAno(b.querySelector(".edu-end").value),
+          status_pt: b.querySelector(".edu-status").value,
+        }))
         : [],
       courses: document.getElementById("include-courses").checked
         ? Array.from(document.querySelectorAll(".curso-block")).map((b) => ({
-            name_pt: b.querySelector(".curso-name").value,
-            institution: b.querySelector(".curso-inst").value,
-            year: b.querySelector(".curso-year").value,
-          }))
+          name_pt: b.querySelector(".curso-name").value,
+          institution: b.querySelector(".curso-inst").value,
+          year: b.querySelector(".curso-year").value,
+        }))
         : [],
       projects: document.getElementById("include-projects").checked
         ? Array.from(document.querySelectorAll(".proj-block")).map((b) => ({
-            name: b.querySelector(".proj-name").value,
-            technologies: b.querySelector(".proj-tech").value,
-            link: b.querySelector(".proj-link").value,
-            description_pt: b.querySelector(".proj-desc-pt").value,
-          }))
+          name: b.querySelector(".proj-name").value,
+          technologies: b.querySelector(".proj-tech").value,
+          link: b.querySelector(".proj-link").value,
+          description_pt: b.querySelector(".proj-desc-pt").value,
+        }))
         : [],
       skills: {
         technical: document

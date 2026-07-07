@@ -4,3 +4,9 @@ __pycache__/
 temp.tex
 .git/
 .env
+android/
+www/
+node_modules/
+docs/
+backend/tests/
+saida/
