@@ -13,21 +13,130 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
+      :root {
+        --ink: #1c1b19;
+        --ink-soft: #5a564c;
+        --paper: #faf7f2;
+        --paper-line: #e4dfd4;
+        --navy: #1e3a5f;
+        --navy-dark: #16293f;
+        --navy-tint: #e7edf3;
+
+        /* Sobrescreve as variáveis de tema do próprio Bootstrap, para que
+           botões, links, badges e afins herdem a paleta nova automaticamente
+           em vez do azul padrão. */
+        --bs-primary: var(--navy);
+        --bs-primary-rgb: 30, 58, 95;
+        --bs-primary-text-emphasis: var(--navy);
+        --bs-primary-bg-subtle: var(--navy-tint);
+        --bs-primary-border-subtle: var(--navy);
+        --bs-link-color: var(--navy);
+        --bs-link-color-rgb: 30, 58, 95;
+        --bs-link-hover-color: var(--navy-dark);
+        --bs-link-hover-color-rgb: 22, 41, 63;
+        --bs-body-font-family: "Inter", sans-serif;
+      }
+
       body {
-        background-color: #f4f6f9;
+        background-color: var(--paper);
+        color: var(--ink);
+        font-family: "Inter", sans-serif;
       }
+
+      /* O Bootstrap 5.3 nem sempre propaga --bs-primary pra todo componente
+         (algumas cores ficam fixas no CSS compilado), então reforçamos
+         explicitamente os controles mais usados aqui. */
+      .btn-primary {
+        background-color: var(--navy) !important;
+        border-color: var(--navy) !important;
+      }
+      .btn-primary:hover,
+      .btn-primary:active {
+        background-color: var(--navy-dark) !important;
+        border-color: var(--navy-dark) !important;
+      }
+      .btn-outline-primary {
+        color: var(--navy) !important;
+        border-color: var(--navy) !important;
+      }
+      .btn-outline-primary:hover {
+        background-color: var(--navy) !important;
+        color: var(--paper) !important;
+      }
+      .text-primary {
+        color: var(--navy) !important;
+      }
+      .form-check-input:checked {
+        background-color: var(--navy);
+        border-color: var(--navy);
+      }
+      .form-check-input:focus {
+        border-color: var(--navy);
+        box-shadow: 0 0 0 0.25rem rgba(30, 58, 95, 0.2);
+      }
+
+      /* Cabeçalhos de modal/painel: bloco tinta sólida, sem gradiente. */
       .bg-gradient-primary {
-        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        background: var(--navy);
       }
-      .section-title {
+
+      /* Tipografia editorial nos títulos */
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      .modal-title,
+      #resumeModalTitle,
+      #current-resume-title {
+        font-family: "Source Serif 4", serif;
+      }
+
+      /* Cabeçalho principal (masthead) */
+      .masthead {
+        background-color: var(--paper) !important;
+        border-bottom: 3px solid var(--ink);
+        padding: 2rem 2.5rem 1.25rem !important;
+      }
+      .masthead h3 {
+        color: var(--ink);
         font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+        letter-spacing: -0.5px;
       }
+      .masthead p {
+        color: var(--ink-soft) !important;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        opacity: 1 !important;
+      }
+
+      /* Cabeçalhos de seção: numeral editorial + serifado, sem ícone */
+      .section-title {
+        font-family: "Source Serif 4", serif;
+        font-weight: 600;
+        font-size: 1.2rem;
+        color: var(--ink);
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        border-bottom-color: var(--paper-line) !important;
+      }
+      .section-num {
+        font-family: "Source Serif 4", serif;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: var(--navy);
+      }
+
       .fade-in {
         animation: fadeIn 0.4s ease-in-out;
       }
@@ -42,23 +151,73 @@
         }
       }
       .card {
-        border-radius: 16px !important;
-        border: none !important;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
-        transition: transform 0.2s;
-      }
-      .card:hover {
-        transform: translateY(-2px);
+        border-radius: 10px !important;
+        border: 1px solid var(--paper-line) !important;
+        box-shadow: none !important;
       }
       .form-control,
       .form-select {
-        border-radius: 8px;
-        border: 1px solid #ced4da;
+        border-radius: 6px;
+        border: 1px solid #cec7b8;
+      }
+      .form-control:focus,
+      .form-select:focus {
+        border-color: var(--navy);
+        box-shadow: 0 0 0 0.2rem rgba(30, 58, 95, 0.15);
       }
       .btn-add {
         border-radius: 20px;
         font-weight: 600;
         padding: 6px 16px;
+      }
+
+      /* Cores categóricas dos blocos dinâmicos (Experiência/Formação/
+         Cursos/Projetos), trocando o azul/ciano/verde/amarelo padrão do
+         Bootstrap por tons compatíveis com a paleta editorial. */
+      .border-primary {
+        border-color: var(--navy) !important;
+      }
+      .border-info {
+        border-color: #4a6670 !important;
+      }
+      .border-success {
+        border-color: #5c6e3c !important;
+      }
+      .border-warning {
+        border-color: #a87c1f !important;
+      }
+      .text-info {
+        color: #4a6670 !important;
+      }
+      .text-success {
+        color: #5c6e3c !important;
+      }
+      .text-warning {
+        color: #a87c1f !important;
+      }
+      .btn-outline-info {
+        color: #4a6670 !important;
+        border-color: #4a6670 !important;
+      }
+      .btn-outline-info:hover {
+        background-color: #4a6670 !important;
+        color: var(--paper) !important;
+      }
+      .btn-outline-success {
+        color: #5c6e3c !important;
+        border-color: #5c6e3c !important;
+      }
+      .btn-outline-success:hover {
+        background-color: #5c6e3c !important;
+        color: var(--paper) !important;
+      }
+      .btn-outline-warning {
+        color: #a87c1f !important;
+        border-color: #a87c1f !important;
+      }
+      .btn-outline-warning:hover {
+        background-color: #a87c1f !important;
+        color: var(--paper) !important;
       }
 
       /* FEEDBACK VISUAL */
@@ -94,33 +253,48 @@
       /* PAINEL DE CURRÍCULOS */
       .resume-item {
         padding: 12px 16px;
-        border-left: 4px solid #0d6efd;
+        border-left: 4px solid var(--navy);
         cursor: pointer;
         transition: all 0.2s;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid var(--paper-line);
       }
       .resume-item:hover {
-        background-color: #f8f9fa;
+        background-color: var(--paper);
       }
       .resume-item.active {
-        background-color: #e7f1ff;
-        border-left-color: #0a58ca;
+        background-color: var(--navy-tint);
+        border-left-color: var(--navy-dark);
         font-weight: 600;
       }
       .resume-item-date {
         font-size: 0.75rem;
-        color: #6c757d;
+        color: var(--ink-soft);
       }
       .badge-current {
-        background-color: #28a745;
+        background-color: #5c6e3c;
         color: white;
         padding: 2px 6px;
         border-radius: 4px;
         font-size: 0.7rem;
         margin-left: 5px;
+      }
+
+      /* Caixa de exportação (idioma + botão final) */
+      .export-box {
+        background-color: var(--navy-tint) !important;
+        border-color: var(--paper-line) !important;
+      }
+      .btn-generate {
+        background-color: #5c6e3c !important;
+        border-color: #5c6e3c !important;
+        color: var(--paper) !important;
+      }
+      .btn-generate:hover {
+        background-color: #4a5a2f !important;
+        border-color: #4a5a2f !important;
       }
     </style>
   </head>
@@ -131,8 +305,7 @@
         <div class="modal-content">
           <div class="modal-header bg-gradient-primary text-white">
             <h5 class="modal-title fw-bold">
-              <i class="fas fa-file-alt me-2"></i
-              ><span id="resumeModalTitle">Novo Currículo</span>
+              <i class="fas fa-file-alt me-2"></i><span id="resumeModalTitle">Novo Currículo</span>
             </h5>
             <button
               type="button"
@@ -151,20 +324,10 @@
             />
           </div>
           <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
               Cancelar
             </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              id="saveResumeNameBtn"
-            >
-              Salvar
-            </button>
+            <button type="button" class="btn btn-primary" id="saveResumeNameBtn">Salvar</button>
           </div>
         </div>
       </div>
@@ -185,10 +348,7 @@
       <div class="offcanvas-body p-0">
         <div class="list-group list-group-flush" id="resumesList"></div>
         <div class="p-3 border-top">
-          <button
-            class="btn btn-primary w-100"
-            onclick="abrirModalNovoCurriculo()"
-          >
+          <button class="btn btn-primary w-100" onclick="abrirModalNovoCurriculo()">
             <i class="fas fa-plus me-2"></i> Criar Novo
           </button>
         </div>
@@ -200,9 +360,7 @@
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header bg-gradient-primary text-white">
-            <h5 class="modal-title fw-bold">
-              <i class="fas fa-lock me-2"></i> Área do Candidato
-            </h5>
+            <h5 class="modal-title fw-bold"><i class="fas fa-lock me-2"></i> Área do Candidato</h5>
             <button
               type="button"
               class="btn-close btn-close-white"
@@ -243,9 +401,7 @@
                 style="display: none"
               ></div>
               <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary" id="btn-login">
-                  Entrar
-                </button>
+                <button type="submit" class="btn btn-primary" id="btn-login">Entrar</button>
                 <button
                   type="button"
                   class="btn btn-outline-secondary"
@@ -254,11 +410,7 @@
                 >
                   Criar Conta
                 </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-danger"
-                  onclick="loginComGoogle()"
-                >
+                <button type="button" class="btn btn-outline-danger" onclick="loginComGoogle()">
                   <i class="fab fa-google me-2"></i> Google
                 </button>
               </div>
@@ -279,18 +431,11 @@
       </div>
     </div>
 
-    <div
-      class="modal fade"
-      id="resetPasswordModal"
-      tabindex="-1"
-      aria-hidden="true"
-    >
+    <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header bg-gradient-primary text-white">
-            <h5 class="modal-title fw-bold">
-              <i class="fas fa-key me-2"></i> Recuperar Senha
-            </h5>
+            <h5 class="modal-title fw-bold"><i class="fas fa-key me-2"></i> Recuperar Senha</h5>
             <button
               type="button"
               class="btn-close btn-close-white"
@@ -299,8 +444,7 @@
           </div>
           <div class="modal-body p-4">
             <p class="small text-muted">
-              Digite o e-mail da sua conta. Vamos enviar um link pra você
-              definir uma nova senha.
+              Digite o e-mail da sua conta. Vamos enviar um link pra você definir uma nova senha.
             </p>
             <form
               id="resetPasswordForm"
@@ -325,11 +469,7 @@
                 style="display: none"
               ></div>
               <div class="d-grid">
-                <button
-                  type="submit"
-                  class="btn btn-primary"
-                  id="btn-send-reset"
-                >
+                <button type="submit" class="btn btn-primary" id="btn-send-reset">
                   Enviar link de recuperação
                 </button>
               </div>
@@ -350,14 +490,11 @@
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header bg-gradient-primary text-white">
-            <h5 class="modal-title fw-bold">
-              <i class="fas fa-key me-2"></i> Definir Nova Senha
-            </h5>
+            <h5 class="modal-title fw-bold"><i class="fas fa-key me-2"></i> Definir Nova Senha</h5>
           </div>
           <div class="modal-body p-4">
             <p class="small text-muted">
-              Você clicou num link de recuperação de senha. Escolha uma nova
-              senha pra continuar.
+              Você clicou num link de recuperação de senha. Escolha uma nova senha pra continuar.
             </p>
             <form
               id="newPasswordForm"
@@ -392,11 +529,7 @@
                 style="display: none"
               ></div>
               <div class="d-grid">
-                <button
-                  type="submit"
-                  class="btn btn-primary"
-                  id="btn-save-new-password"
-                >
+                <button type="submit" class="btn btn-primary" id="btn-save-new-password">
                   Salvar nova senha
                 </button>
               </div>
@@ -417,8 +550,7 @@
       style="z-index: 1000; display: none"
     >
       <div class="badge bg-info p-2 shadow">
-        <i class="fas fa-cloud-upload-alt me-2"></i
-        ><span id="save-status-text">Salvando...</span>
+        <i class="fas fa-cloud-upload-alt me-2"></i><span id="save-status-text">Salvando...</span>
       </div>
     </div>
 
@@ -430,9 +562,8 @@
             id="login-banner"
           >
             <div>
-              <i class="fas fa-info-circle me-2"></i
-              ><strong>Atenção:</strong> Faça login para gerenciar múltiplos
-              currículos.
+              <i class="fas fa-info-circle me-2"></i><strong>Atenção:</strong> Faça login para
+              gerenciar múltiplos currículos.
             </div>
             <button
               class="btn btn-sm btn-dark fw-bold px-4"
@@ -451,11 +582,8 @@
             <div class="d-flex align-items-center">
               <i class="fas fa-check-circle me-2"></i>
               <div>
-                <strong>Logado!</strong> (<span
-                  id="user-email-display"
-                  class="fw-bold"
-                ></span
-                >) Editando:
+                <strong>Logado!</strong> (<span id="user-email-display" class="fw-bold"></span>)
+                Editando:
                 <span id="current-resume-title" class="fw-bold text-primary"
                   >Nenhum selecionado</span
                 >
@@ -469,12 +597,7 @@
               >
                 <i class="fas fa-list me-1"></i> Meus Currículos
               </button>
-              <button
-                class="btn btn-sm btn-outline-danger"
-                onclick="fazerLogout()"
-              >
-                Sair
-              </button>
+              <button class="btn btn-sm btn-outline-danger" onclick="fazerLogout()">Sair</button>
             </div>
           </div>
         </div>
@@ -483,60 +606,34 @@
       <div class="row justify-content-center">
         <div class="col-md-10">
           <div class="card shadow-lg">
-            <div
-              class="card-header bg-gradient-primary text-white p-4 rounded-top"
-            >
-              <h3 class="mb-0 fw-bold">
-                <i class="fas fa-file-signature me-2"></i> CareerOS
-              </h3>
-              <p class="mb-0 text-light opacity-75">
-                Gerador de Currículo ATS Inteligente
-              </p>
+            <div class="card-header masthead">
+              <h3 class="mb-0 fw-bold">CareerOS</h3>
+              <p class="mb-0">Gerador de Currículo ATS Inteligente</p>
             </div>
             <div class="card-body p-4 p-md-5">
               <form id="cv-form" novalidate>
                 <!-- DADOS BÁSICOS -->
                 <h5 class="border-bottom pb-2 mb-4 text-primary section-title">
-                  <i class="fas fa-user-circle"></i> 1. Dados Básicos
+                  <span class="section-num">01</span> Dados Básicos
                 </h5>
                 <div class="row mb-3">
                   <div class="col-md-6">
                     <label class="form-label fw-bold">Nome Completo</label
-                    ><input
-                      type="text"
-                      class="form-control"
-                      id="name"
-                      required
-                    />
+                    ><input type="text" class="form-control" id="name" required />
                   </div>
                   <div class="col-md-6">
                     <label class="form-label fw-bold">Título Profissional</label
-                    ><input
-                      type="text"
-                      class="form-control"
-                      id="label_pt"
-                      required
-                    />
+                    ><input type="text" class="form-control" id="label_pt" required />
                   </div>
                 </div>
                 <div class="row mb-3">
                   <div class="col-md-6">
                     <label class="form-label fw-bold">E-mail</label
-                    ><input
-                      type="email"
-                      class="form-control"
-                      id="email"
-                      required
-                    />
+                    ><input type="email" class="form-control" id="email" required />
                   </div>
                   <div class="col-md-6">
                     <label class="form-label fw-bold">Telefone</label
-                    ><input
-                      type="tel"
-                      class="form-control"
-                      id="phone"
-                      required
-                    />
+                    ><input type="tel" class="form-control" id="phone" required />
                   </div>
                 </div>
                 <div class="row mb-4">
@@ -549,9 +646,7 @@
                   <div class="col-md-3">
                     <label class="form-label fw-bold">Cidade</label
                     ><select class="form-select" id="cidade" required disabled>
-                      <option value="" disabled selected>
-                        Selecione o estado
-                      </option>
+                      <option value="" disabled selected>Selecione o estado</option>
                     </select>
                   </div>
                   <div class="col-md-3">
@@ -577,18 +672,11 @@
                 </div>
 
                 <!-- RESUMO -->
-                <h5
-                  class="border-bottom pb-2 mb-4 text-primary section-title mt-5"
-                >
-                  <i class="fas fa-align-left"></i> 2. Resumo Profissional
+                <h5 class="border-bottom pb-2 mb-4 text-primary section-title mt-5">
+                  <span class="section-num">02</span> Resumo Profissional
                 </h5>
                 <div class="mb-4">
-                  <textarea
-                    class="form-control"
-                    id="summary_pt"
-                    rows="4"
-                    required
-                  ></textarea>
+                  <textarea class="form-control" id="summary_pt" rows="4" required></textarea>
                 </div>
 
                 <!-- EXPERIÊNCIA -->
@@ -596,7 +684,7 @@
                   class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4 mt-5"
                 >
                   <h5 class="mb-0 text-primary section-title">
-                    <i class="fas fa-briefcase"></i> 3. Experiência Profissional
+                    <span class="section-num">03</span> Experiência Profissional
                   </h5>
                   <div class="form-check form-switch fs-5">
                     <input
@@ -623,7 +711,7 @@
                   class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4 mt-5"
                 >
                   <h5 class="mb-0 text-primary section-title">
-                    <i class="fas fa-graduation-cap"></i> 4. Formação Acadêmica
+                    <span class="section-num">04</span> Formação Acadêmica
                   </h5>
                   <div class="form-check form-switch fs-5">
                     <input
@@ -650,7 +738,7 @@
                   class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4 mt-5"
                 >
                   <h5 class="mb-0 text-primary section-title">
-                    <i class="fas fa-certificate"></i> 5. Cursos Complementares
+                    <span class="section-num">05</span> Cursos Complementares
                   </h5>
                   <div class="form-check form-switch fs-5">
                     <input
@@ -658,9 +746,7 @@
                       type="checkbox"
                       id="include-courses"
                       checked
-                    /><label class="form-check-label" for="include-courses"
-                      >Incluir no PDF?</label
-                    >
+                    /><label class="form-check-label" for="include-courses">Incluir no PDF?</label>
                   </div>
                 </div>
                 <div id="cursos-container"></div>
@@ -677,7 +763,7 @@
                   class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4 mt-5"
                 >
                   <h5 class="mb-0 text-primary section-title">
-                    <i class="fas fa-laptop-code"></i> 6. Projetos Técnicos
+                    <span class="section-num">06</span> Projetos Técnicos
                   </h5>
                   <div class="form-check form-switch fs-5">
                     <input
@@ -685,9 +771,7 @@
                       type="checkbox"
                       id="include-projects"
                       checked
-                    /><label class="form-check-label" for="include-projects"
-                      >Incluir no PDF?</label
-                    >
+                    /><label class="form-check-label" for="include-projects">Incluir no PDF?</label>
                   </div>
                 </div>
                 <div id="projetos-container"></div>
@@ -700,10 +784,8 @@
                 </button>
 
                 <!-- HABILIDADES -->
-                <h5
-                  class="border-bottom pb-2 mb-4 text-primary section-title mt-5"
-                >
-                  <i class="fas fa-tools"></i> 7. Habilidades e Ferramentas
+                <h5 class="border-bottom pb-2 mb-4 text-primary section-title mt-5">
+                  <span class="section-num">07</span> Habilidades e Ferramentas
                 </h5>
                 <div class="mb-4">
                   <input
@@ -716,14 +798,11 @@
                 </div>
 
                 <!-- EXPORTAR -->
-                <div class="bg-light p-4 rounded-3 border mt-5 mb-4">
+                <div class="export-box p-4 rounded-3 border mt-5 mb-4">
                   <div class="row align-items-center">
                     <div class="col-md-8">
                       <label class="form-label fw-bold">Idioma de Saída:</label
-                      ><select
-                        class="form-select form-select-lg"
-                        id="idioma_escolhido"
-                      >
+                      ><select class="form-select form-select-lg" id="idioma_escolhido">
                         <option value="pt" selected>🇧🇷 Português</option>
                         <option value="en">🇺🇸 Inglês</option>
                       </select>
@@ -731,7 +810,7 @@
                     <div class="col-md-4 mt-4 mt-md-0 d-grid">
                       <button
                         type="submit"
-                        class="btn btn-success btn-lg rounded-pill"
+                        class="btn btn-generate btn-lg rounded-pill"
                         id="btn-gerar"
                       >
                         <i class="fas fa-file-pdf me-2"></i> Gerar Currículo
