@@ -1,8 +1,8 @@
-# CareerOS Architecture
+# Currícula Architecture
 
 ## Visão Geral
 
-CareerOS é uma plataforma para otimização de carreira baseada em Inteligência Artificial.
+Currícula é uma plataforma para otimização de carreira baseada em Inteligência Artificial.
 
 A arquitetura foi dividida em módulos independentes para facilitar evolução, manutenção e testes.
 

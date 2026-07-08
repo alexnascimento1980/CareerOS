@@ -1,6 +1,6 @@
 {
   "appId": "com.alexnascimento.careeros",
-  "appName": "CareerOS",
+  "appName": "Currícula",
   "webDir": "www",
   "server": {
     "androidScheme": "https"

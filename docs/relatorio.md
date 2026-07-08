@@ -1,19 +1,19 @@
-# 📄 Relatório Técnico e Documentação de Deploy: CareerOS
+# 📄 Relatório Técnico e Documentação de Deploy: Currícula
 
-**Projeto:** CareerOS - Gerador de Currículo ATS Inteligente
+**Projeto:** Currícula - Gerador de Currículo ATS Bilíngue Inteligente
 **Autor:** Alex Aparecido Pereira do Nascimento
-**Repositório:** [https://github.com/alexnascimento1980/CareerOS](https://github.com/alexnascimento1980/CareerOS)
+**Repositório:** [https://github.com/alexnascimento1980/curricula](https://github.com/alexnascimento1980/curricula)
 
 ---
 
 ## 1. Visão Geral do Produto
 
-O **CareerOS** é uma aplicação web full-stack projetada para solucionar a ineficiência na criação de currículos otimizados para sistemas ATS (Applicant Tracking Systems).
+O **Currícula** é uma aplicação web full-stack projetada para solucionar a ineficiência na criação de currículos otimizados para sistemas ATS (Applicant Tracking Systems).
 
 Idealizado para suportar profissionais com perfis híbridos e em transição de carreira (como a intersecção entre Logística Operacional e Ciência de Dados), o sistema permite a geração dinâmica de currículos em formato PDF de alta precisão tipográfica, utilizando processamento backend e templates dinâmicos.
 
-![Print da Tela Inicial do CareerOS](caminho_para_sua_imagem_1.png)
-_(Figura 1: Interface principal do CareerOS com design responsivo em Bootstrap 5)_
+![Print da Tela Inicial do Currícula](caminho_para_sua_imagem_1.png)
+_(Figura 1: Interface principal do Currícula com design responsivo em Bootstrap 5)_
 
 ---
 
@@ -79,8 +79,8 @@ Caso seja necessário depurar a aplicação em ambiente de desenvolvimento isola
 
 ```bash
 # 1. Clonar o projeto
-git clone [https://github.com/alexnascimento1980/CareerOS.git](https://github.com/alexnascimento1980/CareerOS.git)
-cd CareerOS
+git clone [https://github.com/alexnascimento1980/curricula.git](https://github.com/alexnascimento1980/curricula.git)
+cd curricula
 
 # 2. Construir a imagem (Download do Ubuntu, Python e dependências LaTeX)
 docker build -t career-os-local .

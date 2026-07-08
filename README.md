@@ -1,6 +1,6 @@
-# CareerOS — Gerador de Currículo ATS Bilíngue
+# Currícula — Gerador de Currículo ATS Bilíngue
 
-O **CareerOS** é uma aplicação web full-stack para gerar currículos profissionais otimizados para sistemas ATS (Applicant Tracking Systems). O candidato preenche um formulário dinâmico, o backend valida e processa os dados, e um PDF é compilado com o motor de tipografia LaTeX — com suporte a múltiplos currículos salvos por usuário e tradução automática para inglês.
+O **Currícula** é uma aplicação web full-stack para gerar currículos profissionais otimizados para sistemas ATS (Applicant Tracking Systems). O candidato preenche um formulário dinâmico, o backend valida e processa os dados, e um PDF é compilado com o motor de tipografia LaTeX — com suporte a múltiplos currículos salvos por usuário e tradução automática para inglês.
 
 ## 🚀 Funcionalidades
 
@@ -50,7 +50,7 @@ O backend tem uma suíte com **42 testes** (`pytest`), cobrindo validação de d
 ## 📂 Estrutura do Projeto
 
 ```text
-CareerOS/
+Currícula/
 ├── .github/
 │   └── workflows/
 │       ├── tests.yml              # CI: roda a suíte de testes a cada push/PR
@@ -88,8 +88,8 @@ CareerOS/
 
 ```bash
 # 1. Clone o repositório
-git clone https://github.com/alexnascimento1980/CareerOS.git
-cd CareerOS
+git clone https://github.com/alexnascimento1980/curricula.git
+cd curricula
 
 # 2. Crie e ative um ambiente virtual
 python -m venv venv

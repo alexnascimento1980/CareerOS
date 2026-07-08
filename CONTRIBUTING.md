@@ -1,6 +1,6 @@
 # Contribuindo
 
-Obrigado por contribuir com o CareerOS.
+Obrigado por contribuir com o Currícula.
 
 ## Fluxo
 
