@@ -135,7 +135,7 @@ def normalizar_url_perfil(valor):
     valor = str(valor or "").strip()
     for prefixo in ("https://", "http://"):
         if valor.lower().startswith(prefixo):
-            valor = valor[len(prefixo) :]
+            valor = valor[len(prefixo):]
             break
     if valor.lower().startswith("www."):
         valor = valor[4:]
@@ -187,7 +187,8 @@ def validar_dados_cv(data):
     # --- blocos em lista (obrigatórios: experience/education; opcionais: courses/projects) ---
     listas_obrigatorias = ["experience", "education"]
     listas_opcionais = ["courses", "projects"]
-    limites_itens = {"experience": 30, "education": 15, "courses": 30, "projects": 30}
+    limites_itens = {"experience": 30,
+                     "education": 15, "courses": 30, "projects": 30}
 
     for campo in listas_obrigatorias:
         if campo not in data:
@@ -262,7 +263,8 @@ def traduzir_payload(data):
         # Experiências
         exp_futs = []
         for exp in data.get("experience", []):
-            pos_fut = executor.submit(traduzir_texto, exp.get("position_pt", ""))
+            pos_fut = executor.submit(
+                traduzir_texto, exp.get("position_pt", ""))
             hl_futs = [
                 executor.submit(traduzir_texto, h) for h in exp.get("highlights_pt", [])
             ]
@@ -272,19 +274,22 @@ def traduzir_payload(data):
         edu_futs = []
         for edu in data.get("education", []):
             area_fut = executor.submit(traduzir_texto, edu.get("area_pt", ""))
-            status_fut = executor.submit(traduzir_texto, edu.get("status_pt", ""))
+            status_fut = executor.submit(
+                traduzir_texto, edu.get("status_pt", ""))
             edu_futs.append((edu, area_fut, status_fut))
 
         # Projetos
         proj_futs = []
         for proj in data.get("projects", []):
-            desc_fut = executor.submit(traduzir_texto, proj.get("description_pt", ""))
+            desc_fut = executor.submit(
+                traduzir_texto, proj.get("description_pt", ""))
             proj_futs.append((proj, desc_fut))
 
         # Cursos
         curso_futs = []
         for curso in data.get("courses", []):
-            name_fut = executor.submit(traduzir_texto, curso.get("name_pt", ""))
+            name_fut = executor.submit(
+                traduzir_texto, curso.get("name_pt", ""))
             curso_futs.append((curso, name_fut))
 
         # Habilidades técnicas
@@ -343,7 +348,8 @@ def generate_cv():
     data["basics"]["linkedin"] = normalizar_url_perfil(
         data["basics"].get("linkedin", "")
     )
-    data["basics"]["github"] = normalizar_url_perfil(data["basics"].get("github", ""))
+    data["basics"]["github"] = normalizar_url_perfil(
+        data["basics"].get("github", ""))
 
     lang = data.get("lang", "pt")
     if lang == "en":
@@ -415,7 +421,8 @@ def generate_cv():
 
         # --- LÓGICA DE NOMECLATURA NO BACKEND ---
         nome_candidato = (
-            data.get("basics", {}).get("name", "Candidato").strip().replace(" ", "_")
+            data.get("basics", {}).get(
+                "name", "Candidato").strip().replace(" ", "_")
         )
         nome_arquivo = f"{nome_candidato}_curriculo_{lang}.pdf"
 
