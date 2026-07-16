@@ -238,6 +238,33 @@ def test_generate_cv_pt_gera_pdf_valido(client):
     assert resp.data[:4] == b"%PDF"
 
 
+# ==========================================
+# Cabeçalhos de segurança HTTP
+# ==========================================
+def test_cabecalhos_seguranca_presentes_em_qualquer_resposta(client):
+    # Confere numa rota de sucesso (/) e numa de erro (400), já que o
+    # after_request precisa rodar independente do status da resposta.
+    for resp in [
+        client.get("/"),
+        client.post("/generate-cv", json={"lang": "pt"}),
+    ]:
+        assert resp.headers.get("X-Frame-Options") == "DENY"
+        assert resp.headers.get("X-Content-Type-Options") == "nosniff"
+        assert resp.headers.get("Referrer-Policy") == "strict-origin-when-cross-origin"
+        assert "Content-Security-Policy" in resp.headers
+        assert "Strict-Transport-Security" in resp.headers
+
+
+def test_csp_restringe_a_dominios_especificos_nao_libera_geral(client):
+    resp = client.get("/")
+    csp = resp.headers["Content-Security-Policy"]
+    assert "default-src 'self'" in csp
+    assert "frame-ancestors 'none'" in csp
+    # não pode liberar geral (isso anularia a proteção)
+    assert "script-src *" not in csp
+    assert "default-src *" not in csp
+
+
 def test_generate_cv_caracteres_especiais_nao_quebra_compilacao(client):
     d = payload_valido()
     d["experience"][0]["company"] = "Logística & Cia 100% Foco #1"

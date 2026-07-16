@@ -46,6 +46,71 @@ limiter = Limiter(
     storage_uri="memory://",
 )
 
+# URL do projeto Supabase, usada só para liberar no CSP (connect-src) — se
+# você migrar de projeto Supabase, atualize também aqui (ou defina a
+# variável de ambiente SUPABASE_URL, o que evita precisar mexer no código).
+_SUPABASE_URL = os.environ.get(
+    "SUPABASE_URL", "https://vaiedrsonmktbnkcktqv.supabase.co"
+)
+
+
+@app.after_request
+def adicionar_cabecalhos_seguranca(response):
+    """Cabeçalhos de segurança HTTP aplicados a toda resposta.
+
+    Nota: isso protege a versão web (servida via HTTP por este Flask). O
+    app Android/iOS carrega uma cópia empacotada do HTML localmente, sem
+    passar por essas respostas HTTP — lá a proteção equivalente vem do
+    sandbox do próprio sistema operacional, não desses cabeçalhos.
+    """
+    # Impede que este site seja carregado dentro de um <iframe> em outro
+    # domínio (proteção contra clickjacking). frame-ancestors (CSP) faz a
+    # mesma coisa e é o padrão mais novo; mantemos X-Frame-Options também
+    # para navegadores mais antigos que ainda não suportam frame-ancestors.
+    response.headers["X-Frame-Options"] = "DENY"
+
+    # Impede que o navegador tente "adivinhar" o tipo de um arquivo diferente
+    # do Content-Type declarado (evita truques de execução de script via
+    # upload/arquivo disfarçado).
+    response.headers["X-Content-Type-Options"] = "nosniff"
+
+    # Não vaza a URL completa de origem em requisições cross-site; ainda
+    # manda o bastante (o domínio) para analytics/logs funcionarem.
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+
+    # Desliga o acesso a APIs de hardware que este app não usa.
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+
+    # Só tem efeito quando a resposta já chega por HTTPS (navegadores ignoram
+    # este cabeçalho em conexões HTTP puras, então é seguro deixar sempre
+    # ligado, inclusive em desenvolvimento local).
+    response.headers["Strict-Transport-Security"] = (
+        "max-age=31536000; includeSubDomains"
+    )
+
+    # Restringe de onde scripts/estilos/fontes podem ser carregados, em vez
+    # de liberar geral. Precisa de 'unsafe-inline' em script/style porque o
+    # index.html hoje usa atributos onclick="..." e style="..." inline —
+    # isso enfraquece um pouco a proteção contra XSS baseado em script
+    # inline, mas ainda bloqueia carregar script/estilo de qualquer domínio
+    # de terceiros não listado aqui, que é o vetor mais comum.
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' "
+        "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+        "style-src 'self' 'unsafe-inline' "
+        "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com "
+        "https://fonts.googleapis.com; "
+        "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; "
+        "img-src 'self' data:; "
+        f"connect-src 'self' {_SUPABASE_URL} https://servicodados.ibge.gov.br; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self';"
+    )
+
+    return response
+
 
 @app.route("/")
 def index():
