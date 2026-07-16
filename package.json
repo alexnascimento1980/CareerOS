@@ -4,7 +4,7 @@
   "description": "Currícula - Gerador de Currículo ATS Bilíngue",
   "type": "module",
   "scripts": {
-    "test": "echo \"sem testes JS por enquanto\" && exit 0",
+    "test": "vitest run",
     "lint": "eslint frontend"
   },
   "repository": {
@@ -14,7 +14,9 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "eslint": "^9.15.0"
+    "eslint": "^9.15.0",
+    "jsdom": "^29.1.1",
+    "vitest": "^4.1.10"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.1",

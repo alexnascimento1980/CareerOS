@@ -19,17 +19,6 @@ const API_BASE_URL =
     : "";
 
 let currentUser = null;
-
-// Converte um Blob (o PDF recebido do backend) para base64, formato que o
-// plugin Filesystem do Capacitor exige para gravar arquivos binários.
-function blobParaBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result.split(",")[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
 let currentResumeId = null;
 let isSavingToCloud = false;
 let isLoadingResume = false;
@@ -100,8 +89,7 @@ function atualizarUIAuth(user) {
     bannerLogin.style.setProperty("display", "flex", "important");
     bannerLogged.style.setProperty("display", "none", "important");
     emailDisplay.textContent = "";
-    clearTimeout(timeoutSalvar);
-    timeoutSalvar = null;
+    debouncerSalvamento.cancelar();
     currentResumeId = null;
     document.getElementById("resumesList").innerHTML = "";
     document.getElementById("current-resume-title").textContent =
@@ -414,50 +402,14 @@ document.getElementById("phone").addEventListener("input", function (e) {
   e.target.value = v;
 });
 
-// Se a pessoa colar a URL completa (o normal ao copiar do navegador), tira
-// o https://www. automaticamente — o backend já monta esse prefixo sozinho,
-// então mantê-lo aqui faria o link final sair duplicado e quebrado.
-function limparUrlPerfil(valor) {
-  return valor.replace(/^https?:\/\//i, "").replace(/^www\./i, "");
-}
-
+// limparUrlPerfil, formatarDataMesAno e toggleDataFim vêm de utils.js
+// (carregado antes deste arquivo em index.html) — extraídas de lá para
+// poderem ser testadas isoladamente.
 ["linkedin", "github"].forEach((id) => {
   document.getElementById(id).addEventListener("blur", function () {
     this.value = limparUrlPerfil(this.value.trim());
   });
 });
-
-function formatarDataMesAno(v) {
-  if (!v) return "";
-  const p = v.split("-");
-  return p.length === 2 ? `${p[1]}/${p[0]}` : v;
-}
-
-function toggleDataFim(checkbox) {
-  const input = checkbox.closest(".row").querySelector(".input-data-fim");
-  if (checkbox.checked) {
-    input.disabled = true;
-    input.removeAttribute("required");
-    input.value = "";
-  } else {
-    input.disabled = false;
-    // Só volta a ser obrigatório se a seção (Experiência/Formação) também
-    // estiver marcada para entrar no PDF — sem isso, desmarcar "Incluir no
-    // PDF?" e depois mexer nessa caixinha reativava a obrigatoriedade à
-    // revelia do toggle da seção.
-    const secaoId = checkbox.closest("#experiencias-container")
-      ? "include-experience"
-      : checkbox.closest("#formacao-container")
-        ? "include-education"
-        : null;
-    const secaoIncluida = secaoId
-      ? document.getElementById(secaoId).checked
-      : true;
-    if (secaoIncluida) {
-      input.setAttribute("required", "required");
-    }
-  }
-}
 
 // --- INJEÇÃO DE HTML ---
 function adicionarExperiencia() {
@@ -590,89 +542,35 @@ function removerElemento(id) {
   }
 }
 
-document
-  .getElementById("include-experience")
-  .addEventListener("change", function () {
-    const isChecked = this.checked;
-    document
-      .querySelectorAll(
-        "#experiencias-container input:not([type=checkbox]), #experiencias-container textarea",
-      )
-      .forEach((i) =>
-        isChecked
-          ? i.setAttribute("required", "required")
-          : i.removeAttribute("required"),
-      );
+// aplicarObrigatoriedade (utils.js) liga/desliga "required" nos campos de
+// texto/data da seção, sem nunca mexer nas caixinhas de checkbox — extraída
+// pra cá justamente porque essa distinção já foi um bug real no passado.
+[
+  ["include-experience", "experiencias-container"],
+  ["include-education", "formacao-container"],
+  ["include-courses", "cursos-container"],
+  ["include-projects", "projetos-container"],
+].forEach(([toggleId, containerId]) => {
+  document.getElementById(toggleId).addEventListener("change", function () {
+    aplicarObrigatoriedade(document.getElementById(containerId), this.checked);
   });
-
-document
-  .getElementById("include-education")
-  .addEventListener("change", function () {
-    const isChecked = this.checked;
-    document
-      .querySelectorAll(
-        "#formacao-container input:not([type=checkbox]), #formacao-container textarea",
-      )
-      .forEach((i) =>
-        isChecked
-          ? i.setAttribute("required", "required")
-          : i.removeAttribute("required"),
-      );
-  });
-
-document
-  .getElementById("include-courses")
-  .addEventListener("change", function () {
-    const isChecked = this.checked;
-    document
-      .querySelectorAll(
-        "#cursos-container input:not([type=checkbox]), #cursos-container textarea",
-      )
-      .forEach((i) =>
-        isChecked
-          ? i.setAttribute("required", "required")
-          : i.removeAttribute("required"),
-      );
-  });
-
-document
-  .getElementById("include-projects")
-  .addEventListener("change", function () {
-    const isChecked = this.checked;
-    document
-      .querySelectorAll(
-        "#projetos-container input:not([type=checkbox]), #projetos-container textarea",
-      )
-      .forEach((i) =>
-        isChecked
-          ? i.setAttribute("required", "required")
-          : i.removeAttribute("required"),
-      );
-  });
+});
 
 // ==========================================
 // PERSISTÊNCIA NA NUVEM
 // ==========================================
-let timeoutSalvar;
+// criarDebouncer (utils.js): agrupa edições rápidas numa só chamada de
+// salvamento, mas permite forçar o salvamento imediato antes de trocar de
+// currículo (flush) — ver comentário original desse bug em utils.js.
+const debouncerSalvamento = criarDebouncer(() => salvarDadosNuvem(), 1500);
+
 function agendarSalvamentoNuvem() {
   if (!currentUser) return;
-  clearTimeout(timeoutSalvar);
-  timeoutSalvar = setTimeout(salvarDadosNuvem, 1500);
+  debouncerSalvamento.agendar();
 }
 
-// Se houver uma edição aguardando o debounce de 1.5s, salva IMEDIATAMENTE
-// no currículo que ainda está ativo (chame isso antes de trocar de
-// currículo). Sem isso, o timer antigo dispararia depois da troca e
-// salvaria os dados errados (ou incompletos) por cima do novo currículo
-// selecionado, já que salvarDadosNuvem() sempre usa o currentResumeId
-// no momento em que ele efetivamente roda, não no momento em que foi
-// agendado.
 async function flushSalvamentoPendente() {
-  if (timeoutSalvar) {
-    clearTimeout(timeoutSalvar);
-    timeoutSalvar = null;
-    await salvarDadosNuvem();
-  }
+  await debouncerSalvamento.flush();
 }
 
 async function salvarDadosNuvem() {
@@ -908,8 +806,7 @@ async function excluirCurriculo(id) {
   if (id === currentResumeId) {
     // Cancela qualquer autosave pendente sem salvar: não faz sentido gravar
     // dados num currículo que acabamos de excluir.
-    clearTimeout(timeoutSalvar);
-    timeoutSalvar = null;
+    debouncerSalvamento.cancelar();
 
     // Precisa de outro currículo pra assumir a edição (ou criar um novo se
     // esse era o único que o usuário tinha).

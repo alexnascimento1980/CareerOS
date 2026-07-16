@@ -57,6 +57,11 @@ def script():
     return send_from_directory(FRONTEND_DIR, "script.js")
 
 
+@app.route("/utils.js")
+def utils_js():
+    return send_from_directory(FRONTEND_DIR, "utils.js")
+
+
 def normalizar_url_perfil(valor):
     """Remove https://, http:// e www. do início, já que o template monta
     o link como https://{{ valor }} — se o usuário colar a URL completa

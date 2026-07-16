@@ -25,7 +25,11 @@ Pontos que receberam atenção específica durante o desenvolvimento:
 
 ## 🧪 Testes Automatizados
 
-O backend tem uma suíte com **42 testes** (`pytest`), cobrindo validação de dados, escaping de LaTeX, normalização de URLs, e o endpoint de geração de PDF de ponta a ponta (incluindo compilação real com `pdflatex`). Roda automaticamente via GitHub Actions a cada push/PR.
+O backend tem uma suíte com **42 testes** (`pytest`), cobrindo validação de dados, escaping de LaTeX, normalização de URLs, e o endpoint de geração de PDF de ponta a ponta (incluindo compilação real com `pdflatex`).
+
+O frontend tem uma suíte com **21 testes** (`Vitest` + `jsdom`), cobrindo a lógica extraída para `frontend/utils.js`: normalização de URLs, formatação de datas, conversão de arquivo para base64, o toggle "Incluir no PDF?" (sem nunca marcar caixas de seleção como obrigatórias) e o debounce do autosave (incluindo o cenário de trocar de currículo rapidamente).
+
+Ambas rodam automaticamente via GitHub Actions a cada push/PR.
 
 ## 🛠️ Tecnologias Utilizadas
 
@@ -70,7 +74,10 @@ Currícula/
 │   └── requirements-dev.txt       # Dependências de desenvolvimento/teste
 ├── frontend/
 │   ├── index.html                 # Interface do usuário (formulário)
-│   └── script.js                  # Lógica de frontend (auth, currículos, envio de dados)
+│   ├── script.js                  # Lógica de frontend (auth, currículos, envio de dados)
+│   ├── utils.js                   # Funções puras extraídas (testáveis isoladamente)
+│   └── utils.test.js              # Suíte de testes do frontend (Vitest)
+├── vitest.config.js
 ├── android/                       # Projeto nativo Android (Capacitor)
 ├── www/                           # Cópia web empacotada pelo Capacitor (sincronizada de frontend/)
 ├── docs/                          # Documentação estendida do projeto
@@ -111,8 +118,13 @@ Acesse `http://127.0.0.1:5000`. É necessário ter o TeX Live (`pdflatex`) insta
 Para rodar os testes automatizados:
 
 ```bash
+# Backend (Python)
 pip install -r backend/requirements-dev.txt
 pytest backend/tests/ -v
+
+# Frontend (JavaScript)
+npm install
+npm test
 ```
 
 ## 📱 Aplicativo Mobile
