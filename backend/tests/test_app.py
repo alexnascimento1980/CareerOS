@@ -250,8 +250,7 @@ def test_cabecalhos_seguranca_presentes_em_qualquer_resposta(client):
     ]:
         assert resp.headers.get("X-Frame-Options") == "DENY"
         assert resp.headers.get("X-Content-Type-Options") == "nosniff"
-        assert resp.headers.get(
-            "Referrer-Policy") == "strict-origin-when-cross-origin"
+        assert resp.headers.get("Referrer-Policy") == "strict-origin-when-cross-origin"
         assert "Content-Security-Policy" in resp.headers
         assert "Strict-Transport-Security" in resp.headers
 

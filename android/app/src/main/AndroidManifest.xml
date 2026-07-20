@@ -23,14 +23,14 @@
             </intent-filter>
 
             <!-- Permite que o Android reabra este app quando o navegador do
-                 sistema tentar navegar para com.alexnascimento.careeros://,
+                 sistema tentar navegar para com.alexnascimento.curricula://,
                  usado para concluir o login com Google (ver appUrlOpen no
                  script.js). -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="com.alexnascimento.careeros" android:host="auth-callback" />
+                <data android:scheme="com.alexnascimento.curricula" android:host="auth-callback" />
             </intent-filter>
 
         </activity>

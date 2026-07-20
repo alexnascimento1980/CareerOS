@@ -146,7 +146,7 @@ async function fazerLogin() {
 // Esquema de URL customizado que o Android/iOS usa pra "devolver" o
 // controle ao app depois do login OAuth (configurado no AndroidManifest.xml
 // e, futuramente, no Info.plist do iOS).
-const OAUTH_CALLBACK_URL = "com.alexnascimento.careeros://auth-callback";
+const OAUTH_CALLBACK_URL = "com.alexnascimento.curricula://auth-callback";
 
 async function loginComGoogle() {
   const isNative = window.Capacitor && window.Capacitor.isNativePlatform();
