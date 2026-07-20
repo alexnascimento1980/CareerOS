@@ -1,5 +1,9 @@
 # Currícula — Gerador de Currículo ATS Bilíngue
 
+![CI](https://img.shields.io/github/actions/workflow/status/alexnascimento1980/curricula/tests.yml?branch=main&label=tests)
+![Code Quality](https://img.shields.io/github/actions/workflow/status/alexnascimento1980/curricula/code-quality.yml?branch=main&label=code%20quality)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
 O **Currícula** é uma aplicação web full-stack para gerar currículos profissionais otimizados para sistemas ATS (Applicant Tracking Systems). O candidato preenche um formulário dinâmico, o backend valida e processa os dados, e um PDF é compilado com o motor de tipografia LaTeX — com suporte a múltiplos currículos salvos por usuário e tradução automática para inglês.
 
 ## 🚀 Funcionalidades
@@ -23,13 +27,15 @@ Pontos que receberam atenção específica durante o desenvolvimento:
 - **Rate limiting** no endpoint de geração de PDF (10/min, 60/hora), já que cada requisição dispara compilação LaTeX (uso pesado de CPU).
 - **Mensagens de erro genéricas** para o cliente — detalhes internos (stack traces, caminhos de arquivo) ficam só no log do servidor.
 
+Encontrou uma vulnerabilidade? Veja a política de segurança do repositório para saber como reportar.
+
 ## 🧪 Testes Automatizados
 
 O backend tem uma suíte com **42 testes** (`pytest`), cobrindo validação de dados, escaping de LaTeX, normalização de URLs, e o endpoint de geração de PDF de ponta a ponta (incluindo compilação real com `pdflatex`).
 
 O frontend tem uma suíte com **21 testes** (`Vitest` + `jsdom`), cobrindo a lógica extraída para `frontend/utils.js`: normalização de URLs, formatação de datas, conversão de arquivo para base64, o toggle "Incluir no PDF?" (sem nunca marcar caixas de seleção como obrigatórias) e o debounce do autosave (incluindo o cenário de trocar de currículo rapidamente).
 
-Ambas rodam automaticamente via GitHub Actions a cada push/PR.
+Ambas rodam automaticamente via GitHub Actions a cada push/PR, junto com um workflow separado de lint/code quality (`ruff`, `black`, `isort`, `eslint`).
 
 ## 🛠️ Tecnologias Utilizadas
 
@@ -48,18 +54,22 @@ Ambas rodam automaticamente via GitHub Actions a cada push/PR.
 - TeX Live / pdflatex (motor de PDF)
 - Supabase (PostgreSQL + Auth + RLS)
 - Docker & Gunicorn (deploy e servidor de produção)
-- pytest (testes automatizados)
-- GitHub Actions (CI de testes + backup diário)
+- pytest / Vitest (testes automatizados)
+- ruff, black, isort, ESLint, Prettier (qualidade de código)
+- GitHub Actions (CI de testes, lint e backup diário)
 
 ## 📂 Estrutura do Projeto
 
-```text
+```
 Currícula/
 ├── .github/
 │   └── workflows/
 │       ├── tests.yml              # CI: roda a suíte de testes a cada push/PR
 │       ├── code-quality.yml       # CI: lint (ruff, black, isort, eslint)
 │       └── backup_supabase.yml    # Backup diário automático da tabela curriculos
+├── .vscode/                       # Configurações recomendadas do editor
+├── android/                       # Projeto nativo Android (Capacitor)
+├── assets/                        # Imagens e recursos estáticos do projeto
 ├── backend/
 │   ├── app.py                     # Servidor Flask e rotas da API
 │   ├── latex_utils.py             # Escaping de caracteres especiais do LaTeX
@@ -72,20 +82,30 @@ Currícula/
 │   │   └── dados.json             # Dado de exemplo usado pelo gerador.py
 │   ├── requirements.txt           # Dependências de produção
 │   └── requirements-dev.txt       # Dependências de desenvolvimento/teste
+├── docs/                          # Documentação estendida do projeto
 ├── frontend/
 │   ├── index.html                 # Interface do usuário (formulário)
 │   ├── script.js                  # Lógica de frontend (auth, currículos, envio de dados)
 │   ├── utils.js                   # Funções puras extraídas (testáveis isoladamente)
 │   └── utils.test.js              # Suíte de testes do frontend (Vitest)
-├── vitest.config.js
-├── android/                       # Projeto nativo Android (Capacitor)
 ├── www/                           # Cópia web empacotada pelo Capacitor (sincronizada de frontend/)
-├── docs/                          # Documentação estendida do projeto
 ├── capacitor.config.json
-├── package.json
+├── CHANGELOG.md                   # Histórico de versões do projeto
+├── CONTRIBUTING.md                # Guia de contribuição
 ├── Dockerfile                     # Receita de infraestrutura para nuvem
+├── LICENSE.md                     # Licença MIT
+├── package.json
+├── pyproject.toml                 # Configuração de ferramentas Python (ruff/black/isort)
+├── pytest.ini                     # Configuração do pytest
+├── eslint.config.js               # Configuração de lint do frontend
+├── vitest.config.js
 ├── .dockerignore
+├── .editorconfig
+├── .gitattributes
 ├── .gitignore
+├── .hintrc
+├── .prettierignore
+├── .prettierrc
 └── README.md
 ```
 
@@ -93,7 +113,7 @@ Currícula/
 
 ## ▶️ Como rodar localmente
 
-```bash
+```
 # 1. Clone o repositório
 git clone https://github.com/alexnascimento1980/curricula.git
 cd curricula
@@ -117,7 +137,7 @@ Acesse `http://127.0.0.1:5000`. É necessário ter o TeX Live (`pdflatex`) insta
 
 Para rodar os testes automatizados:
 
-```bash
+```
 # Backend (Python)
 pip install -r backend/requirements-dev.txt
 pytest backend/tests/ -v
@@ -127,6 +147,18 @@ npm install
 npm test
 ```
 
+Para checar lint/formatação antes de abrir um PR:
+
+```
+# Backend
+ruff check .
+black --check .
+isort --check-only .
+
+# Frontend
+npm run lint
+```
+
 ## 📱 Aplicativo Mobile
 
 O app Android (via Capacitor) já está funcional — login (e-mail/senha e Google), múltiplos currículos, geração de PDF bilíngue e recuperação de senha testados em aparelho físico. Veja `docs/mobile.md` para detalhes de build e configuração.
@@ -134,3 +166,11 @@ O app Android (via Capacitor) já está funcional — login (e-mail/senha e Goog
 ## 🗺️ Roadmap
 
 - [ ] Versão iOS (requer Mac + Xcode)
+
+## 🤝 Contribuindo
+
+Contribuições são bem-vindas! Veja o [CONTRIBUTING.md](CONTRIBUTING.md) para o fluxo de branches, padrão de commits e checklist de PR antes de abrir sua contribuição.
+
+## 📄 Licença
+
+Este projeto está licenciado sob a licença MIT — veja o arquivo [LICENSE.md](LICENSE.md) para mais detalhes.
