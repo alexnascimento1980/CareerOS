@@ -103,7 +103,11 @@ def adicionar_cabecalhos_seguranca(response):
         "https://fonts.googleapis.com; "
         "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; "
         "img-src 'self' data:; "
-        f"connect-src 'self' {_SUPABASE_URL} https://servicodados.ibge.gov.br; "
+        # cdn.jsdelivr.net aqui é só pra permitir que o DevTools baixe os
+        # .map (source maps) do Bootstrap quando aberto; o domínio já é
+        # confiável de qualquer forma via script-src/style-src acima.
+        f"connect-src 'self' {_SUPABASE_URL} https://servicodados.ibge.gov.br "
+        "https://cdn.jsdelivr.net; "
         "frame-ancestors 'none'; "
         "base-uri 'self'; "
         "form-action 'self';"
@@ -125,6 +129,11 @@ def script():
 @app.route("/utils.js")
 def utils_js():
     return send_from_directory(FRONTEND_DIR, "utils.js")
+
+
+@app.route("/accessibility.js")
+def accessibility_js():
+    return send_from_directory(FRONTEND_DIR, "accessibility.js")
 
 
 def normalizar_url_perfil(valor):
