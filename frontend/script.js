@@ -37,14 +37,17 @@ let modalTargetId = null;
 // navegador, print de tela, link compartilhado) teria acesso à sessão.
 function limparTokenDaURL() {
   if (window.location.hash) {
-    const urlLimpa = window.location.origin + window.location.pathname + window.location.search;
+    const urlLimpa =
+      window.location.origin +
+      window.location.pathname +
+      window.location.search;
     window.history.replaceState({}, document.title, urlLimpa);
   }
 }
 
 async function checarSessao() {
   const {
-    data: { session }
+    data: { session },
   } = await supabaseClient.auth.getSession();
   atualizarUIAuth(session?.user || null);
   limparTokenDaURL();
@@ -91,7 +94,8 @@ function atualizarUIAuth(user) {
     debouncerSalvamento.cancelar();
     currentResumeId = null;
     document.getElementById("resumesList").innerHTML = "";
-    document.getElementById("current-resume-title").textContent = "Nenhum selecionado";
+    document.getElementById("current-resume-title").textContent =
+      "Nenhum selecionado";
     limparFormulario();
   }
 }
@@ -129,7 +133,7 @@ async function fazerLogin() {
   btn.textContent = "Entrando...";
   const { error } = await supabaseClient.auth.signInWithPassword({
     email,
-    password
+    password,
   });
   btn.textContent = "Entrar";
   if (error) {
@@ -158,8 +162,8 @@ async function loginComGoogle() {
       provider: "google",
       options: {
         redirectTo: OAUTH_CALLBACK_URL,
-        skipBrowserRedirect: true
-      }
+        skipBrowserRedirect: true,
+      },
     });
     if (error) {
       mostrarNotificacao("Erro no login com Google: " + error.message, "danger");
@@ -169,9 +173,10 @@ async function loginComGoogle() {
   } else {
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.origin }
+      options: { redirectTo: window.location.origin },
     });
-    if (error) mostrarNotificacao("Erro no login com Google: " + error.message, "danger");
+    if (error)
+      mostrarNotificacao("Erro no login com Google: " + error.message, "danger");
   }
 }
 
@@ -193,7 +198,7 @@ if (window.Capacitor && window.Capacitor.isNativePlatform()) {
     if (access_token && refresh_token) {
       const { error } = await supabaseClient.auth.setSession({
         access_token,
-        refresh_token
+        refresh_token,
       });
       if (error) {
         mostrarNotificacao("Erro ao concluir login: " + error.message, "danger");
@@ -245,7 +250,8 @@ async function fazerLogout() {
 // ==========================================
 function abrirModalRecuperarSenha() {
   bootstrap.Modal.getInstance(document.getElementById("authModal"))?.hide();
-  document.getElementById("reset-email").value = document.getElementById("auth-email").value || "";
+  document.getElementById("reset-email").value =
+    document.getElementById("auth-email").value || "";
   document.getElementById("reset-error").style.display = "none";
   new bootstrap.Modal(document.getElementById("resetPasswordModal")).show();
 }
@@ -267,7 +273,7 @@ async function enviarLinkRecuperacao() {
 
   const isNative = window.Capacitor && window.Capacitor.isNativePlatform();
   const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-    redirectTo: isNative ? OAUTH_CALLBACK_URL : window.location.origin
+    redirectTo: isNative ? OAUTH_CALLBACK_URL : window.location.origin,
   });
 
   btn.disabled = false;
@@ -279,10 +285,12 @@ async function enviarLinkRecuperacao() {
     return;
   }
 
-  bootstrap.Modal.getInstance(document.getElementById("resetPasswordModal")).hide();
+  bootstrap.Modal.getInstance(
+    document.getElementById("resetPasswordModal"),
+  ).hide();
   mostrarNotificacao(
     "Se esse e-mail estiver cadastrado, você vai receber um link para redefinir a senha.",
-    "success"
+    "success",
   );
 }
 
@@ -308,7 +316,7 @@ async function salvarNovaSenha() {
   btn.textContent = "Salvando...";
 
   const { error } = await supabaseClient.auth.updateUser({
-    password: novaSenha
+    password: novaSenha,
   });
 
   btn.disabled = false;
@@ -320,7 +328,9 @@ async function salvarNovaSenha() {
     return;
   }
 
-  bootstrap.Modal.getInstance(document.getElementById("newPasswordModal")).hide();
+  bootstrap.Modal.getInstance(
+    document.getElementById("newPasswordModal"),
+  ).hide();
   mostrarNotificacao("Senha atualizada com sucesso!", "success");
 }
 
@@ -337,36 +347,41 @@ async function carregarEstados() {
   const selectEstado = document.getElementById("estado");
   try {
     const response = await fetch(
-      "https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome"
+      "https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome",
     );
     const estados = await response.json();
-    selectEstado.innerHTML = '<option value="" disabled selected>Selecione um estado...</option>';
+    selectEstado.innerHTML =
+      "<option value=\"\" disabled selected>Selecione um estado...</option>";
     estados.forEach(
       (estado) =>
-        (selectEstado.innerHTML += `<option value="${estado.sigla}">${estado.nome}</option>`)
+        (selectEstado.innerHTML += `<option value="${estado.sigla}">${estado.nome}</option>`),
     );
   } catch (e) {
-    selectEstado.innerHTML = '<option value="" disabled selected>Erro ao carregar</option>';
+    selectEstado.innerHTML =
+      "<option value=\"\" disabled selected>Erro ao carregar</option>";
   }
 }
 
 async function carregarCidades(uf) {
   const selectCidade = document.getElementById("cidade");
-  selectCidade.innerHTML = '<option value="" disabled selected>Carregando cidades...</option>';
+  selectCidade.innerHTML =
+    "<option value=\"\" disabled selected>Carregando cidades...</option>";
   selectCidade.disabled = true;
   try {
     const response = await fetch(
-      `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios?orderBy=nome`
+      `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios?orderBy=nome`,
     );
     const cidades = await response.json();
-    selectCidade.innerHTML = '<option value="" disabled selected>Selecione uma cidade...</option>';
+    selectCidade.innerHTML =
+      "<option value=\"\" disabled selected>Selecione uma cidade...</option>";
     cidades.forEach(
       (cidade) =>
-        (selectCidade.innerHTML += `<option value="${cidade.nome}">${cidade.nome}</option>`)
+        (selectCidade.innerHTML += `<option value="${cidade.nome}">${cidade.nome}</option>`),
     );
     selectCidade.disabled = false;
   } catch (e) {
-    selectCidade.innerHTML = '<option value="" disabled selected>Erro ao carregar</option>';
+    selectCidade.innerHTML =
+      "<option value=\"\" disabled selected>Erro ao carregar</option>";
   }
 }
 
@@ -378,9 +393,13 @@ document.getElementById("phone").addEventListener("input", function (e) {
   let v = e.target.value.replace(/\D/g, "");
   if (v.length > 11) v = v.substring(0, 11);
   if (v.length <= 10) {
-    v = v.replace(/^(\d{2})(\d)/g, "($1) $2").replace(/(\d{4})(\d{1,4})$/, "$1-$2");
+    v = v
+      .replace(/^(\d{2})(\d)/g, "($1) $2")
+      .replace(/(\d{4})(\d{1,4})$/, "$1-$2");
   } else {
-    v = v.replace(/^(\d{2})(\d)/g, "($1) $2").replace(/(\d{5})(\d{1,4})$/, "$1-$2");
+    v = v
+      .replace(/^(\d{2})(\d)/g, "($1) $2")
+      .replace(/(\d{5})(\d{1,4})$/, "$1-$2");
   }
   e.target.value = v;
 });
@@ -396,7 +415,9 @@ document.getElementById("phone").addEventListener("input", function (e) {
 
 // --- INJEÇÃO DE HTML ---
 function adicionarExperiencia() {
-  const isReq = document.getElementById("include-experience").checked ? "required" : "";
+  const isReq = document.getElementById("include-experience").checked
+    ? "required"
+    : "";
   const n = expCount;
   const html = `
     <div class="card mb-3 exp-block shadow-sm border-start border-primary border-4 fade-in" id="exp-${n}">
@@ -423,12 +444,16 @@ function adicionarExperiencia() {
         <div class="mb-2"><label class="form-label fw-bold text-muted small" for="exp-highlights-${n}">Atividades (separe por ";")</label><textarea id="exp-highlights-${n}" class="form-control exp-highlights-pt" rows="3" ${isReq}></textarea></div>
       </div>
     </div>`;
-  document.getElementById("experiencias-container").insertAdjacentHTML("beforeend", html);
+  document
+    .getElementById("experiencias-container")
+    .insertAdjacentHTML("beforeend", html);
   expCount++;
 }
 
 function adicionarFormacao() {
-  const isReq = document.getElementById("include-education").checked ? "required" : "";
+  const isReq = document.getElementById("include-education").checked
+    ? "required"
+    : "";
   const n = eduCount;
   const html = `
     <div class="card mb-3 edu-block shadow-sm border-start border-info border-4 fade-in" id="edu-${n}">
@@ -455,12 +480,16 @@ function adicionarFormacao() {
         </div>
       </div>
     </div>`;
-  document.getElementById("formacao-container").insertAdjacentHTML("beforeend", html);
+  document
+    .getElementById("formacao-container")
+    .insertAdjacentHTML("beforeend", html);
   eduCount++;
 }
 
 function adicionarCurso() {
-  const isReq = document.getElementById("include-courses").checked ? "required" : "";
+  const isReq = document.getElementById("include-courses").checked
+    ? "required"
+    : "";
   const n = cursoCount;
   const html = `
     <div class="card mb-3 curso-block shadow-sm border-start border-success border-4 fade-in" id="curso-${n}">
@@ -476,12 +505,16 @@ function adicionarCurso() {
         </div>
       </div>
     </div>`;
-  document.getElementById("cursos-container").insertAdjacentHTML("beforeend", html);
+  document
+    .getElementById("cursos-container")
+    .insertAdjacentHTML("beforeend", html);
   cursoCount++;
 }
 
 function adicionarProjeto() {
-  const isReq = document.getElementById("include-projects").checked ? "required" : "";
+  const isReq = document.getElementById("include-projects").checked
+    ? "required"
+    : "";
   const n = projCount;
   const html = `
     <div class="card mb-3 proj-block shadow-sm border-start border-warning border-4 fade-in" id="proj-${n}">
@@ -498,7 +531,9 @@ function adicionarProjeto() {
         <div class="mb-2"><label class="form-label fw-bold text-muted small" for="proj-desc-${n}">Descrição</label><textarea id="proj-desc-${n}" class="form-control proj-desc-pt" rows="2" ${isReq}></textarea></div>
       </div>
     </div>`;
-  document.getElementById("projetos-container").insertAdjacentHTML("beforeend", html);
+  document
+    .getElementById("projetos-container")
+    .insertAdjacentHTML("beforeend", html);
   projCount++;
 }
 
@@ -520,7 +555,7 @@ function removerElemento(id) {
   ["include-experience", "experiencias-container"],
   ["include-education", "formacao-container"],
   ["include-courses", "cursos-container"],
-  ["include-projects", "projetos-container"]
+  ["include-projects", "projetos-container"],
 ].forEach(([toggleId, containerId]) => {
   document.getElementById(toggleId).addEventListener("change", function () {
     aplicarObrigatoriedade(document.getElementById(containerId), this.checked);
@@ -558,7 +593,7 @@ async function salvarDadosNuvem() {
         estado: document.getElementById("estado").value,
         cidade: document.getElementById("cidade").value,
         linkedin: document.getElementById("linkedin").value,
-        github: document.getElementById("github").value
+        github: document.getElementById("github").value,
       },
       summary: { pt: [document.getElementById("summary_pt").value] },
       skills: {
@@ -566,48 +601,57 @@ async function salvarDadosNuvem() {
           .getElementById("skills")
           .value.split(",")
           .map((s) => s.trim())
-          .filter((s) => s)
+          .filter((s) => s),
       },
       config: {
-        includeExperience: document.getElementById("include-experience").checked,
+        includeExperience:
+          document.getElementById("include-experience").checked,
         includeEducation: document.getElementById("include-education").checked,
         includeCourses: document.getElementById("include-courses").checked,
         includeProjects: document.getElementById("include-projects").checked,
-        idioma: document.getElementById("idioma_escolhido").value
+        idioma: document.getElementById("idioma_escolhido").value,
       },
-      experience: Array.from(document.querySelectorAll(".exp-block")).map((b) => ({
-        company: b.querySelector(".exp-company").value,
-        position: b.querySelector(".exp-position-pt").value,
-        start: b.querySelector(".exp-start").value,
-        end: b.querySelector(".exp-end").value,
-        isCurrent: b.querySelector(".exp-current").checked,
-        highlights: b.querySelector(".exp-highlights-pt").value
-      })),
-      education: Array.from(document.querySelectorAll(".edu-block")).map((b) => ({
-        institution: b.querySelector(".edu-institution").value,
-        area: b.querySelector(".edu-area-pt").value,
-        start: b.querySelector(".edu-start").value,
-        end: b.querySelector(".edu-end").value,
-        isCurrent: b.querySelector(".edu-current").checked,
-        status: b.querySelector(".edu-status").value
-      })),
-      courses: Array.from(document.querySelectorAll(".curso-block")).map((b) => ({
-        name: b.querySelector(".curso-name").value,
-        institution: b.querySelector(".curso-inst").value,
-        year: b.querySelector(".curso-year").value
-      })),
-      projects: Array.from(document.querySelectorAll(".proj-block")).map((b) => ({
-        name: b.querySelector(".proj-name").value,
-        tech: b.querySelector(".proj-tech").value,
-        link: b.querySelector(".proj-link").value,
-        desc: b.querySelector(".proj-desc-pt").value
-      }))
+      experience: Array.from(document.querySelectorAll(".exp-block")).map(
+        (b) => ({
+          company: b.querySelector(".exp-company").value,
+          position: b.querySelector(".exp-position-pt").value,
+          start: b.querySelector(".exp-start").value,
+          end: b.querySelector(".exp-end").value,
+          isCurrent: b.querySelector(".exp-current").checked,
+          highlights: b.querySelector(".exp-highlights-pt").value,
+        }),
+      ),
+      education: Array.from(document.querySelectorAll(".edu-block")).map(
+        (b) => ({
+          institution: b.querySelector(".edu-institution").value,
+          area: b.querySelector(".edu-area-pt").value,
+          start: b.querySelector(".edu-start").value,
+          end: b.querySelector(".edu-end").value,
+          isCurrent: b.querySelector(".edu-current").checked,
+          status: b.querySelector(".edu-status").value,
+        }),
+      ),
+      courses: Array.from(document.querySelectorAll(".curso-block")).map(
+        (b) => ({
+          name: b.querySelector(".curso-name").value,
+          institution: b.querySelector(".curso-inst").value,
+          year: b.querySelector(".curso-year").value,
+        }),
+      ),
+      projects: Array.from(document.querySelectorAll(".proj-block")).map(
+        (b) => ({
+          name: b.querySelector(".proj-name").value,
+          tech: b.querySelector(".proj-tech").value,
+          link: b.querySelector(".proj-link").value,
+          desc: b.querySelector(".proj-desc-pt").value,
+        }),
+      ),
     };
     const { error } = await supabaseClient
       .from("curriculos")
       .update({
         dados: r,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .eq("id", currentResumeId);
 
@@ -696,7 +740,8 @@ async function carregarListaCurriculos(userId) {
     info.style.flex = "1";
     info.setAttribute(
       "aria-label",
-      (isActive ? "Currículo atual selecionado: " : "Selecionar currículo: ") + nomeTexto
+      (isActive ? "Currículo atual selecionado: " : "Selecionar currículo: ") +
+        nomeTexto,
     );
     info.addEventListener("click", () => selecionarCurriculo(r.id));
 
@@ -711,7 +756,8 @@ async function carregarListaCurriculos(userId) {
 
     const dataEl = document.createElement("div");
     dataEl.className = "resume-item-date";
-    dataEl.textContent = "Atualizado em " + new Date(r.updated_at).toLocaleString("pt-BR");
+    dataEl.textContent =
+      "Atualizado em " + new Date(r.updated_at).toLocaleString("pt-BR");
 
     info.appendChild(nomeEl);
     info.appendChild(dataEl);
@@ -721,7 +767,7 @@ async function carregarListaCurriculos(userId) {
     const btnRenomear = document.createElement("button");
     btnRenomear.type = "button";
     btnRenomear.className = "btn btn-sm btn-outline-secondary me-1";
-    btnRenomear.innerHTML = '<i class="fas fa-pen" aria-hidden="true"></i>';
+    btnRenomear.innerHTML = "<i class=\"fas fa-pen\" aria-hidden=\"true\"></i>";
     btnRenomear.title = "Renomear";
     btnRenomear.setAttribute("aria-label", "Renomear currículo: " + nomeTexto);
     btnRenomear.addEventListener("click", (e) => {
@@ -732,7 +778,7 @@ async function carregarListaCurriculos(userId) {
     const btnExcluir = document.createElement("button");
     btnExcluir.type = "button";
     btnExcluir.className = "btn btn-sm btn-outline-danger";
-    btnExcluir.innerHTML = '<i class="fas fa-trash-alt" aria-hidden="true"></i>';
+    btnExcluir.innerHTML = "<i class=\"fas fa-trash-alt\" aria-hidden=\"true\"></i>";
     btnExcluir.title = "Excluir";
     btnExcluir.setAttribute("aria-label", "Excluir currículo: " + nomeTexto);
     btnExcluir.addEventListener("click", (e) => {
@@ -757,14 +803,19 @@ async function selecionarCurriculo(id) {
   await carregarCurriculoPorId(id);
   await carregarListaCurriculos(currentUser.id);
   const painel = document.getElementById("resumePanel");
-  const instancia = bootstrap.Offcanvas.getInstance(painel) || new bootstrap.Offcanvas(painel);
+  const instancia =
+    bootstrap.Offcanvas.getInstance(painel) || new bootstrap.Offcanvas(painel);
   instancia.hide();
 }
 
 async function excluirCurriculo(id) {
-  if (!confirm("Excluir este currículo? Essa ação não pode ser desfeita.")) return;
+  if (!confirm("Excluir este currículo? Essa ação não pode ser desfeita."))
+    return;
 
-  const { error } = await supabaseClient.from("curriculos").delete().eq("id", id);
+  const { error } = await supabaseClient
+    .from("curriculos")
+    .delete()
+    .eq("id", id);
   if (error) {
     mostrarNotificacao("Erro ao excluir currículo.", "danger");
     return;
@@ -787,7 +838,10 @@ async function excluirCurriculo(id) {
       currentResumeId = data[0].id;
       await carregarCurriculoPorId(currentResumeId);
     } else {
-      currentResumeId = await criarCurriculoNoBanco(currentUser.id, "Meu Currículo");
+      currentResumeId = await criarCurriculoNoBanco(
+        currentUser.id,
+        "Meu Currículo",
+      );
       if (currentResumeId) await carregarCurriculoPorId(currentResumeId);
     }
   }
@@ -806,45 +860,48 @@ function abrirModalNovoCurriculo() {
 function abrirModalRenomear(id, nomeAtual) {
   modalMode = "rename";
   modalTargetId = id;
-  document.getElementById("resumeModalTitle").textContent = "Renomear Currículo";
+  document.getElementById("resumeModalTitle").textContent =
+    "Renomear Currículo";
   document.getElementById("resumeNameInput").value = nomeAtual;
   new bootstrap.Modal(document.getElementById("resumeModal")).show();
 }
 
-document.getElementById("saveResumeNameBtn").addEventListener("click", async () => {
-  const nome = document.getElementById("resumeNameInput").value.trim();
-  if (!nome) {
-    mostrarNotificacao("Informe um nome para o currículo.", "danger");
-    return;
-  }
-  if (!currentUser) return;
-
-  if (modalMode === "new") {
-    await flushSalvamentoPendente();
-    const novoId = await criarCurriculoNoBanco(currentUser.id, nome);
-    if (!novoId) return;
-    currentResumeId = novoId;
-    limparFormulario();
-    document.getElementById("current-resume-title").textContent = nome;
-    await carregarListaCurriculos(currentUser.id);
-    mostrarNotificacao("Currículo criado! Comece a preencher.", "success");
-  } else if (modalMode === "rename") {
-    const { error } = await supabaseClient
-      .from("curriculos")
-      .update({ resume_name: nome })
-      .eq("id", modalTargetId);
-    if (error) {
-      mostrarNotificacao("Erro ao renomear currículo.", "danger");
+document
+  .getElementById("saveResumeNameBtn")
+  .addEventListener("click", async () => {
+    const nome = document.getElementById("resumeNameInput").value.trim();
+    if (!nome) {
+      mostrarNotificacao("Informe um nome para o currículo.", "danger");
       return;
     }
-    if (modalTargetId === currentResumeId) {
-      document.getElementById("current-resume-title").textContent = nome;
-    }
-    await carregarListaCurriculos(currentUser.id);
-  }
+    if (!currentUser) return;
 
-  bootstrap.Modal.getInstance(document.getElementById("resumeModal")).hide();
-});
+    if (modalMode === "new") {
+      await flushSalvamentoPendente();
+      const novoId = await criarCurriculoNoBanco(currentUser.id, nome);
+      if (!novoId) return;
+      currentResumeId = novoId;
+      limparFormulario();
+      document.getElementById("current-resume-title").textContent = nome;
+      await carregarListaCurriculos(currentUser.id);
+      mostrarNotificacao("Currículo criado! Comece a preencher.", "success");
+    } else if (modalMode === "rename") {
+      const { error } = await supabaseClient
+        .from("curriculos")
+        .update({ resume_name: nome })
+        .eq("id", modalTargetId);
+      if (error) {
+        mostrarNotificacao("Erro ao renomear currículo.", "danger");
+        return;
+      }
+      if (modalTargetId === currentResumeId) {
+        document.getElementById("current-resume-title").textContent = nome;
+      }
+      await carregarListaCurriculos(currentUser.id);
+    }
+
+    bootstrap.Modal.getInstance(document.getElementById("resumeModal")).hide();
+  });
 
 async function carregarCurriculoPorId(id) {
   if (isLoadingResume) return;
@@ -868,7 +925,8 @@ async function carregarCurriculoPorId(id) {
       .maybeSingle();
     if (error || !data) throw new Error("Sem dados");
 
-    document.getElementById("current-resume-title").textContent = data.resume_name || "Sem nome";
+    document.getElementById("current-resume-title").textContent =
+      data.resume_name || "Sem nome";
     const r = data.dados || {};
 
     document.getElementById("name").value = r.basics?.name || "";
@@ -878,21 +936,27 @@ async function carregarCurriculoPorId(id) {
     document.getElementById("linkedin").value = r.basics?.linkedin || "";
     document.getElementById("github").value = r.basics?.github || "";
     document.getElementById("summary_pt").value = r.summary?.pt?.[0] || "";
-    document.getElementById("skills").value = r.skills?.technical?.join(", ") || "";
+    document.getElementById("skills").value =
+      r.skills?.technical?.join(", ") || "";
 
     // Restaura o estado de cada toggle "Incluir no PDF?" ANTES de recriar os
     // blocos abaixo, já que adicionarExperiencia/Formacao/Curso/Projeto leem
     // o checkbox correspondente para decidir se os campos são obrigatórios.
     const cfg = r.config || {};
-    document.getElementById("include-experience").checked = cfg.includeExperience !== false;
-    document.getElementById("include-education").checked = cfg.includeEducation !== false;
-    document.getElementById("include-courses").checked = cfg.includeCourses !== false;
-    document.getElementById("include-projects").checked = cfg.includeProjects !== false;
+    document.getElementById("include-experience").checked =
+      cfg.includeExperience !== false;
+    document.getElementById("include-education").checked =
+      cfg.includeEducation !== false;
+    document.getElementById("include-courses").checked =
+      cfg.includeCourses !== false;
+    document.getElementById("include-projects").checked =
+      cfg.includeProjects !== false;
 
     if (r.basics?.estado) {
       document.getElementById("estado").value = r.basics.estado;
       await carregarCidades(r.basics.estado);
-      if (r.basics.cidade) document.getElementById("cidade").value = r.basics.cidade;
+      if (r.basics.cidade)
+        document.getElementById("cidade").value = r.basics.cidade;
     }
 
     // Carregamento dinâmico
@@ -1005,44 +1069,51 @@ function mostrarNotificacao(m, t = "info") {
   setTimeout(() => a.remove(), 5000);
 }
 
-document.getElementById("cv-form").addEventListener("input", agendarSalvamentoNuvem);
-document.getElementById("cv-form").addEventListener("change", agendarSalvamentoNuvem);
+document
+  .getElementById("cv-form")
+  .addEventListener("input", agendarSalvamentoNuvem);
+document
+  .getElementById("cv-form")
+  .addEventListener("change", agendarSalvamentoNuvem);
 
 window.onload = async function () {
   await carregarEstados();
   await checarSessao();
 };
 
-document.getElementById("cv-form").addEventListener("submit", async function (e) {
-  e.preventDefault();
-  if (!this.checkValidity()) {
-    this.classList.add("was-validated");
-    mostrarNotificacao("Verifique os campos obrigatórios.", "danger");
-    return;
-  }
-  if (!currentUser) {
-    new bootstrap.Modal(document.getElementById("authModal")).show();
-    return;
-  }
-  const b = document.getElementById("btn-gerar");
-  const h = b.innerHTML;
-  b.innerHTML = '<i class="fas fa-spinner fa-spin me-2" aria-hidden="true"></i> Gerando...';
-  b.disabled = true;
-  await salvarDadosNuvem();
-  const p = {
-    lang: document.getElementById("idioma_escolhido").value,
-    basics: {
-      name: document.getElementById("name").value,
-      label_pt: document.getElementById("label_pt").value,
-      email: document.getElementById("email").value,
-      phone: document.getElementById("phone").value,
-      location: `${document.getElementById("cidade").value}, ${document.getElementById("estado").value}`,
-      linkedin: document.getElementById("linkedin").value,
-      github: document.getElementById("github").value
-    },
-    summary: { pt: [document.getElementById("summary_pt").value] },
-    experience: document.getElementById("include-experience").checked
-      ? Array.from(document.querySelectorAll(".exp-block")).map((b) => ({
+document
+  .getElementById("cv-form")
+  .addEventListener("submit", async function (e) {
+    e.preventDefault();
+    if (!this.checkValidity()) {
+      this.classList.add("was-validated");
+      mostrarNotificacao("Verifique os campos obrigatórios.", "danger");
+      return;
+    }
+    if (!currentUser) {
+      new bootstrap.Modal(document.getElementById("authModal")).show();
+      return;
+    }
+    const b = document.getElementById("btn-gerar");
+    const h = b.innerHTML;
+    b.innerHTML =
+      "<i class=\"fas fa-spinner fa-spin me-2\" aria-hidden=\"true\"></i> Gerando...";
+    b.disabled = true;
+    await salvarDadosNuvem();
+    const p = {
+      lang: document.getElementById("idioma_escolhido").value,
+      basics: {
+        name: document.getElementById("name").value,
+        label_pt: document.getElementById("label_pt").value,
+        email: document.getElementById("email").value,
+        phone: document.getElementById("phone").value,
+        location: `${document.getElementById("cidade").value}, ${document.getElementById("estado").value}`,
+        linkedin: document.getElementById("linkedin").value,
+        github: document.getElementById("github").value,
+      },
+      summary: { pt: [document.getElementById("summary_pt").value] },
+      experience: document.getElementById("include-experience").checked
+        ? Array.from(document.querySelectorAll(".exp-block")).map((b) => ({
           company: b.querySelector(".exp-company").value,
           position_pt: b.querySelector(".exp-position-pt").value,
           startDate: formatarDataMesAno(b.querySelector(".exp-start").value),
@@ -1053,93 +1124,93 @@ document.getElementById("cv-form").addEventListener("submit", async function (e)
             .querySelector(".exp-highlights-pt")
             .value.split(";")
             .map((i) => i.trim())
-            .filter((i) => i)
+            .filter((i) => i),
         }))
-      : [],
-    education: document.getElementById("include-education").checked
-      ? Array.from(document.querySelectorAll(".edu-block")).map((b) => ({
+        : [],
+      education: document.getElementById("include-education").checked
+        ? Array.from(document.querySelectorAll(".edu-block")).map((b) => ({
           institution: b.querySelector(".edu-institution").value,
           area_pt: b.querySelector(".edu-area-pt").value,
           startDate: formatarDataMesAno(b.querySelector(".edu-start").value),
           endDate: b.querySelector(".edu-current").checked
             ? "Presente"
             : formatarDataMesAno(b.querySelector(".edu-end").value),
-          status_pt: b.querySelector(".edu-status").value
+          status_pt: b.querySelector(".edu-status").value,
         }))
-      : [],
-    courses: document.getElementById("include-courses").checked
-      ? Array.from(document.querySelectorAll(".curso-block")).map((b) => ({
+        : [],
+      courses: document.getElementById("include-courses").checked
+        ? Array.from(document.querySelectorAll(".curso-block")).map((b) => ({
           name_pt: b.querySelector(".curso-name").value,
           institution: b.querySelector(".curso-inst").value,
-          year: b.querySelector(".curso-year").value
+          year: b.querySelector(".curso-year").value,
         }))
-      : [],
-    projects: document.getElementById("include-projects").checked
-      ? Array.from(document.querySelectorAll(".proj-block")).map((b) => ({
+        : [],
+      projects: document.getElementById("include-projects").checked
+        ? Array.from(document.querySelectorAll(".proj-block")).map((b) => ({
           name: b.querySelector(".proj-name").value,
           technologies: b.querySelector(".proj-tech").value,
           link: b.querySelector(".proj-link").value,
-          description_pt: b.querySelector(".proj-desc-pt").value
+          description_pt: b.querySelector(".proj-desc-pt").value,
         }))
-      : [],
-    skills: {
-      technical: document
-        .getElementById("skills")
-        .value.split(",")
-        .map((s) => s.trim())
-        .filter((s) => s)
-    }
-  };
-  try {
-    const res = await fetch(`${API_BASE_URL}/generate-cv`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(p)
-    });
-    if (!res.ok) {
-      let mensagem = "Erro ao gerar PDF.";
-      try {
-        const erroJson = await res.json();
-        mensagem = erroJson.erro || mensagem;
-      } catch (_) {
-        // resposta de erro não veio em JSON, mantém mensagem padrão
+        : [],
+      skills: {
+        technical: document
+          .getElementById("skills")
+          .value.split(",")
+          .map((s) => s.trim())
+          .filter((s) => s),
+      },
+    };
+    try {
+      const res = await fetch(`${API_BASE_URL}/generate-cv`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(p),
+      });
+      if (!res.ok) {
+        let mensagem = "Erro ao gerar PDF.";
+        try {
+          const erroJson = await res.json();
+          mensagem = erroJson.erro || mensagem;
+        } catch (_) {
+          // resposta de erro não veio em JSON, mantém mensagem padrão
+        }
+        mostrarNotificacao(mensagem, "danger");
+        return;
       }
-      mostrarNotificacao(mensagem, "danger");
-      return;
-    }
-    const blob = await res.blob();
-    const nomeArquivo = `${document.getElementById("name").value.trim().replace(/\s+/g, "_")}_curriculo.pdf`;
+      const blob = await res.blob();
+      const nomeArquivo = `${document.getElementById("name").value.trim().replace(/\s+/g, "_")}_curriculo.pdf`;
 
-    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-      // Dentro do app, o truque de <a download> do navegador não funciona
-      // (o WebView não tem gerenciador de downloads). Em vez disso,
-      // gravamos o PDF no armazenamento do app e abrimos a folha nativa
-      // de compartilhamento/salvamento do Android/iOS.
-      const base64Data = await blobParaBase64(blob);
-      const { Filesystem, Share } = window.Capacitor.Plugins;
-      const arquivo = await Filesystem.writeFile({
-        path: nomeArquivo,
-        data: base64Data,
-        directory: "CACHE"
-      });
-      await Share.share({
-        title: "Currículo em PDF",
-        url: arquivo.uri,
-        dialogTitle: "Salvar ou compartilhar currículo"
-      });
-    } else {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = nomeArquivo;
-      a.click();
+      if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+        // Dentro do app, o truque de <a download> do navegador não funciona
+        // (o WebView não tem gerenciador de downloads). Em vez disso,
+        // gravamos o PDF no armazenamento do app e abrimos a folha nativa
+        // de compartilhamento/salvamento do Android/iOS.
+        const base64Data = await blobParaBase64(blob);
+        const { Filesystem, Share } = window.Capacitor.Plugins;
+        const arquivo = await Filesystem.writeFile({
+          path: nomeArquivo,
+          data: base64Data,
+          directory: "CACHE",
+        });
+        await Share.share({
+          title: "Currículo em PDF",
+          url: arquivo.uri,
+          dialogTitle: "Salvar ou compartilhar currículo",
+        });
+      } else {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = nomeArquivo;
+        a.click();
+      }
+      mostrarNotificacao("PDF gerado com sucesso!", "success");
+    } catch (err) {
+      console.error("Erro ao gerar/salvar PDF:", err);
+      mostrarNotificacao("Erro ao gerar PDF.", "danger");
+    } finally {
+      b.innerHTML = h;
+      b.disabled = false;
     }
-    mostrarNotificacao("PDF gerado com sucesso!", "success");
-  } catch (err) {
-    console.error("Erro ao gerar/salvar PDF:", err);
-    mostrarNotificacao("Erro ao gerar PDF.", "danger");
-  } finally {
-    b.innerHTML = h;
-    b.disabled = false;
-  }
-});
+  });
