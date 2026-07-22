@@ -7,13 +7,13 @@ import re
 # esses caracteres em vez de deixar a compilação falhar.
 _EMOJI_PATTERN = re.compile(
     "["
-    "\U0001F300-\U0001FAFF"  # símbolos e pictogramas diversos, emoticons, transporte, etc.
-    "\U00002600-\U000027BF"  # símbolos diversos e dingbats (☀, ✅, ➡ etc.)
-    "\U0001F1E6-\U0001F1FF"  # bandeiras (pares de indicadores regionais)
-    "\U00002190-\U000021FF"  # setas
-    "\U00002B00-\U00002BFF"  # setas e formas diversas
-    "\U0000FE00-\U0000FE0F"  # seletores de variação (ex.: o que forma o 🛠️)
-    "\U0000200D"             # zero-width joiner (usado em emojis compostos)
+    "\U0001f300-\U0001faff"  # símbolos e pictogramas diversos, emoticons, transporte, etc.
+    "\U00002600-\U000027bf"  # símbolos diversos e dingbats (☀, ✅, ➡ etc.)
+    "\U0001f1e6-\U0001f1ff"  # bandeiras (pares de indicadores regionais)
+    "\U00002190-\U000021ff"  # setas
+    "\U00002b00-\U00002bff"  # setas e formas diversas
+    "\U0000fe00-\U0000fe0f"  # seletores de variação (ex.: o que forma o 🛠️)
+    "\U0000200d"  # zero-width joiner (usado em emojis compostos)
     "]+",
     flags=re.UNICODE,
 )
