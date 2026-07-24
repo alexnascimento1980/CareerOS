@@ -2,7 +2,7 @@ import json
 import os
 
 from jinja2 import Environment, FileSystemLoader
-from latex_utils import escapar_latex
+from latex_utils import escapar_latex, escapar_pdfmeta
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DADOS_PATH = os.path.join(BASE_DIR, "sample-data", "dados.json")
@@ -18,6 +18,7 @@ def gerar_curriculos():
     # Configura o ambiente Jinja2
     ambiente_jinja = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
     ambiente_jinja.filters["latex"] = escapar_latex
+    ambiente_jinja.filters["latexmeta"] = escapar_pdfmeta
     template = ambiente_jinja.get_template("base_ats.tex")
 
     # Cria pasta de saída se não existir

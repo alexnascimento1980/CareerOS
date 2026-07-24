@@ -13,7 +13,7 @@
       return {
         fontSize: salvo.fontSize || "normal",
         highContrast: !!salvo.highContrast,
-        reduceMotion: !!salvo.reduceMotion
+        reduceMotion: !!salvo.reduceMotion,
       };
     } catch {
       return { fontSize: "normal", highContrast: false, reduceMotion: false };
@@ -34,9 +34,14 @@
     if (tamanho === "md") root.classList.add("a11y-font-md");
     if (tamanho === "lg") root.classList.add("a11y-font-lg");
 
-    document.querySelectorAll("#a11y-font-group button").forEach((btn) => {
-      btn.setAttribute("aria-pressed", btn.dataset.fontSize === tamanho ? "true" : "false");
-    });
+    document
+      .querySelectorAll("#a11y-font-group button")
+      .forEach((btn) => {
+        btn.setAttribute(
+          "aria-pressed",
+          btn.dataset.fontSize === tamanho ? "true" : "false",
+        );
+      });
   }
 
   function aplicarHighContrast(ativo) {
@@ -68,7 +73,9 @@
     function abrirPainel() {
       panel.classList.add("open");
       toggleBtn.setAttribute("aria-expanded", "true");
-      const primeiroFoco = panel.querySelector("button, input, [tabindex]");
+      const primeiroFoco = panel.querySelector(
+        "button, input, [tabindex]",
+      );
       if (primeiroFoco) primeiroFoco.focus();
     }
 
@@ -106,15 +113,17 @@
       }
     });
 
-    document.querySelectorAll("#a11y-font-group button").forEach((btn) => {
-      btn.addEventListener("click", function () {
-        const novoTamanho = btn.dataset.fontSize;
-        const atuais = lerPreferencias();
-        atuais.fontSize = novoTamanho;
-        salvarPreferencias(atuais);
-        aplicarFontSize(novoTamanho);
+    document
+      .querySelectorAll("#a11y-font-group button")
+      .forEach((btn) => {
+        btn.addEventListener("click", function () {
+          const novoTamanho = btn.dataset.fontSize;
+          const atuais = lerPreferencias();
+          atuais.fontSize = novoTamanho;
+          salvarPreferencias(atuais);
+          aplicarFontSize(novoTamanho);
+        });
       });
-    });
 
     const chkContraste = document.getElementById("a11y-high-contrast");
     if (chkContraste) {

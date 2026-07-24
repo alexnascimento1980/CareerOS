@@ -11,7 +11,7 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from jinja2 import Environment, FileSystemLoader
-from latex_utils import escapar_latex
+from latex_utils import escapar_latex, escapar_pdfmeta
 
 # Caminhos calculados a partir da localização deste arquivo, não da pasta
 # de onde o comando é executado — assim o app funciona igual rodando
@@ -371,6 +371,7 @@ def generate_cv():
     try:
         env = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
         env.filters["latex"] = escapar_latex
+        env.filters["latexmeta"] = escapar_pdfmeta
         template = env.get_template("base_ats.tex")
         rendered_tex = template.render(dados=data, lang=lang)
 
@@ -384,19 +385,32 @@ def generate_cv():
                 f.write(rendered_tex)
 
             try:
+                pdflatex_cmd = [
+                    "pdflatex",
+                    "-interaction=nonstopmode",
+                    "-output-directory",
+                    tmpdir,
+                    tex_path,
+                ]
+                # Compila duas vezes: os marcadores de navegação do PDF
+                # (bookmarks), inseridos via \pdfbookmark para acessibilidade,
+                # só ficam corretos depois de uma segunda passada — é assim
+                # que o hyperref resolve as referências entre si.
                 result = subprocess.run(
-                    [
-                        "pdflatex",
-                        "-interaction=nonstopmode",
-                        "-output-directory",
-                        tmpdir,
-                        tex_path,
-                    ],
+                    pdflatex_cmd,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
                     timeout=30,
                 )
+                if result.returncode == 0:
+                    result = subprocess.run(
+                        pdflatex_cmd,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                        timeout=30,
+                    )
             except subprocess.TimeoutExpired:
                 return (
                     jsonify({"erro": "Tempo limite excedido ao compilar o PDF."}),

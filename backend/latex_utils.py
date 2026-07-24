@@ -53,3 +53,25 @@ def escapar_latex(texto):
         return ""
     texto = remover_emojis(texto)
     return "".join(_LATEX_ESCAPE_MAP.get(ch, ch) for ch in str(texto))
+
+
+# Caracteres que quebrariam o parsing do argumento de \hypersetup (não
+# precisam de escape "visual" como no corpo do documento, já que viram
+# metadado do PDF — não são tipografados).
+_PDFMETA_CARACTERES_INSEGUROS = ["\\", "{", "}", "%", "#", "&", "_", "~", "^", "$"]
+
+
+def escapar_pdfmeta(texto):
+    """Sanitiza texto para uso em metadados do PDF (pdftitle, pdfauthor).
+
+    Usado para preencher os metadados do PDF (título/autor), o que ajuda
+    leitores de tela e o próprio visualizador de PDF a identificar o
+    documento corretamente — parte da acessibilidade do arquivo gerado,
+    não só do formulário que o gera.
+    """
+    if texto is None:
+        return ""
+    texto = remover_emojis(str(texto))
+    for ch in _PDFMETA_CARACTERES_INSEGUROS:
+        texto = texto.replace(ch, "")
+    return texto.strip()
