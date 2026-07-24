@@ -239,7 +239,9 @@ def traduzir_texto(texto, tentativas=2):
     for tentativa in range(tentativas):
         try:
             return GoogleTranslator(source="pt", target="en").translate(texto), True
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 — biblioteca de terceiros (scraping
+            # não-oficial) não documenta quais exceções lança; um retry genérico
+            # é a estratégia correta aqui, não uma omissão.
             ultimo_erro = e
             time.sleep(0.4)
     app.logger.warning(
@@ -398,18 +400,18 @@ def generate_cv():
                 # que o hyperref resolve as referências entre si.
                 result = subprocess.run(
                     pdflatex_cmd,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
+                    capture_output=True,
                     text=True,
                     timeout=30,
+                    check=False,
                 )
                 if result.returncode == 0:
                     result = subprocess.run(
                         pdflatex_cmd,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
+                        capture_output=True,
                         text=True,
                         timeout=30,
+                        check=False,
                     )
             except subprocess.TimeoutExpired:
                 return (

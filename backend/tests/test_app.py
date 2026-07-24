@@ -12,8 +12,8 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import app as app_module  # noqa: E402
-from latex_utils import escapar_latex  # noqa: E402
+import app as app_module
+from latex_utils import escapar_latex
 
 
 def payload_valido():
